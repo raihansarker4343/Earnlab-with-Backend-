@@ -53,7 +53,7 @@ const ChatPage: React.FC = () => {
         const message: ChatMessage = {
             id: messages.length + 1,
             user: user.username,
-            avatar: user.avatarUrl,
+            avatar: user.avatarUrl || `https://i.pravatar.cc/32?u=${user.username}`,
             message: newMessage,
             timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
             isSelf: true,

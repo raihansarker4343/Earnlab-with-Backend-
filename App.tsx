@@ -105,27 +105,6 @@ export const AppContext = React.createContext<{
   setIsAdmin: () => {},
 });
 
-const getPageFromPathname = () => {
-    const pathname = window.location.pathname;
-    // Remove leading slash and decode
-    const pageName = decodeURIComponent(pathname.substring(1));
-    if (pageName === '' || pageName.toLowerCase() === 'admin') {
-        return 'Home';
-    }
-    return pageName;
-};
-
-const getPageFromHash = () => {
-    const hash = window.location.hash;
-    if (hash.startsWith('#/')) {
-        const pageName = hash.substring(2);
-        // Exclude 'admin' from being treated as a regular page from hash
-        if (pageName.toLowerCase() === 'admin') return null;
-        return decodeURIComponent(pageName.split('?')[0]); // Remove any potential query params from hash
-    }
-    return null;
-};
-
 const PageLoader: React.FC = () => (
     <div className="flex items-center justify-center h-full w-full p-8">
         <div className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
@@ -194,7 +173,6 @@ const sanitizeUser = (rawUser: User): User => {
 
 
 const App: React.FC = () => {
-  const [hash, setHash] = useState(window.location.hash);
   const [isAdmin, setIsAdmin] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [user, setUser] = useState<User | null>(null);
@@ -211,19 +189,15 @@ const App: React.FC = () => {
     const storedTheme = localStorage.getItem('theme');
     return (storedTheme === 'light' || storedTheme === 'dark') ? storedTheme : 'dark';
   });
+  const [redirectAfterLogin, setRedirectAfterLogin] = useState<string | null>(null);
+  const [isLoadingAuth, setIsLoadingAuth] = useState(true);
 
-  const setCurrentPageAndUpdateUrl = useCallback((pageName: string) => {
-    setCurrentPage(pageName);
-    const url = new URL(window.location.origin);
-    if (pageName === 'Home') {
-        url.pathname = '/';
-    } else if (pageName.toLowerCase() === 'admin') {
-        window.location.hash = '/admin';
-        return;
-    } else {
-        url.pathname = `/${encodeURIComponent(pageName)}`;
+  const navigate = useCallback((pageName: string) => {
+    const hashName = pageName.replace(/\s/g, '');
+    const newHash = pageName === 'Home' ? '' : `#/${hashName}`;
+    if (window.location.hash !== newHash) {
+        window.location.hash = newHash;
     }
-    window.history.pushState({ page: pageName }, '', url.toString());
   }, []);
 
   const handleLogin = useCallback((token: string, userData: User) => {
@@ -233,46 +207,97 @@ const App: React.FC = () => {
     setUser(sanitizedUser);
     setBalance(sanitizedUser.totalEarned || 0);
     setIsLoggedIn(true);
-    setCurrentPageAndUpdateUrl('Home');
+
+    if (redirectAfterLogin) {
+      navigate(redirectAfterLogin);
+      setRedirectAfterLogin(null);
+    } else {
+      navigate('Home');
+    }
+    
     setIsSigninModalOpen(false);
     setIsSignupModalOpen(false);
-  }, [setCurrentPageAndUpdateUrl]);
+  }, [navigate, redirectAfterLogin]);
 
   const handleLogout = useCallback(() => {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
     setUser(null);
     setIsLoggedIn(false);
-    setCurrentPageAndUpdateUrl('Home');
-  }, [setCurrentPageAndUpdateUrl]);
+    setRedirectAfterLogin(null);
+    navigate('Home');
+  }, [navigate]);
   
   useEffect(() => {
       try {
         const token = localStorage.getItem('token');
         const storedUser = localStorage.getItem('user');
         if (token && storedUser) {
-            const userData: User = JSON.parse(storedUser);
-            const sanitizedUser = sanitizeUser(userData);
-            setUser(sanitizedUser);
-            setBalance(sanitizedUser.totalEarned || 0);
-            setIsLoggedIn(true);
+            const userData = JSON.parse(storedUser);
+            if (userData && typeof userData === 'object') {
+                const sanitizedUser = sanitizeUser(userData as User);
+                setUser(sanitizedUser);
+                setBalance(sanitizedUser.totalEarned || 0);
+                setIsLoggedIn(true);
+            } else {
+                handleLogout();
+            }
+        } else {
+            setIsLoggedIn(false);
+            setUser(null);
         }
       } catch (error) {
         console.error("Failed to parse user data from localStorage", error);
         handleLogout();
+      } finally {
+        setIsLoadingAuth(false);
       }
   }, [handleLogout]);
 
 
   useEffect(() => {
-    const handleHashChange = () => {
-      setHash(window.location.hash);
+    if (isLoadingAuth) {
+        return;
+    }
+    
+    const handleUrlChange = () => {
+        const hash = window.location.hash;
+        const getPageFromHash = () => {
+            if (hash.startsWith('#/')) {
+                const pageName = hash.substring(2);
+                if (pageName.toLowerCase().startsWith('admin')) return pageName;
+                return decodeURIComponent(pageName.split('?')[0]);
+            }
+            return null;
+        };
+
+        const pageFromHash = getPageFromHash();
+
+        if (pageFromHash?.toLowerCase().startsWith('admin')) {
+            // Admin routing is handled separately and does not set currentPage
+            return;
+        }
+
+        const requestedPageKey = pageFromHash || 'Home';
+        const requestedPageName = pageKeyLookup[requestedPageKey] || Object.keys(pageComponentsMap).find(k => k === requestedPageKey) || 'Home';
+        
+        const isProtectedRoute = requestedPageName !== 'Home';
+
+        if (isProtectedRoute && !isLoggedIn) {
+            setRedirectAfterLogin(requestedPageName);
+            navigate('Home'); 
+            setIsSigninModalOpen(true);
+        } else {
+            setCurrentPage(requestedPageName);
+        }
     };
-    window.addEventListener('hashchange', handleHashChange);
+  
+    handleUrlChange(); // Set initial page
+    window.addEventListener('hashchange', handleUrlChange);
     return () => {
-      window.removeEventListener('hashchange', handleHashChange);
+        window.removeEventListener('hashchange', handleUrlChange);
     };
-  }, []);
+  }, [isLoggedIn, navigate, isLoadingAuth]);
   
   const openSignupModal = (email = '') => {
       setSignupInitialEmail(email);
@@ -283,13 +308,30 @@ const App: React.FC = () => {
       isLoggedIn, user, balance, setBalance, handleLogin, handleLogout,
       isWalletModalOpen, setIsWalletModalOpen, isSigninModalOpen, 
       setIsSigninModalOpen, isSignupModalOpen, openSignupModal, 
-      currentPage, setCurrentPage: setCurrentPageAndUpdateUrl, 
+      currentPage, setCurrentPage: navigate, 
       isSidebarCollapsed, setIsSidebarCollapsed, isMobileSidebarOpen, 
       setIsMobileSidebarOpen, theme, setTheme, isSupportChatModalOpen, 
       setIsSupportChatModalOpen, isAdmin, setIsAdmin
   };
 
-  if (hash.startsWith('#/admin')) {
+  useEffect(() => {
+    if (theme === 'dark') {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+    localStorage.setItem('theme', theme);
+  }, [theme]);
+  
+  if (isLoadingAuth) {
+    return (
+        <div className="flex h-screen w-screen items-center justify-center bg-slate-100 dark:bg-[#0f172a]">
+            <PageLoader />
+        </div>
+    );
+  }
+
+  if (window.location.hash.startsWith('#/admin')) {
       if (!isAdmin) {
           return (
               <Suspense fallback={<PageLoader />}>
@@ -306,41 +348,27 @@ const App: React.FC = () => {
       );
   }
   
-  const dedicatedPageNameFromHash = getPageFromHash();
-  const dedicatedPageName = dedicatedPageNameFromHash ? pageKeyLookup[dedicatedPageNameFromHash] : null;
-  const isDedicatedView = !!dedicatedPageName;
-  
-  useEffect(() => {
-    if (theme === 'dark') {
-      document.documentElement.classList.add('dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-    }
-    localStorage.setItem('theme', theme);
-  }, [theme]);
-  
-  useEffect(() => {
-    const pageFromHash = getPageFromHash();
-    const dedicatedPage = pageFromHash ? pageKeyLookup[pageFromHash] : null;
-    const initialPage = dedicatedPage || getPageFromPathname();
-    setCurrentPage(initialPage);
-
-    const handlePopState = () => {
-      const newPageFromHash = getPageFromHash();
-      const newDedicatedPage = newPageFromHash ? pageKeyLookup[newPageFromHash] : null;
-      if (newDedicatedPage) {
-          setCurrentPage(newDedicatedPage);
-      } else {
-          const newPage = getPageFromPathname();
-          setCurrentPage(newPage);
+  const getPageFromHash = () => {
+      const hash = window.location.hash;
+      if (hash.startsWith('#/')) {
+          const pageName = hash.substring(2);
+          if (pageName.toLowerCase().startsWith('admin')) return null;
+          return decodeURIComponent(pageName.split('?')[0]);
       }
-    };
-    window.addEventListener('popstate', handlePopState);
-    return () => {
-      window.removeEventListener('popstate', handlePopState);
-    };
-  }, []);
+      return null;
+  };
+  
+  const dedicatedPageNameFromHash = getPageFromHash();
+  const dedicatedPageName = dedicatedPageNameFromHash ? (pageKeyLookup[dedicatedPageNameFromHash] || Object.keys(pageComponentsMap).find(k => k === dedicatedPageNameFromHash)) : null;
 
+  const dedicatedPageNames = new Set([
+    'Prime Surveys', 'CPX Research', 'Adscend Media Surveys', 'BitLabs', 'inBrain', 'Pollfish', 'TheoremReach',
+    'Torox', 'Adscend Media', 'AdToWall', 'RevU', 'AdGate Media', 'MyChips', 'MM Wall', 'Aye-T Studios',
+    'Monlix', 'Hang My Ads', 'Lootably', 'Time Wall', 'AdGem'
+  ]);
+  
+  const isDedicatedView = !!dedicatedPageName && dedicatedPageNames.has(dedicatedPageName);
+  
   const switchToSignup = () => {
       setIsSigninModalOpen(false);
       setIsSignupModalOpen(true);
