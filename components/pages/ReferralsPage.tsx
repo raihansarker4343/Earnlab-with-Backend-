@@ -20,9 +20,11 @@ const ReferralsPage: React.FC = () => {
     if (!user) {
         return <div>Loading...</div>;
     }
+    
+    const referralLink = `https://earnlab.com/ref/${user.username}`;
 
     const handleCopyLink = () => {
-        navigator.clipboard.writeText(user.referralLink).then(() => {
+        navigator.clipboard.writeText(referralLink).then(() => {
             setCopyButtonText('Copied!');
             setTimeout(() => setCopyButtonText('Copy Link'), 2000);
         });
@@ -36,8 +38,8 @@ const ReferralsPage: React.FC = () => {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <StatCard title="Total Referrals" value={user.totalReferrals.toString()} icon="fas fa-users" />
-                <StatCard title="Referral Earnings" value={`$${user.referralEarnings.toFixed(2)}`} icon="fas fa-dollar-sign" />
+                <StatCard title="Total Referrals" value={user.totalReferrals?.toString() || '0'} icon="fas fa-users" />
+                <StatCard title="Referral Earnings" value={`$${user.referralEarnings?.toFixed(2) || '0.00'}`} icon="fas fa-dollar-sign" />
             </div>
 
             <div className="bg-white dark:bg-[#1e293b] p-6 rounded-lg border border-slate-200 dark:border-slate-800">
@@ -48,7 +50,7 @@ const ReferralsPage: React.FC = () => {
                     <input
                         type="text"
                         readOnly
-                        value={user.referralLink}
+                        value={referralLink}
                         className="w-full bg-slate-100 dark:bg-[#141c2f] border border-slate-300 dark:border-slate-700 rounded-lg px-4 py-3 text-slate-700 dark:text-slate-300 focus:outline-none"
                     />
                     <button

@@ -2,23 +2,23 @@
 import type { ReactNode } from 'react';
 
 export interface User {
+  id: string | number;
   username: string;
-  avatarUrl: string;
-  joinedDate: string;
-  id: string;
-  earnId: string;
-  rank: string;
-  xp: number;
-  xpToNextLevel: number;
-  totalEarned: number;
-  last30DaysEarned: number;
-  completedTasks: number;
-  totalWagered: number;
-  totalProfit: number;
-  totalWithdrawn: number;
-  totalReferrals: number;
-  referralEarnings: number;
-  referralLink: string;
+  email?: string;
+  avatarUrl?: string;
+  joinedDate?: string;
+  earnId?: string;
+  rank?: string;
+  xp?: number;
+  xpToNextLevel?: number;
+  totalEarned?: number;
+  last30DaysEarned?: number;
+  completedTasks?: number;
+  totalWagered?: number;
+  totalProfit?: number;
+  totalWithdrawn?: number;
+  totalReferrals?: number;
+  referralEarnings?: number;
 }
 
 export interface EarningFeedItem {

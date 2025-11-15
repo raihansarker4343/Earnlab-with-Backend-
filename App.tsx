@@ -5,7 +5,6 @@ import LoggedOutHeader from './components/LoggedOutHeader';
 import WalletModal from './components/WalletModal';
 import LiveEarningFeed from './components/LiveEarningFeed';
 import Footer from './components/Footer';
-import { MOCK_USER } from './constants';
 import type { User } from './types';
 import LoggedOutSidebar from './components/LoggedOutSidebar';
 import SigninModal from './components/SigninModal';
@@ -59,7 +58,8 @@ export const AppContext = React.createContext<{
   user: User | null;
   balance: number;
   setBalance: React.Dispatch<React.SetStateAction<number>>;
-  setIsLoggedIn: React.Dispatch<React.SetStateAction<boolean>>;
+  handleLogin: (token: string, user: User) => void;
+  handleLogout: () => void;
   isWalletModalOpen: boolean;
   setIsWalletModalOpen: React.Dispatch<React.SetStateAction<boolean>>;
   isSigninModalOpen: boolean;
@@ -83,7 +83,8 @@ export const AppContext = React.createContext<{
   user: null,
   balance: 0,
   setBalance: () => {},
-  setIsLoggedIn: () => {},
+  handleLogin: () => {},
+  handleLogout: () => {},
   isWalletModalOpen: false,
   setIsWalletModalOpen: () => {},
   isSigninModalOpen: false,
@@ -177,6 +178,71 @@ const pageKeyLookup = Object.keys(pageComponentsMap).reduce((lookup, key) => {
 const App: React.FC = () => {
   const [hash, setHash] = useState(window.location.hash);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [user, setUser] = useState<User | null>(null);
+  const [balance, setBalance] = useState(0);
+  const [isWalletModalOpen, setIsWalletModalOpen] = useState(false);
+  const [isSupportChatModalOpen, setIsSupportChatModalOpen] = useState(false);
+  const [isSigninModalOpen, setIsSigninModalOpen] = useState(false);
+  const [isSignupModalOpen, setIsSignupModalOpen] = useState(false);
+  const [signupInitialEmail, setSignupInitialEmail] = useState('');
+  const [currentPage, setCurrentPage] = useState('Home');
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
+  const [theme, setTheme] = useState<'light' | 'dark'>(() => {
+    const storedTheme = localStorage.getItem('theme');
+    return (storedTheme === 'light' || storedTheme === 'dark') ? storedTheme : 'dark';
+  });
+
+  const setCurrentPageAndUpdateUrl = useCallback((pageName: string) => {
+    setCurrentPage(pageName);
+    const url = new URL(window.location.origin);
+    if (pageName === 'Home') {
+        url.pathname = '/';
+    } else if (pageName.toLowerCase() === 'admin') {
+        window.location.hash = '/admin';
+        return;
+    } else {
+        url.pathname = `/${encodeURIComponent(pageName)}`;
+    }
+    window.history.pushState({ page: pageName }, '', url.toString());
+  }, []);
+
+  const handleLogin = useCallback((token: string, userData: User) => {
+    localStorage.setItem('token', token);
+    localStorage.setItem('user', JSON.stringify(userData));
+    setUser(userData);
+    setBalance(userData.totalEarned || 0);
+    setIsLoggedIn(true);
+    setCurrentPageAndUpdateUrl('Home');
+    setIsSigninModalOpen(false);
+    setIsSignupModalOpen(false);
+  }, [setCurrentPageAndUpdateUrl]);
+
+  const handleLogout = useCallback(() => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    setUser(null);
+    setIsLoggedIn(false);
+    setCurrentPageAndUpdateUrl('Home');
+  }, [setCurrentPageAndUpdateUrl]);
+  
+  useEffect(() => {
+      try {
+        const token = localStorage.getItem('token');
+        const storedUser = localStorage.getItem('user');
+        if (token && storedUser) {
+            const userData: User = JSON.parse(storedUser);
+            setUser(userData);
+            setBalance(userData.totalEarned || 0);
+            setIsLoggedIn(true);
+        }
+      } catch (error) {
+        console.error("Failed to parse user data from localStorage", error);
+        handleLogout();
+      }
+  }, [handleLogout]);
+
 
   useEffect(() => {
     const handleHashChange = () => {
@@ -188,36 +254,19 @@ const App: React.FC = () => {
     };
   }, []);
   
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [user] = useState<User | null>(MOCK_USER);
-  const [balance, setBalance] = useState(125.50);
-  const [isWalletModalOpen, setIsWalletModalOpen] = useState(false);
-  const [isSupportChatModalOpen, setIsSupportChatModalOpen] = useState(false);
-  const [isSigninModalOpen, setIsSigninModalOpen] = useState(false);
-  const [isSignupModalOpen, setIsSignupModalOpen] = useState(false);
-  const [signupInitialEmail, setSignupInitialEmail] = useState('');
-  const [currentPage, setCurrentPage] = useState(getPageFromPathname());
-  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
-  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
-  const [theme, setTheme] = useState<'light' | 'dark'>(() => {
-    const storedTheme = localStorage.getItem('theme');
-    return (storedTheme === 'light' || storedTheme === 'dark') ? storedTheme : 'dark';
-  });
-
-  // FIX: Moved `openSignupModal` before its use in `appContextValue`.
   const openSignupModal = (email = '') => {
       setSignupInitialEmail(email);
       setIsSignupModalOpen(true);
   };
 
   const appContextValue = { 
-      isLoggedIn, user, balance, setBalance, setIsLoggedIn, 
+      isLoggedIn, user, balance, setBalance, handleLogin, handleLogout,
       isWalletModalOpen, setIsWalletModalOpen, isSigninModalOpen, 
       setIsSigninModalOpen, isSignupModalOpen, openSignupModal, 
-      currentPage, isSidebarCollapsed, 
-      setIsSidebarCollapsed, isMobileSidebarOpen, setIsMobileSidebarOpen, 
-      theme, setTheme, isSupportChatModalOpen, setIsSupportChatModalOpen,
-      isAdmin, setIsAdmin
+      currentPage, setCurrentPage: setCurrentPageAndUpdateUrl, 
+      isSidebarCollapsed, setIsSidebarCollapsed, isMobileSidebarOpen, 
+      setIsMobileSidebarOpen, theme, setTheme, isSupportChatModalOpen, 
+      setIsSupportChatModalOpen, isAdmin, setIsAdmin
   };
 
   if (hash.startsWith('#/admin')) {
@@ -229,7 +278,7 @@ const App: React.FC = () => {
           );
       }
       return (
-          <AppContext.Provider value={{...appContextValue, setCurrentPage: () => {}}}>
+          <AppContext.Provider value={appContextValue}>
             <Suspense fallback={<PageLoader />}>
                 <AdminLayout />
             </Suspense>
@@ -272,6 +321,16 @@ const App: React.FC = () => {
     };
   }, []);
 
+  const switchToSignup = () => {
+      setIsSigninModalOpen(false);
+      setIsSignupModalOpen(true);
+  };
+
+  const switchToSignin = () => {
+      setIsSignupModalOpen(false);
+      setIsSigninModalOpen(true);
+  };
+
   if (isDedicatedView) {
       const pageName = dedicatedPageName;
       const ComponentToRender = pageName ? pageComponentsMap[pageName] : null;
@@ -285,6 +344,7 @@ const App: React.FC = () => {
       }
 
       return (
+        <AppContext.Provider value={appContextValue}>
           <div className="bg-slate-100 dark:bg-[#0f172a] text-slate-800 dark:text-slate-300 min-h-screen">
               <Suspense fallback={<PageLoader />}>
                   <div className="p-4 sm:p-6 lg:p-8">
@@ -292,45 +352,10 @@ const App: React.FC = () => {
                   </div>
               </Suspense>
           </div>
+        </AppContext.Provider>
       );
   }
 
-  const setCurrentPageAndUpdateUrl = (pageName: string) => {
-    setCurrentPage(pageName);
-    const url = new URL(window.location.origin);
-    if (pageName === 'Home') {
-        url.pathname = '/';
-    } else if (pageName.toLowerCase() === 'admin') {
-        window.location.hash = '/admin';
-        return;
-    } else {
-        url.pathname = `/${encodeURIComponent(pageName)}`;
-    }
-    window.history.pushState({ page: pageName }, '', url.toString());
-  };
-
-  const handleLogin = useCallback(() => {
-    setIsLoggedIn(true);
-    setCurrentPageAndUpdateUrl('Home');
-    setIsSigninModalOpen(false);
-    setIsSignupModalOpen(false);
-  }, []);
-
-  const handleLogout = useCallback(() => {
-    setIsLoggedIn(false);
-    setCurrentPageAndUpdateUrl('Home');
-  }, []);
-
-  const switchToSignup = () => {
-      setIsSigninModalOpen(false);
-      setIsSignupModalOpen(true);
-  };
-
-  const switchToSignin = () => {
-      setIsSignupModalOpen(false);
-      setIsSigninModalOpen(true);
-  };
-  
   const renderPage = () => {
     const pagePadding = "p-4 sm:p-6 lg:p-8";
     let componentToRender;
@@ -349,13 +374,11 @@ const App: React.FC = () => {
     return <div className={pagePadding}>{componentToRender}</div>;
   };
   
-  const fullAppContextValue = { ...appContextValue, setCurrentPage: setCurrentPageAndUpdateUrl };
-
   const headerContent = isLoggedIn ? <Header onLogout={handleLogout} /> : <LoggedOutHeader />;
   const mainContent = renderPage();
 
   return (
-    <AppContext.Provider value={fullAppContextValue}>
+    <AppContext.Provider value={appContextValue}>
       <div className="flex h-screen bg-slate-100 dark:bg-[#0f172a] text-slate-800 dark:text-slate-300">
         {isLoggedIn ? <Sidebar /> : <LoggedOutSidebar />}
         <div className="flex-1 flex flex-col min-w-0 overflow-y-auto">
@@ -385,7 +408,6 @@ const App: React.FC = () => {
                     isOpen={isSignupModalOpen}
                     onClose={() => setIsSignupModalOpen(false)}
                     initialEmail={signupInitialEmail}
-                    onSignupSuccess={handleLogin}
                     onSwitchToSignin={switchToSignin}
                 />
             </>

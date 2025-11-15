@@ -1,24 +1,6 @@
 import type { User, EarningFeedItem, SurveyProvider, FaqItem, RewardOption, LeaderboardUser, Achievement, ChatMessage, Testimonial, FeaturedOffer, Transaction, OfferWall } from './types';
 
-export const MOCK_USER: User = {
-  username: 'raihansarker',
-  avatarUrl: 'https://i.pravatar.cc/150?u=raihansarker',
-  joinedDate: '11/2/2025',
-  id: 'a66b5a5...9731791',
-  earnId: '0b3438l...6e33723',
-  rank: 'Silver',
-  xp: 45000,
-  xpToNextLevel: 100000,
-  totalEarned: 125.50,
-  last30DaysEarned: 25.00,
-  completedTasks: 12,
-  totalWagered: 0.00,
-  totalProfit: 0.00,
-  totalWithdrawn: 50.00,
-  totalReferrals: 15,
-  referralEarnings: 25.75,
-  referralLink: 'https://earnlab.com/ref/raihansarker',
-};
+export const API_URL = 'https://earnlab-backend.onrender.com'; // Replace with your deployed backend URL
 
 export const EARNING_FEED_ITEMS: EarningFeedItem[] = [
   { id: 1, user: 'Sparkb6', avatar: 'https://i.pravatar.cc/32?u=sparkb6', task: 'Bitcoin (BTC)', provider: '', amount: 141.96 },

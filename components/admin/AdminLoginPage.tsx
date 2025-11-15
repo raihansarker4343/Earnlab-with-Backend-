@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { API_URL } from '../../constants';
 
 interface AdminLoginPageProps {
     onLoginSuccess: () => void;
@@ -10,23 +11,29 @@ const AdminLoginPage: React.FC<AdminLoginPageProps> = ({ onLoginSuccess }) => {
     const [error, setError] = useState('');
     const [isLoading, setIsLoading] = useState(false);
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setError('');
         setIsLoading(true);
 
-        // Simulate API call
-        setTimeout(() => {
-            // Simple validation for demo purposes.
-            if (email && password) {
-                // In a real app, you'd verify credentials against a server.
-                // For now, any input is considered a success.
+        try {
+            const response = await fetch(`${API_URL}/api/auth/admin-login`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, password }),
+            });
+
+            if (response.ok) {
                 onLoginSuccess();
             } else {
-                setError('Please enter both email and password.');
+                const data = await response.json();
+                setError(data.message || 'Invalid credentials.');
             }
+        } catch (err) {
+            setError('An error occurred. Please try again.');
+        } finally {
             setIsLoading(false);
-        }, 500);
+        }
     };
     
     return (

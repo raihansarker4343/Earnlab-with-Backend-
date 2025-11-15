@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { AppContext } from '../App';
+import { API_URL } from '../constants';
 
 interface SigninModalProps {
     isOpen: boolean;
@@ -8,15 +9,18 @@ interface SigninModalProps {
 }
 
 const SigninModal: React.FC<SigninModalProps> = ({ isOpen, onClose, onSwitchToSignup }) => {
-    const { setIsLoggedIn } = useContext(AppContext);
+    const { handleLogin } = useContext(AppContext);
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [error, setError] = useState('');
+    const [isLoading, setIsLoading] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
     const [isRendered, setIsRendered] = useState(false);
 
     useEffect(() => {
         if (isOpen) {
             setIsRendered(true);
+            setError(''); // Reset error on open
         }
     }, [isOpen]);
 
@@ -26,11 +30,27 @@ const SigninModal: React.FC<SigninModalProps> = ({ isOpen, onClose, onSwitchToSi
         }
     };
 
-    const handleLoginSuccess = () => {
-        // In a real app, this would be an API call
-        // For demo, just log in
-        setIsLoggedIn(true);
-        onClose();
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setError('');
+        setIsLoading(true);
+        try {
+            const response = await fetch(`${API_URL}/api/auth/signin`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, password }),
+            });
+            const data = await response.json();
+            if (response.ok) {
+                handleLogin(data.token, data.user);
+            } else {
+                setError(data.message || 'Failed to sign in.');
+            }
+        } catch (err) {
+            setError('An error occurred. Please try again.');
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     if (!isRendered) {
@@ -60,29 +80,9 @@ const SigninModal: React.FC<SigninModalProps> = ({ isOpen, onClose, onSwitchToSi
                         &times;
                     </button>
                 </div>
-
-                <div className="space-y-3 mb-6">
-                    <button onClick={handleLoginSuccess} className="w-full bg-white text-slate-800 font-semibold py-2.5 rounded-lg flex items-center justify-center gap-2 hover:bg-slate-200 transition-colors">
-                        <img src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg" alt="Google" className="w-5 h-5" /> Sign in with Google
-                    </button>
-                    <button onClick={handleLoginSuccess} className="w-full bg-[#1877F2] text-white font-semibold py-2.5 rounded-lg flex items-center justify-center gap-3 hover:bg-blue-700 transition-colors">
-                        <i className="fab fa-facebook-f text-lg"></i> Sign In with Facebook
-                    </button>
-                    <button onClick={handleLoginSuccess} className="w-full bg-black text-white font-semibold py-2.5 rounded-lg flex items-center justify-center gap-3 hover:bg-gray-800 transition-colors border border-slate-600">
-                        <i className="fab fa-apple text-xl"></i> Sign In with Apple
-                    </button>
-                    <button onClick={handleLoginSuccess} className="w-full bg-[#1b2838] text-white font-semibold py-2.5 rounded-lg flex items-center justify-center gap-3 hover:bg-[#2a475e] transition-colors border border-slate-600">
-                        <i className="fab fa-steam-symbol text-xl"></i> Sign In with Steam
-                    </button>
-                </div>
-
-                <div className="flex items-center my-6">
-                    <hr className="flex-grow border-slate-600" />
-                    <span className="mx-4 text-slate-400 text-sm font-semibold">OR</span>
-                    <hr className="flex-grow border-slate-600" />
-                </div>
                 
-                <form onSubmit={(e) => { e.preventDefault(); handleLoginSuccess(); }} className="space-y-4">
+                <form onSubmit={handleSubmit} className="space-y-4">
+                    {error && <p className="text-red-400 bg-red-500/20 p-3 rounded-lg text-sm text-center">{error}</p>}
                     <div>
                         <label htmlFor="modal-signin-email" className="block text-sm font-medium text-slate-300 mb-2">Email</label>
                         <div className="relative">
@@ -123,17 +123,14 @@ const SigninModal: React.FC<SigninModalProps> = ({ isOpen, onClose, onSwitchToSi
 
                     <button 
                         type="submit"
-                        className="w-full bg-[#22c55e] hover:bg-green-600 text-white font-bold py-3 rounded-lg transition-colors !mt-6"
+                        disabled={isLoading}
+                        className="w-full bg-[#22c55e] hover:bg-green-600 text-white font-bold py-3 rounded-lg transition-colors !mt-6 disabled:bg-slate-500 disabled:cursor-wait"
                     >
-                        Sign In
+                        {isLoading ? 'Signing In...' : 'Sign In'}
                     </button>
                     
                     <p className="text-sm text-slate-400 text-center !mt-6">
                         No account? <button type="button" onClick={onSwitchToSignup} className="text-green-400 hover:underline font-semibold">Sign up</button>
-                    </p>
-
-                    <p className="text-xs text-slate-500 text-center !mt-6">
-                        By signing in, you are agreeing to our <a href="#" className="text-green-400 hover:underline">Terms of Service</a> and <a href="#" className="text-green-400 hover:underline">Privacy Policy</a>. General prohibited users using multiple accounts, completing offers on another user's account, or using any type of VPN, VPS or Emulator software.
                     </p>
 
                 </form>
