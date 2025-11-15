@@ -1,6 +1,6 @@
 import type { User, EarningFeedItem, SurveyProvider, FaqItem, RewardOption, LeaderboardUser, Achievement, ChatMessage, Testimonial, FeaturedOffer, Transaction, OfferWall } from './types';
 
-export const API_URL = 'https://earnlab-backend.onrender.com'; // Replace with your deployed backend URL
+export const API_URL = 'https://earnlab-with-backend.onrender.com'; // Replace with your deployed backend URL
 
 export const EARNING_FEED_ITEMS: EarningFeedItem[] = [
   { id: 1, user: 'Sparkb6', avatar: 'https://i.pravatar.cc/32?u=sparkb6', task: 'Bitcoin (BTC)', provider: '', amount: 141.96 },
