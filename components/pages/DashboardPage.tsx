@@ -40,7 +40,7 @@ const DashboardPage: React.FC = () => {
 
     if (!user) return <div>Loading...</div>;
 
-    const xpPercentage = (user.xp / user.xpToNextLevel) * 100;
+    const xpPercentage = user.xpToNextLevel ? ((user.xp || 0) / user.xpToNextLevel) * 100 : 0;
     
     const renderTabContent = () => {
         if (isLoading) {
@@ -138,8 +138,8 @@ const DashboardPage: React.FC = () => {
                         </div>
                         <div className="mt-4">
                             <div className="flex justify-between text-sm mb-1">
-                                <span className="text-slate-500 dark:text-slate-400">0 XP</span>
-                                <span className="text-slate-900 dark:text-white">{user.xpToNextLevel.toLocaleString()} XP to next level</span>
+                                <span className="text-slate-500 dark:text-slate-400">{(user.xp || 0).toLocaleString()} XP</span>
+                                <span className="text-slate-900 dark:text-white">{(user.xpToNextLevel || 0).toLocaleString()} XP to next level</span>
                             </div>
                             <div className="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-2.5">
                                 <div className="bg-blue-600 h-2.5 rounded-full" style={{ width: `${xpPercentage}%` }}></div>
@@ -155,12 +155,12 @@ const DashboardPage: React.FC = () => {
                     [...Array(6)].map((_, i) => <StatCardSkeleton key={i} />)
                 ) : (
                     <>
-                        <StatCard title="Total Earned" value={`$${user.totalEarned.toFixed(2)}`} icon="fas fa-dollar-sign" />
-                        <StatCard title="Last 30 Days Earned" value={`$${user.last30DaysEarned.toFixed(2)}`} icon="fas fa-calendar-alt" />
-                        <StatCard title="Completed Tasks" value={user.completedTasks.toString()} icon="fas fa-check-circle" />
-                        <StatCard title="Total Wagered" value={`$${user.totalWagered.toFixed(2)}`} icon="fas fa-dice" />
-                        <StatCard title="Total Profit" value={`$${user.totalProfit.toFixed(2)}`} icon="fas fa-chart-line" />
-                        <StatCard title="Total Withdrawn" value={`$${user.totalWithdrawn.toFixed(2)}`} icon="fas fa-university" />
+                        <StatCard title="Total Earned" value={`$${(user.totalEarned || 0).toFixed(2)}`} icon="fas fa-dollar-sign" />
+                        <StatCard title="Last 30 Days Earned" value={`$${(user.last30DaysEarned || 0).toFixed(2)}`} icon="fas fa-calendar-alt" />
+                        <StatCard title="Completed Tasks" value={(user.completedTasks || 0).toString()} icon="fas fa-check-circle" />
+                        <StatCard title="Total Wagered" value={`$${(user.totalWagered || 0).toFixed(2)}`} icon="fas fa-dice" />
+                        <StatCard title="Total Profit" value={`$${(user.totalProfit || 0).toFixed(2)}`} icon="fas fa-chart-line" />
+                        <StatCard title="Total Withdrawn" value={`$${(user.totalWithdrawn || 0).toFixed(2)}`} icon="fas fa-university" />
                     </>
                 )}
             </div>
