@@ -174,6 +174,24 @@ const pageKeyLookup = Object.keys(pageComponentsMap).reduce((lookup, key) => {
     return lookup;
 }, {} as Record<string, string>);
 
+// Helper function to ensure numeric fields from the API/localStorage are numbers
+const sanitizeUser = (rawUser: User): User => {
+    const user = { ...rawUser };
+    const numericKeys: (keyof User)[] = [
+        'xp', 'xpToNextLevel', 'totalEarned', 'last30DaysEarned',
+        'completedTasks', 'totalWagered', 'totalProfit', 'totalWithdrawn',
+        'totalReferrals', 'referralEarnings'
+    ];
+
+    for (const key of numericKeys) {
+        if (user[key] !== undefined && user[key] !== null) {
+            // @ts-ignore - TS has trouble with dynamic keys on interfaces
+            user[key] = Number(user[key]);
+        }
+    }
+    return user;
+};
+
 
 const App: React.FC = () => {
   const [hash, setHash] = useState(window.location.hash);
@@ -210,9 +228,10 @@ const App: React.FC = () => {
 
   const handleLogin = useCallback((token: string, userData: User) => {
     localStorage.setItem('token', token);
-    localStorage.setItem('user', JSON.stringify(userData));
-    setUser(userData);
-    setBalance(userData.totalEarned || 0);
+    const sanitizedUser = sanitizeUser(userData);
+    localStorage.setItem('user', JSON.stringify(sanitizedUser));
+    setUser(sanitizedUser);
+    setBalance(sanitizedUser.totalEarned || 0);
     setIsLoggedIn(true);
     setCurrentPageAndUpdateUrl('Home');
     setIsSigninModalOpen(false);
@@ -233,8 +252,9 @@ const App: React.FC = () => {
         const storedUser = localStorage.getItem('user');
         if (token && storedUser) {
             const userData: User = JSON.parse(storedUser);
-            setUser(userData);
-            setBalance(userData.totalEarned || 0);
+            const sanitizedUser = sanitizeUser(userData);
+            setUser(sanitizedUser);
+            setBalance(sanitizedUser.totalEarned || 0);
             setIsLoggedIn(true);
         }
       } catch (error) {
