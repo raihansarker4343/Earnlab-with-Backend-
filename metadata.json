@@ -1,0 +1,5 @@
+{
+  "name": "EarnLab With backend",
+  "description": "A web application for users to complete tasks and surveys to earn rewards. Features a user dashboard, wallet, withdrawal system, and a detailed homepage, inspired by the EarnLab design.",
+  "requestFramePermissions": []
+}
