@@ -19,7 +19,7 @@ const SurveyProviderCard: React.FC<{ provider: SurveyProvider }> = ({ provider }
 
     return (
         <a
-            href={provider.isLocked ? '#' : `/#/${encodeURIComponent(provider.name.replace(/\s/g, ''))}`}
+            href={provider.isLocked ? '#' : `/${encodeURIComponent(provider.name.replace(/\s/g, ''))}`}
             target={provider.isLocked ? '_self' : '_blank'}
             rel="noopener noreferrer"
             onClick={(e) => { if (provider.isLocked) e.preventDefault(); }}

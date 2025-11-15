@@ -193,10 +193,11 @@ const App: React.FC = () => {
   const [isLoadingAuth, setIsLoadingAuth] = useState(true);
 
   const navigate = useCallback((pageName: string) => {
-    const hashName = pageName.replace(/\s/g, '');
-    const newHash = pageName === 'Home' ? '' : `#/${hashName}`;
-    if (window.location.hash !== newHash) {
-        window.location.hash = newHash;
+    const pathName = pageName === 'Home' ? '/' : `/${pageName.replace(/\s/g, '')}`;
+    if (window.location.pathname !== pathName) {
+        window.history.pushState({ page: pageName }, pageName, pathName);
+        // Dispatch popstate event to trigger URL change handling
+        window.dispatchEvent(new PopStateEvent('popstate'));
     }
   }, []);
 
@@ -261,24 +262,22 @@ const App: React.FC = () => {
     }
     
     const handleUrlChange = () => {
-        const hash = window.location.hash;
-        const getPageFromHash = () => {
-            if (hash.startsWith('#/')) {
-                const pageName = hash.substring(2);
-                if (pageName.toLowerCase().startsWith('admin')) return pageName;
-                return decodeURIComponent(pageName.split('?')[0]);
-            }
-            return null;
+        const path = window.location.pathname;
+        const getPageFromPath = () => {
+            if (path === '/') return 'Home';
+            const pageName = path.substring(1);
+            if (pageName.toLowerCase().startsWith('admin')) return pageName;
+            return decodeURIComponent(pageName.split('?')[0]);
         };
 
-        const pageFromHash = getPageFromHash();
+        const pageFromPath = getPageFromPath();
 
-        if (pageFromHash?.toLowerCase().startsWith('admin')) {
+        if (pageFromPath?.toLowerCase().startsWith('admin')) {
             // Admin routing is handled separately and does not set currentPage
             return;
         }
 
-        const requestedPageKey = pageFromHash || 'Home';
+        const requestedPageKey = pageFromPath || 'Home';
         const requestedPageName = pageKeyLookup[requestedPageKey] || Object.keys(pageComponentsMap).find(k => k === requestedPageKey) || 'Home';
         
         const isProtectedRoute = requestedPageName !== 'Home';
@@ -293,9 +292,9 @@ const App: React.FC = () => {
     };
   
     handleUrlChange(); // Set initial page
-    window.addEventListener('hashchange', handleUrlChange);
+    window.addEventListener('popstate', handleUrlChange);
     return () => {
-        window.removeEventListener('hashchange', handleUrlChange);
+        window.removeEventListener('popstate', handleUrlChange);
     };
   }, [isLoggedIn, navigate, isLoadingAuth]);
   
@@ -331,7 +330,7 @@ const App: React.FC = () => {
     );
   }
 
-  if (window.location.hash.startsWith('#/admin')) {
+  if (window.location.pathname.startsWith('/admin')) {
       if (!isAdmin) {
           return (
               <Suspense fallback={<PageLoader />}>
@@ -348,18 +347,16 @@ const App: React.FC = () => {
       );
   }
   
-  const getPageFromHash = () => {
-      const hash = window.location.hash;
-      if (hash.startsWith('#/')) {
-          const pageName = hash.substring(2);
-          if (pageName.toLowerCase().startsWith('admin')) return null;
-          return decodeURIComponent(pageName.split('?')[0]);
-      }
-      return null;
+  const getPageFromPath = () => {
+      const path = window.location.pathname;
+      if (path === '/' || path === '') return null;
+      const pageName = path.substring(1);
+      if (pageName.toLowerCase().startsWith('admin')) return null;
+      return decodeURIComponent(pageName.split('?')[0]);
   };
   
-  const dedicatedPageNameFromHash = getPageFromHash();
-  const dedicatedPageName = dedicatedPageNameFromHash ? (pageKeyLookup[dedicatedPageNameFromHash] || Object.keys(pageComponentsMap).find(k => k === dedicatedPageNameFromHash)) : null;
+  const dedicatedPageNameFromPath = getPageFromPath();
+  const dedicatedPageName = dedicatedPageNameFromPath ? (pageKeyLookup[dedicatedPageNameFromPath] || Object.keys(pageComponentsMap).find(k => k === dedicatedPageNameFromPath)) : null;
 
   const dedicatedPageNames = new Set([
     'Prime Surveys', 'CPX Research', 'Adscend Media Surveys', 'BitLabs', 'inBrain', 'Pollfish', 'TheoremReach',

@@ -22,7 +22,7 @@ const OfferWallCard: React.FC<{ wall: OfferWall }> = ({ wall }) => {
 
     return (
         <a
-            href={wall.isLocked ? '#' : `/#/${encodeURIComponent(wall.name.replace(/\s/g, ''))}`}
+            href={wall.isLocked ? '#' : `/${encodeURIComponent(wall.name.replace(/\s/g, ''))}`}
             target={wall.isLocked ? '_self' : '_blank'}
             rel="noopener noreferrer"
             onClick={(e) => { if (wall.isLocked) e.preventDefault(); }}
