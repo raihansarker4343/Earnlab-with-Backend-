@@ -218,7 +218,7 @@ const TransactionHistory: React.FC = () => {
 
 
 const WalletModal: React.FC = () => {
-    const { isWalletModalOpen, setIsWalletModalOpen, balance, setBalance, setTransactions } = useContext(AppContext);
+    const { isWalletModalOpen, setIsWalletModalOpen, balance, setBalance, setTransactions, setIsWithdrawSuccessModalOpen } = useContext(AppContext);
     const [activeTab, setActiveTab] = useState<'withdraw' | 'history'>('withdraw');
     const [withdrawalStep, setWithdrawalStep] = useState<'select' | 'form' | 'confirm'>('select');
     const [withdrawalDetails, setWithdrawalDetails] = useState({
@@ -320,8 +320,8 @@ const WalletModal: React.FC = () => {
             setTransactions(prev => [parsedTransaction, ...prev]);
             setBalance(prev => prev - withdrawalAmount);
 
-            alert(`Withdrawal request for $${withdrawalAmount.toFixed(2)} has been submitted and is now pending review.`);
             closeModal();
+            setIsWithdrawSuccessModalOpen(true);
         } catch (error: any) {
             console.error("Withdrawal failed:", error);
             alert(`Error: ${error.message}`);

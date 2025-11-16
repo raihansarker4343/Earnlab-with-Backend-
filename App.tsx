@@ -11,6 +11,7 @@ import SigninModal from './components/SigninModal';
 import SignupModal from './components/SignupModal';
 import SupportChatModal from './components/SupportChatModal';
 import { API_URL } from './constants';
+import WithdrawalSuccessModal from './components/WithdrawalSuccessModal';
 
 
 // Lazy load page components
@@ -82,6 +83,8 @@ export const AppContext = React.createContext<{
   setTheme: React.Dispatch<React.SetStateAction<'light' | 'dark'>>;
   isSupportChatModalOpen: boolean;
   setIsSupportChatModalOpen: React.Dispatch<React.SetStateAction<boolean>>;
+  isWithdrawSuccessModalOpen: boolean;
+  setIsWithdrawSuccessModalOpen: React.Dispatch<React.SetStateAction<boolean>>;
   isAdmin: boolean;
   setIsAdmin: React.Dispatch<React.SetStateAction<boolean>>;
 }>({
@@ -110,6 +113,8 @@ export const AppContext = React.createContext<{
   setTheme: () => {},
   isSupportChatModalOpen: false,
   setIsSupportChatModalOpen: () => {},
+  isWithdrawSuccessModalOpen: false,
+  setIsWithdrawSuccessModalOpen: () => {},
   isAdmin: false,
   setIsAdmin: () => {},
 });
@@ -208,6 +213,7 @@ const App: React.FC = () => {
   const [page, setPage] = useState('Home');
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
+  const [isWithdrawSuccessModalOpen, setIsWithdrawSuccessModalOpen] = useState(false);
   const [theme, setTheme] = useState<'light' | 'dark'>(() => {
     const storedTheme = localStorage.getItem('theme');
     return (storedTheme === 'light' || storedTheme === 'dark') ? storedTheme : 'dark';
@@ -341,7 +347,8 @@ const App: React.FC = () => {
       setCurrentPage: navigate,
       isSidebarCollapsed, setIsSidebarCollapsed, isMobileSidebarOpen, 
       setIsMobileSidebarOpen, theme, setTheme, isSupportChatModalOpen, 
-      setIsSupportChatModalOpen, isAdmin, setIsAdmin
+      setIsSupportChatModalOpen, isWithdrawSuccessModalOpen, setIsWithdrawSuccessModalOpen,
+      isAdmin, setIsAdmin
   };
 
   useEffect(() => {
@@ -461,6 +468,10 @@ const App: React.FC = () => {
         </div>
         {isLoggedIn && <WalletModal />}
         {isLoggedIn && <SupportChatModal isOpen={isSupportChatModalOpen} onClose={() => setIsSupportChatModalOpen(false)} />}
+        <WithdrawalSuccessModal 
+            isOpen={isWithdrawSuccessModalOpen} 
+            onClose={() => setIsWithdrawSuccessModalOpen(false)} 
+        />
         {!isLoggedIn && (
             <>
                 <SigninModal
