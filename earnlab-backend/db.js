@@ -20,6 +20,7 @@ const initDb = async () => {
         username VARCHAR(50) UNIQUE NOT NULL,
         email VARCHAR(255) UNIQUE NOT NULL,
         password_hash VARCHAR(255) NOT NULL,
+        earn_id VARCHAR(50),
         avatar_url VARCHAR(255),
         created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
         total_earned NUMERIC(10, 2) DEFAULT 0,
@@ -56,6 +57,7 @@ const initDb = async () => {
     // Add 'balance' column to 'users' table if it doesn't exist.
     // This serves as a migration for older database schemas.
     await client.query('ALTER TABLE users ADD COLUMN IF NOT EXISTS balance NUMERIC(10, 2) DEFAULT 0');
+    await client.query('ALTER TABLE users ADD COLUMN IF NOT EXISTS earn_id VARCHAR(50)');
 
     console.log('Database schema initialized successfully.');
   } catch (err) {

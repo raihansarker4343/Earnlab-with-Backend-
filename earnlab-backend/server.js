@@ -3,6 +3,7 @@ const express = require('express');
 const cors = require('cors');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const crypto = require('crypto');
 const { pool, initDb } = require('./db');
 require('dotenv').config();
 
@@ -36,12 +37,13 @@ app.post('/api/auth/signup', async (req, res) => {
         await client.query('BEGIN');
         const salt = await bcrypt.genSalt(10);
         const password_hash = await bcrypt.hash(password, salt);
+        const earn_id = crypto.randomBytes(8).toString('hex');
         
         const newUserQuery = await client.query(
-            `INSERT INTO users (username, email, password_hash, avatar_url, total_earned) 
-             VALUES ($1, $2, $3, $4, 0.00) 
-             RETURNING id, username, email, avatar_url, created_at AS joined_date, total_earned, balance, last_30_days_earned, completed_tasks, total_wagered, total_profit, total_withdrawn, total_referrals, referral_earnings, xp, rank`,
-            [username, email, password_hash, `https://i.pravatar.cc/150?u=${username}`]
+            `INSERT INTO users (username, email, password_hash, avatar_url, earn_id) 
+             VALUES ($1, $2, $3, $4, $5) 
+             RETURNING id, username, email, avatar_url, created_at AS joined_date, total_earned, balance, last_30_days_earned, completed_tasks, total_wagered, total_profit, total_withdrawn, total_referrals, referral_earnings, xp, rank, earn_id`,
+            [username, email, password_hash, `https://i.pravatar.cc/150?u=${username}`, earn_id]
         );
 
         const user = newUserQuery.rows[0];
@@ -67,7 +69,7 @@ app.post('/api/auth/signin', async (req, res) => {
     const { email, password } = req.body;
     try {
         const result = await pool.query(
-            `SELECT id, username, email, password_hash, avatar_url, created_at AS joined_date, total_earned, balance, last_30_days_earned, completed_tasks, total_wagered, total_profit, total_withdrawn, total_referrals, referral_earnings, xp, rank 
+            `SELECT id, username, email, password_hash, avatar_url, created_at AS joined_date, total_earned, balance, last_30_days_earned, completed_tasks, total_wagered, total_profit, total_withdrawn, total_referrals, referral_earnings, xp, rank, earn_id 
              FROM users WHERE email = $1`, 
             [email]
         );
@@ -240,7 +242,7 @@ app.patch('/api/admin/transactions/:id', authMiddleware, async (req, res) => {
 
 // Helper to convert snake_case from DB to camelCase for frontend
 const snakeToCamel = (obj) => {
-    if (typeof obj !== 'object' || obj === null) return obj;
+    if (typeof obj !== 'object' || obj === null || obj instanceof Date) return obj;
     if (Array.isArray(obj)) return obj.map(snakeToCamel);
     
     return Object.entries(obj).reduce((acc, [key, value]) => {

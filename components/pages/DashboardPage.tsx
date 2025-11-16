@@ -112,7 +112,7 @@ const DashboardPage: React.FC = () => {
                             <h2 className="text-2xl font-bold text-slate-900 dark:text-white">{user.username}</h2>
                             <span className="bg-slate-100 dark:bg-slate-700 text-yellow-500 dark:text-yellow-400 px-3 py-1 rounded-full text-sm font-semibold">{user.rank}</span>
                         </div>
-                        <p className="text-slate-500 dark:text-slate-400 text-sm">Joined {user.joinedDate}</p>
+                        <p className="text-slate-500 dark:text-slate-400 text-sm">Joined {user.joinedDate ? new Date(user.joinedDate).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) : ''}</p>
                         <div className="flex flex-wrap gap-4 text-xs text-slate-500 dark:text-slate-400 mt-2">
                             <span className="bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded">ID: {user.id}</span>
                             <span className="bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded">Earn ID: {user.earnId}</span>
@@ -140,7 +140,7 @@ const DashboardPage: React.FC = () => {
                         <StatCard title="Last 30 Days Earned" value={`$${(user.last30DaysEarned || 0).toFixed(2)}`} icon="fas fa-calendar-alt" />
                         <StatCard title="Completed Tasks" value={(user.completedTasks || 0).toString()} icon="fas fa-check-circle" />
                         <StatCard title="Total Wagered" value={`$${(user.totalWagered || 0).toFixed(2)}`} icon="fas fa-dice" />
-                        <StatCard title="Total Profit" value={`$${(user.referralEarnings || 0).toFixed(2)}`} icon="fas fa-chart-line" />
+                        <StatCard title="Total Profit" value={`$${(user.totalProfit || 0).toFixed(2)}`} icon="fas fa-chart-line" />
                         <StatCard title="Total Withdrawn" value={`$${(user.totalWithdrawn || 0).toFixed(2)}`} icon="fas fa-university" />
                     </>
                 )}
