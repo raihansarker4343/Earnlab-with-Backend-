@@ -1,9 +1,41 @@
-import type { User, EarningFeedItem, SurveyProvider, FaqItem, RewardOption, LeaderboardUser, Achievement, ChatMessage, Testimonial, FeaturedOffer, Transaction, OfferWall } from './types';
+import type { User, EarningFeedItem, FaqItem, RewardOption, LeaderboardUser, Achievement, ChatMessage, Testimonial, FeaturedOffer, Transaction, OfferWall, SurveyProvider } from './types';
 
 // The backend API is hosted at a single, consistent URL.
 // We will use this absolute URL for all API calls, regardless of the frontend's environment.
 // The backend server is configured with CORS to accept requests from any origin, which is why this works.
 export const API_URL = 'https://earnlab-with-backend.onrender.com';
+
+// FIX: Added OFFER_WALLS and SURVEY_PROVIDERS constants back.
+// These are used by the individual offer/survey pages, which are static placeholders.
+// While other parts of the app fetch this data dynamically, providing it here as a
+// constant is the simplest fix to resolve import errors on those pages without
+// a larger refactor. The data is copied from the backend's seed script.
+export const OFFER_WALLS: OfferWall[] = [
+    { id: 1, name: 'Torox', logo: 'https://i.imgur.com/zbyfSVW.png', bonus: '+20%', isEnabled: true, isLocked: false },
+    { id: 2, name: 'Adscend Media', logo: 'https://i.imgur.com/iY9g04E.png', bonus: '+50%', isEnabled: true, isLocked: false },
+    { id: 3, name: 'AdToWall', logo: 'https://i.imgur.com/x0iP1C9.png', isEnabled: true, isLocked: false },
+    { id: 4, name: 'RevU', logo: 'https://i.imgur.com/yvC5YyW.png', isLocked: true, unlockRequirement: 'Earn $2.50 to unlock', bonus: '+50%', isEnabled: true },
+    { id: 5, name: 'AdGate Media', logo: 'https://i.imgur.com/Q2yG7nS.png', isEnabled: true, isLocked: false },
+    { id: 6, name: 'MyChips', logo: 'https://i.imgur.com/yvC5YyW.png', isLocked: true, unlockRequirement: 'Earn $2.50 to unlock', bonus: '+50%', isEnabled: true },
+    { id: 7, name: 'MM Wall', logo: 'https://i.imgur.com/6XzWfP1.png', isEnabled: true, isLocked: false },
+    { id: 8, name: 'Aye-T Studios', logo: 'https://i.imgur.com/J3t5e6E.png', isEnabled: true, isLocked: false },
+    { id: 9, name: 'Monlix', logo: 'https://i.imgur.com/ePFr12w.png', isEnabled: true, isLocked: false },
+    { id: 10, name: 'Hang My Ads', logo: 'https://i.imgur.com/yvC5YyW.png', isLocked: true, unlockRequirement: 'Earn $1.00 to unlock', isEnabled: true },
+    { id: 11, name: 'Lootably', logo: 'https://i.imgur.com/i9nO27d.png', isEnabled: true, isLocked: false },
+    { id: 12, name: 'Time Wall', logo: 'https://i.imgur.com/nJgq1t7.png', isEnabled: true, isLocked: false },
+    { id: 13, name: 'AdGem', logo: 'https://i.imgur.com/r9f5k2Z.png', isEnabled: true, isLocked: false },
+];
+
+export const SURVEY_PROVIDERS: SurveyProvider[] = [
+  { id: 1, name: 'BitLabs', logo: 'https://i.imgur.com/oZznueX.png', rating: 3, type: 'BitLabs', isEnabled: true },
+  { id: 2, name: 'CPX Research', logo: 'https://i.imgur.com/ssL8ALh.png', rating: 3, type: 'CPX RESEARCH', isEnabled: true },
+  { id: 3, name: 'Your-Surveys', logo: 'https://i.imgur.com/pLRnBU2.png', rating: 4, type: 'Your-Surveys', isEnabled: true },
+  { id: 4, name: 'Pollfish', logo: 'https://i.imgur.com/OofFwSR.png', rating: 4, type: 'Pollfish', isEnabled: true },
+  { id: 5, name: 'Prime Surveys', logo: 'https://i.imgur.com/0EGYRXz.png', rating: 3, type: 'Prime Surveys', isEnabled: true },
+  { id: 6, name: 'inBrain', logo: 'https://i.imgur.com/AaQPnwe.png', rating: 2, type: 'inBrain', isEnabled: true },
+  { id: 7, name: 'Adscend Media Surveys', logo: 'https://i.imgur.com/iY9g04E.png', rating: 4, type: 'Adscend Media', isEnabled: true },
+  { id: 8, name: 'TheoremReach', logo: 'https://i.imgur.com/yvC5YyW.png', rating: 4, type: 'TheoremReach', isLocked: true, unlockRequirement: "Level 5+", isEnabled: true },
+];
 
 export const EARNING_FEED_ITEMS: EarningFeedItem[] = [
   { id: 1, user: 'Sparkb6', avatar: 'https://i.pravatar.cc/32?u=sparkb6', task: 'Bitcoin (BTC)', provider: '', amount: 141.96 },
@@ -14,33 +46,6 @@ export const EARNING_FEED_ITEMS: EarningFeedItem[] = [
   { id: 6, user: 'GamerX', avatar: 'https://i.pravatar.cc/32?u=gamerx', task: 'Project Entropy - Ge...', provider: 'Torox', amount: 5.27 },
   { id: 7, user: 'CryptoKing', avatar: 'https://i.pravatar.cc/32?u=cryptoking', task: 'Browinner [DE/BE/...', provider: 'AdToWall', amount: 60.38 },
   { id: 8, user: 'SurveyFan', avatar: 'https://i.pravatar.cc/32?u=surveyfan', task: 'BitLabs - Survey', provider: 'BitLabs', amount: 0.75 },
-];
-
-export const SURVEY_PROVIDERS: SurveyProvider[] = [
-  { name: 'BitLabs', logo: 'https://i.imgur.com/oZznueX.png', rating: 3, type: 'BitLabs' },
-  { name: 'CPX Research', logo: 'https://i.imgur.com/ssL8ALh.png', rating: 3, type: 'CPX RESEARCH' },
-  { name: 'Your-Surveys', logo: 'https://i.imgur.com/pLRnBU2.png', rating: 4, type: 'Your-Surveys' },
-  { name: 'Pollfish', logo: 'https://i.imgur.com/OofFwSR.png', rating: 4, type: 'Pollfish' },
-  { name: 'Prime Surveys', logo: 'https://i.imgur.com/0EGYRXz.png', rating: 3, type: 'Prime Surveys' },
-  { name: 'inBrain', logo: 'https://i.imgur.com/AaQPnwe.png', rating: 2, type: 'inBrain' },
-  { name: 'Adscend Media Surveys', logo: 'https://i.imgur.com/iY9g04E.png', rating: 4, type: 'Adscend Media' },
-  { name: 'TheoremReach', logo: 'https://i.imgur.com/yvC5YyW.png', rating: 4, type: 'TheoremReach', isLocked: true, unlockRequirement: "Level 5+" },
-];
-
-export const OFFER_WALLS: OfferWall[] = [
-    { name: 'Torox', logo: 'https://i.imgur.com/zbyfSVW.png', bonus: '+20%' },
-    { name: 'Adscend Media', logo: 'https://i.imgur.com/iY9g04E.png', bonus: '+50%' },
-    { name: 'AdToWall', logo: 'https://i.imgur.com/x0iP1C9.png' },
-    { name: 'RevU', logo: 'https://i.imgur.com/yvC5YyW.png', isLocked: true, unlockRequirement: 'Earn $2.50 to unlock', bonus: '+50%' },
-    { name: 'AdGate Media', logo: 'https://i.imgur.com/Q2yG7nS.png' },
-    { name: 'MyChips', logo: 'https://i.imgur.com/yvC5YyW.png', isLocked: true, unlockRequirement: 'Earn $2.50 to unlock', bonus: '+50%' },
-    { name: 'MM Wall', logo: 'https://i.imgur.com/6XzWfP1.png' },
-    { name: 'Aye-T Studios', logo: 'https://i.imgur.com/J3t5e6E.png' },
-    { name: 'Monlix', logo: 'https://i.imgur.com/ePFr12w.png' },
-    { name: 'Hang My Ads', logo: 'https://i.imgur.com/yvC5YyW.png', isLocked: true, unlockRequirement: 'Earn $1.00 to unlock' },
-    { name: 'Lootably', logo: 'https://i.imgur.com/i9nO27d.png' },
-    { name: 'Time Wall', logo: 'https://i.imgur.com/nJgq1t7.png' },
-    { name: 'AdGem', logo: 'https://i.imgur.com/r9f5k2Z.png' },
 ];
 
 export const FAQ_ITEMS: FaqItem[] = [

@@ -61,6 +61,27 @@ const initDb = async () => {
         is_enabled BOOLEAN DEFAULT true,
         special_bonus VARCHAR(50)
       );
+
+      CREATE TABLE IF NOT EXISTS survey_providers (
+        id SERIAL PRIMARY KEY,
+        name VARCHAR(100) NOT NULL,
+        logo TEXT,
+        rating INTEGER,
+        type VARCHAR(100),
+        unlock_requirement VARCHAR(255),
+        is_locked BOOLEAN DEFAULT false,
+        is_enabled BOOLEAN DEFAULT true
+      );
+
+      CREATE TABLE IF NOT EXISTS offer_walls (
+        id SERIAL PRIMARY KEY,
+        name VARCHAR(100) NOT NULL,
+        logo TEXT,
+        bonus VARCHAR(50),
+        unlock_requirement VARCHAR(255),
+        is_locked BOOLEAN DEFAULT false,
+        is_enabled BOOLEAN DEFAULT true
+      );
     `);
 
     // Add 'balance' column to 'users' table if it doesn't exist.

@@ -170,7 +170,7 @@ app.post('/api/transactions/withdraw', authMiddleware, async (req, res) => {
     }
 });
 
-// --- PAYMENT METHODS ---
+// --- PUBLIC CONTENT ROUTES ---
 app.get('/api/payment-methods', async (req, res) => {
     try {
         const result = await pool.query('SELECT * FROM payment_methods WHERE is_enabled = true ORDER BY type, name');
@@ -178,6 +178,26 @@ app.get('/api/payment-methods', async (req, res) => {
     } catch (error) {
         console.error('Error fetching payment methods:', error);
         res.status(500).json({ message: 'Server error fetching payment methods.' });
+    }
+});
+
+app.get('/api/survey-providers', async (req, res) => {
+    try {
+        const result = await pool.query('SELECT * FROM survey_providers WHERE is_enabled = true ORDER BY id');
+        res.json(result.rows.map(snakeToCamel));
+    } catch (error) {
+        console.error('Error fetching survey providers:', error);
+        res.status(500).json({ message: 'Server error fetching survey providers.' });
+    }
+});
+
+app.get('/api/offer-walls', async (req, res) => {
+    try {
+        const result = await pool.query('SELECT * FROM offer_walls WHERE is_enabled = true ORDER BY id');
+        res.json(result.rows.map(snakeToCamel));
+    } catch (error) {
+        console.error('Error fetching offer walls:', error);
+        res.status(500).json({ message: 'Server error fetching offer walls.' });
     }
 });
 
@@ -387,6 +407,55 @@ app.patch('/api/admin/payment-methods/:id', authMiddleware, async (req, res) => 
     }
 });
 
+// Admin Survey Provider Management
+app.get('/api/admin/survey-providers', authMiddleware, async (req, res) => {
+    try {
+        const result = await pool.query('SELECT * FROM survey_providers ORDER BY name');
+        res.json(result.rows.map(snakeToCamel));
+    } catch (error) {
+        console.error('Error fetching survey providers for admin:', error);
+        res.status(500).json({ message: 'Server error fetching survey providers.' });
+    }
+});
+
+app.patch('/api/admin/survey-providers/:id', authMiddleware, async (req, res) => {
+    const { id } = req.params;
+    const { isEnabled } = req.body;
+    if (typeof isEnabled !== 'boolean') return res.status(400).json({ message: 'Invalid "isEnabled" value.' });
+    try {
+        const result = await pool.query('UPDATE survey_providers SET is_enabled = $1 WHERE id = $2 RETURNING *', [isEnabled, id]);
+        if (result.rows.length === 0) return res.status(404).json({ message: 'Survey provider not found.' });
+        res.json(snakeToCamel(result.rows[0]));
+    } catch (error) {
+        console.error('Error updating survey provider:', error);
+        res.status(500).json({ message: 'Server error updating survey provider.' });
+    }
+});
+
+// Admin Offer Wall Management
+app.get('/api/admin/offer-walls', authMiddleware, async (req, res) => {
+    try {
+        const result = await pool.query('SELECT * FROM offer_walls ORDER BY name');
+        res.json(result.rows.map(snakeToCamel));
+    } catch (error) {
+        console.error('Error fetching offer walls for admin:', error);
+        res.status(500).json({ message: 'Server error fetching offer walls.' });
+    }
+});
+
+app.patch('/api/admin/offer-walls/:id', authMiddleware, async (req, res) => {
+    const { id } = req.params;
+    const { isEnabled } = req.body;
+    if (typeof isEnabled !== 'boolean') return res.status(400).json({ message: 'Invalid "isEnabled" value.' });
+    try {
+        const result = await pool.query('UPDATE offer_walls SET is_enabled = $1 WHERE id = $2 RETURNING *', [isEnabled, id]);
+        if (result.rows.length === 0) return res.status(404).json({ message: 'Offer wall not found.' });
+        res.json(snakeToCamel(result.rows[0]));
+    } catch (error) {
+        console.error('Error updating offer wall:', error);
+        res.status(500).json({ message: 'Server error updating offer wall.' });
+    }
+});
 
 // Helper to convert snake_case from DB to camelCase for frontend
 const snakeToCamel = (obj) => {
@@ -454,10 +523,74 @@ const seedPaymentMethods = async () => {
     }
 };
 
+const seedSurveyProviders = async () => {
+    const client = await pool.connect();
+    try {
+        const check = await client.query('SELECT * FROM survey_providers LIMIT 1');
+        if (check.rows.length > 0) return;
+
+        console.log('Seeding survey providers...');
+        const providers = [
+          { name: 'BitLabs', logo: 'https://i.imgur.com/oZznueX.png', rating: 3, type: 'BitLabs' },
+          { name: 'CPX Research', logo: 'https://i.imgur.com/ssL8ALh.png', rating: 3, type: 'CPX RESEARCH' },
+          { name: 'Your-Surveys', logo: 'https://i.imgur.com/pLRnBU2.png', rating: 4, type: 'Your-Surveys' },
+          { name: 'Pollfish', logo: 'https://i.imgur.com/OofFwSR.png', rating: 4, type: 'Pollfish' },
+          { name: 'Prime Surveys', logo: 'https://i.imgur.com/0EGYRXz.png', rating: 3, type: 'Prime Surveys' },
+          { name: 'inBrain', logo: 'https://i.imgur.com/AaQPnwe.png', rating: 2, type: 'inBrain' },
+          { name: 'Adscend Media Surveys', logo: 'https://i.imgur.com/iY9g04E.png', rating: 4, type: 'Adscend Media' },
+          { name: 'TheoremReach', logo: 'https://i.imgur.com/yvC5YyW.png', rating: 4, type: 'TheoremReach', is_locked: true, unlock_requirement: "Level 5+" },
+        ];
+        for (const p of providers) {
+            await client.query('INSERT INTO survey_providers (name, logo, rating, type, is_locked, unlock_requirement) VALUES ($1, $2, $3, $4, $5, $6)', [p.name, p.logo, p.rating, p.type, p.is_locked || false, p.unlock_requirement || null]);
+        }
+        console.log('Survey providers seeded.');
+    } catch (err) {
+        console.error('Error seeding survey providers:', err);
+    } finally {
+        client.release();
+    }
+};
+
+const seedOfferWalls = async () => {
+    const client = await pool.connect();
+    try {
+        const check = await client.query('SELECT * FROM offer_walls LIMIT 1');
+        if (check.rows.length > 0) return;
+
+        console.log('Seeding offer walls...');
+        const walls = [
+            { name: 'Torox', logo: 'https://i.imgur.com/zbyfSVW.png', bonus: '+20%' },
+            { name: 'Adscend Media', logo: 'https://i.imgur.com/iY9g04E.png', bonus: '+50%' },
+            { name: 'AdToWall', logo: 'https://i.imgur.com/x0iP1C9.png' },
+            { name: 'RevU', logo: 'https://i.imgur.com/yvC5YyW.png', is_locked: true, unlock_requirement: 'Earn $2.50 to unlock', bonus: '+50%' },
+            { name: 'AdGate Media', logo: 'https://i.imgur.com/Q2yG7nS.png' },
+            { name: 'MyChips', logo: 'https://i.imgur.com/yvC5YyW.png', is_locked: true, unlock_requirement: 'Earn $2.50 to unlock', bonus: '+50%' },
+            { name: 'MM Wall', logo: 'https://i.imgur.com/6XzWfP1.png' },
+            { name: 'Aye-T Studios', logo: 'https://i.imgur.com/J3t5e6E.png' },
+            { name: 'Monlix', logo: 'https://i.imgur.com/ePFr12w.png' },
+            { name: 'Hang My Ads', logo: 'https://i.imgur.com/yvC5YyW.png', is_locked: true, unlock_requirement: 'Earn $1.00 to unlock' },
+            { name: 'Lootably', logo: 'https://i.imgur.com/i9nO27d.png' },
+            { name: 'Time Wall', logo: 'https://i.imgur.com/nJgq1t7.png' },
+            { name: 'AdGem', logo: 'https://i.imgur.com/r9f5k2Z.png' },
+        ];
+        for (const w of walls) {
+            await client.query('INSERT INTO offer_walls (name, logo, bonus, is_locked, unlock_requirement) VALUES ($1, $2, $3, $4, $5)', [w.name, w.logo, w.bonus || null, w.is_locked || false, w.unlock_requirement || null]);
+        }
+        console.log('Offer walls seeded.');
+    } catch (err) {
+        console.error('Error seeding offer walls:', err);
+    } finally {
+        client.release();
+    }
+};
+
 // Start Server
 app.listen(port, () => {
-  initDb();
-  seedAdmin();
-  seedPaymentMethods();
+  initDb().then(() => {
+      seedAdmin();
+      seedPaymentMethods();
+      seedSurveyProviders();
+      seedOfferWalls();
+  });
   console.log(`Server running on http://localhost:${port}`);
 });

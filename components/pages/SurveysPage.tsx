@@ -1,8 +1,32 @@
-import React from 'react';
-import { SURVEY_PROVIDERS } from '../../constants';
+import React, { useState, useEffect } from 'react';
 import SurveyProviderCard from '../SurveyProviderCard';
+import type { SurveyProvider } from '../../types';
+import { API_URL } from '../../constants';
+import SkeletonLoader from '../SkeletonLoader';
 
 const SurveysPage: React.FC = () => {
+    const [providers, setProviders] = useState<SurveyProvider[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+
+    useEffect(() => {
+        const fetchProviders = async () => {
+            try {
+                const response = await fetch(`${API_URL}/api/survey-providers`);
+                if (!response.ok) {
+                    throw new Error('Failed to fetch survey providers.');
+                }
+                const data: SurveyProvider[] = await response.json();
+                setProviders(data);
+            } catch (err: any) {
+                setError(err.message);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+        fetchProviders();
+    }, []);
+
     return (
         <div className="space-y-8">
             <div className="flex flex-col items-start">
@@ -18,11 +42,19 @@ const SurveysPage: React.FC = () => {
                 <p className="text-slate-500 dark:text-slate-400 mt-1">$1 = 1000 coins</p>
             </div>
 
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">
-                {SURVEY_PROVIDERS.map((provider) => (
-                    <SurveyProviderCard key={provider.name} provider={provider} />
-                ))}
-            </div>
+            {isLoading ? (
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">
+                    {[...Array(5)].map((_, i) => <SkeletonLoader key={i} className="h-48 rounded-2xl" />)}
+                </div>
+            ) : error ? (
+                <div className="text-center py-12 text-red-500">{error}</div>
+            ) : (
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">
+                    {providers.map((provider) => (
+                        <SurveyProviderCard key={provider.id} provider={provider} />
+                    ))}
+                </div>
+            )}
         </div>
     );
 };

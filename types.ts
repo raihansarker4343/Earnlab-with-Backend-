@@ -32,6 +32,7 @@ export interface EarningFeedItem {
 }
 
 export interface SurveyProvider {
+  id: number;
   name: string;
   logo: string;
   type?: string;
@@ -40,14 +41,17 @@ export interface SurveyProvider {
   isLocked?: boolean;
   unlocksAt?: string;
   unlockRequirement?: string;
+  isEnabled: boolean;
 }
 
 export interface OfferWall {
+  id: number;
   name: string;
   logo: string;
   bonus?: string;
   isLocked?: boolean;
   unlockRequirement?: string;
+  isEnabled: boolean;
 }
 
 export interface SidebarMenuItem {

@@ -4,6 +4,8 @@ import AdminHeader from './AdminHeader';
 import AdminDashboardPage from './AdminDashboardPage';
 import WithdrawalsPage from './WithdrawalsPage';
 import PaymentSettingsPage from './PaymentSettingsPage';
+import SurveyControlPage from './SurveyControlPage';
+import OfferControlPage from './OfferControlPage';
 
 const AdminLayout: React.FC = () => {
     const [isSidebarOpen, setIsSidebarOpen] = useState(true);
@@ -23,6 +25,10 @@ const AdminLayout: React.FC = () => {
                 return <WithdrawalsPage />;
             case 'PaymentSettings':
                 return <PaymentSettingsPage />;
+            case 'SurveyControl':
+                return <SurveyControlPage />;
+            case 'OfferControl':
+                return <OfferControlPage />;
             default:
                 return <AdminDashboardPage onNavigate={setActivePage} />;
         }

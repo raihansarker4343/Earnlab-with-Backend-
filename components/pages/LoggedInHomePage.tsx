@@ -1,10 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { GoogleGenAI, Type } from '@google/genai';
 import SkeletonLoader from '../SkeletonLoader';
-import { SURVEY_PROVIDERS, OFFER_WALLS } from '../../constants';
 import SurveyProviderCard from '../SurveyProviderCard';
 import OfferWallCard from '../OfferWallCard';
 import { StarIcon } from '../icons/SurveyIcons';
+import type { SurveyProvider, OfferWall } from '../../types';
+import { API_URL } from '../../constants';
 
 // Mock data for the new sections
 const featuredTasks = [
@@ -42,6 +43,38 @@ const LoggedInHomePage: React.FC = () => {
     const [isLoadingRecs, setIsLoadingRecs] = useState(true);
     const [errorRecs, setErrorRecs] = useState<string | null>(null);
     const aiRef = useRef<GoogleGenAI | null>(null);
+
+    const [offerWalls, setOfferWalls] = useState<OfferWall[]>([]);
+    const [surveyProviders, setSurveyProviders] = useState<SurveyProvider[]>([]);
+    const [isLoadingContent, setIsLoadingContent] = useState(true);
+    const [errorContent, setErrorContent] = useState<string | null>(null);
+
+    useEffect(() => {
+        const fetchPageContent = async () => {
+            try {
+                const [offersRes, surveysRes] = await Promise.all([
+                    fetch(`${API_URL}/api/offer-walls`),
+                    fetch(`${API_URL}/api/survey-providers`)
+                ]);
+
+                if (!offersRes.ok) throw new Error('Failed to load offer walls.');
+                if (!surveysRes.ok) throw new Error('Failed to load survey providers.');
+                
+                const offersData = await offersRes.json();
+                const surveysData = await surveysRes.json();
+
+                setOfferWalls(offersData);
+                setSurveyProviders(surveysData);
+
+            } catch (err: any) {
+                setErrorContent(err.message);
+            } finally {
+                setIsLoadingContent(false);
+            }
+        };
+
+        fetchPageContent();
+    }, []);
 
     useEffect(() => {
         if (process.env.API_KEY) {
@@ -184,21 +217,37 @@ const LoggedInHomePage: React.FC = () => {
             {/* Offer Walls */}
             <section>
                 <SectionHeader title="Offer Walls" description="Each offer wall contains hundreds of offers to complete" />
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-6">
-                     {OFFER_WALLS.map((wall) => (
-                        <OfferWallCard key={wall.name} wall={wall} />
-                    ))}
-                </div>
+                 {isLoadingContent ? (
+                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-6">
+                        {[...Array(6)].map((_, i) => <SkeletonLoader key={i} className="h-48 rounded-2xl" />)}
+                    </div>
+                ) : errorContent ? (
+                    <div className="text-center py-12 text-red-500">{errorContent}</div>
+                ) : (
+                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-6">
+                         {offerWalls.map((wall) => (
+                            <OfferWallCard key={wall.id} wall={wall} />
+                        ))}
+                    </div>
+                )}
             </section>
 
              {/* Survey Walls */}
             <section>
                 <SectionHeader title="Survey Walls" description="Each survey wall contains hundreds of surveys to complete" />
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">
-                     {SURVEY_PROVIDERS.map((wall) => (
-                         <SurveyProviderCard key={wall.name} provider={wall} />
-                     ))}
-                </div>
+                 {isLoadingContent ? (
+                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">
+                        {[...Array(5)].map((_, i) => <SkeletonLoader key={i} className="h-48 rounded-2xl" />)}
+                    </div>
+                ) : errorContent ? (
+                    <div className="text-center py-12 text-red-500">{errorContent}</div>
+                ) : (
+                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">
+                         {surveyProviders.map((wall) => (
+                             <SurveyProviderCard key={wall.id} provider={wall} />
+                         ))}
+                    </div>
+                )}
             </section>
 
         </div>

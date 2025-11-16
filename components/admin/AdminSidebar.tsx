@@ -73,6 +73,8 @@ const AdminSidebar: React.FC<SidebarProps> = ({ isOpen, setIsOpen, activePage, s
                         </MenuItem>
                         <MenuItem icon="fas fa-life-ring" text="Support Tickets" />
                         <MenuItem icon="fas fa-cog" text="General Settings" />
+                        <MenuItem icon="fas fa-poll" text="Survey Control" active={activePage === 'SurveyControl'} onClick={() => setActivePage('SurveyControl')} />
+                        <MenuItem icon="fas fa-scroll" text="Offer Control" active={activePage === 'OfferControl'} onClick={() => setActivePage('OfferControl')} />
                         <MenuItem icon="fas fa-desktop" text="Home Page Settings" hasSubMenu />
                         <MenuItem icon="fas fa-bars" text="Menu Page Settings" hasSubMenu />
                         <MenuItem icon="fas fa-envelope-open-text" text="Email Settings" hasSubMenu />
