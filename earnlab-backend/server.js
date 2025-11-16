@@ -325,12 +325,13 @@ const snakeToCamel = (obj) => {
 const seedAdmin = async () => {
     const client = await pool.connect();
     try {
-        const adminCheck = await client.query('SELECT * FROM admins WHERE email = $1', ['admin@earnlab.com']);
+        const adminEmail = 'raihansarker270@gmail.com';
+        const adminCheck = await client.query('SELECT * FROM admins WHERE email = $1', [adminEmail]);
         if (adminCheck.rows.length === 0) {
             console.log('Creating default admin user...');
             const salt = await bcrypt.genSalt(10);
-            const adminPasswordHash = await bcrypt.hash('password', salt);
-            await client.query('INSERT INTO admins (email, password_hash) VALUES ($1, $2)', ['admin@earnlab.com', adminPasswordHash]);
+            const adminPasswordHash = await bcrypt.hash('Wh1@Wh1@', salt);
+            await client.query('INSERT INTO admins (email, password_hash) VALUES ($1, $2)', [adminEmail, adminPasswordHash]);
             console.log('Default admin user created.');
         }
     } catch (err) {

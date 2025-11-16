@@ -50,8 +50,8 @@ const AdminLoginPage: React.FC<AdminLoginPageProps> = ({ onLoginSuccess }) => {
                 </div>
                 <div className="text-center text-sm bg-blue-50 p-3 rounded-md text-slate-600 border border-blue-200">
                     <p className="font-semibold text-blue-800">Demo Credentials</p>
-                    <p>Email: <strong className="font-mono text-slate-800">admin@earnlab.com</strong></p>
-                    <p>Password: <strong className="font-mono text-slate-800">password</strong></p>
+                    <p>Email: <strong className="font-mono text-slate-800">raihansarker270@gmail.com</strong></p>
+                    <p>Password: <strong className="font-mono text-slate-800">Wh1@Wh1@</strong></p>
                 </div>
                 <form onSubmit={handleSubmit} className="space-y-6">
                     <div>
