@@ -59,28 +59,17 @@ const SubMenuItem: React.FC<{ text: string }> = ({ text }) => {
 const AdminSidebar: React.FC<SidebarProps> = ({ isOpen, setIsOpen, activePage, setActivePage }) => {
     return (
         <aside className={`bg-[#0f172a] text-white flex flex-col transition-all duration-300 ease-in-out h-full shadow-lg ${isOpen ? 'w-64' : 'w-0'} overflow-hidden`}>
-            <div className="flex-shrink-0 p-4 min-w-[16rem]">
+            <div className="flex-1 overflow-y-auto p-4 min-w-[16rem]">
                 <div className="flex items-center justify-between h-12 border-b border-slate-700">
                     <h1 className="text-2xl font-bold">Admin Panel</h1>
                 </div>
                 <nav className="mt-6">
                     <ul className="space-y-2">
                         <MenuItem icon="fas fa-tachometer-alt" text="Dashboard" active={activePage === 'Dashboard'} onClick={() => setActivePage('Dashboard')} />
-                        <MenuItem icon="fas fa-hand-holding-usd" text="Invests" hasSubMenu>
-                            <SubMenuItem text="Manage Invests" />
-                            <SubMenuItem text="Invest Schemes" />
-                        </MenuItem>
                         <MenuItem icon="fas fa-exchange-alt" text="Transactions" active={activePage === 'Withdrawals'} onClick={() => setActivePage('Withdrawals')} />
-                        <MenuItem icon="fas fa-tags" text="Pricing Plans" hasSubMenu>
-                            <SubMenuItem text="Manage Plans" />
-                        </MenuItem>
                         <MenuItem icon="fas fa-users" text="Customers" hasSubMenu>
                             <SubMenuItem text="All Customers" />
                             <SubMenuItem text="Active Customers" />
-                        </MenuItem>
-                        <MenuItem icon="fas fa-rss" text="Blog" hasSubMenu>
-                             <SubMenuItem text="All Posts" />
-                             <SubMenuItem text="Categories" />
                         </MenuItem>
                         <MenuItem icon="fas fa-life-ring" text="Support Tickets" />
                         <MenuItem icon="fas fa-cog" text="General Settings" />
