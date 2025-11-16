@@ -296,7 +296,7 @@ app.get('/api/admin/stats', adminAuthMiddleware, async (req, res) => {
 app.get('/api/admin/recent-tasks', adminAuthMiddleware, async (req, res) => {
     try {
         const result = await pool.query(`
-            SELECT t.id AS transaction_id, t.date, u.email, t.amount
+            SELECT t.id AS transaction_id, t.date, u.email, t.amount, u.id as user_id
             FROM transactions t
             JOIN users u ON t.user_id = u.id
             WHERE t.type = 'Task Reward' AND t.status = 'Completed'
@@ -313,7 +313,7 @@ app.get('/api/admin/recent-tasks', adminAuthMiddleware, async (req, res) => {
 app.get('/api/admin/recent-signups', adminAuthMiddleware, async (req, res) => {
     try {
         const result = await pool.query(`
-            SELECT email, created_at AS joined_date
+            SELECT id, email, created_at AS joined_date
             FROM users
             ORDER BY created_at DESC
             LIMIT 5

@@ -16,8 +16,10 @@ interface RecentTask {
     date: string;
     email: string;
     amount: number;
+    userId: number;
 }
 interface RecentSignup {
+    id: number;
     email: string;
     joinedDate: string;
 }
@@ -342,7 +344,7 @@ const AdminDashboardPage: React.FC<AdminDashboardPageProps> = ({ onNavigate, onV
                                             <td className="p-2">{task.email}</td>
                                             <td className="p-2 font-bold">${(Number(task.amount) || 0).toFixed(2)}</td>
                                             <td className="p-2">
-                                                <button className="bg-slate-800 text-white px-3 py-1 rounded text-xs hover:bg-slate-700">Details</button>
+                                                <button onClick={() => onViewUser({ id: task.userId, email: task.email })} className="bg-slate-800 text-white px-3 py-1 rounded text-xs hover:bg-slate-700">Details</button>
                                             </td>
                                         </tr>
                                     ))
@@ -377,7 +379,7 @@ const AdminDashboardPage: React.FC<AdminDashboardPageProps> = ({ onNavigate, onV
                                             <td className="p-2 font-medium">{user.email}</td>
                                             <td className="p-2">{new Date(user.joinedDate).toLocaleString()}</td>
                                             <td className="p-2">
-                                                <button className="bg-slate-800 text-white px-3 py-1 rounded text-xs hover:bg-slate-700">Details</button>
+                                                <button onClick={() => onViewUser({ id: user.id, email: user.email })} className="bg-slate-800 text-white px-3 py-1 rounded text-xs hover:bg-slate-700">Details</button>
                                             </td>
                                         </tr>
                                     ))
