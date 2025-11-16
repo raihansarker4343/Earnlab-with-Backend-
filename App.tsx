@@ -244,9 +244,15 @@ const App: React.FC = () => {
         if (!response.ok) throw new Error('Failed to fetch transactions');
         const userTransactions: Transaction[] = await response.json();
         
-        setTransactions(userTransactions);
+        // FIX: The amount from the backend is a string, convert it to a number.
+        const parsedTransactions = userTransactions.map(tx => ({
+            ...tx,
+            amount: Number(tx.amount)
+        }));
         
-        const pendingWithdrawals = userTransactions
+        setTransactions(parsedTransactions);
+        
+        const pendingWithdrawals = parsedTransactions
           .filter(tx => tx.type === 'Withdrawal' && tx.status === 'Pending')
           .reduce((sum, tx) => sum + tx.amount, 0);
 

@@ -285,7 +285,13 @@ const WalletModal: React.FC = () => {
 
             const savedTransaction: Transaction = await response.json();
 
-            setTransactions(prev => [savedTransaction, ...prev]);
+            // FIX: The amount from the backend is a string, convert it to a number.
+            const parsedTransaction = {
+                ...savedTransaction,
+                amount: Number(savedTransaction.amount),
+            };
+
+            setTransactions(prev => [parsedTransaction, ...prev]);
             setBalance(prev => prev - totalDeducted);
 
             alert(`Withdrawal request for $${withdrawalAmount.toFixed(2)} has been submitted and is now pending review.`);

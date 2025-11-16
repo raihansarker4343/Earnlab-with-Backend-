@@ -87,7 +87,9 @@ const AdminDashboardPage: React.FC = () => {
             });
             if (!response.ok) throw new Error("Failed to fetch withdrawal requests.");
             const data: Transaction[] = await response.json();
-            setWithdrawalRequests(data);
+            // FIX: The amount from the backend is a string, convert it to a number.
+            const parsedData = data.map(tx => ({...tx, amount: Number(tx.amount)}));
+            setWithdrawalRequests(parsedData);
         } catch (err: any) {
             setError(err.message);
         } finally {
@@ -116,11 +118,17 @@ const AdminDashboardPage: React.FC = () => {
                 throw new Error(errData.message || 'Failed to update transaction.');
             }
             const updatedTx: Transaction = await response.json();
+
+            // FIX: The amount from the backend is a string, convert it to a number.
+            const parsedUpdatedTx = {
+                ...updatedTx,
+                amount: Number(updatedTx.amount)
+            };
             
-            setWithdrawalRequests(prev => prev.map(t => t.id === txId ? updatedTx : t));
-            setGlobalTransactions(prev => prev.map(t => t.id === txId ? updatedTx : t));
+            setWithdrawalRequests(prev => prev.map(t => t.id === txId ? parsedUpdatedTx : t));
+            setGlobalTransactions(prev => prev.map(t => t.id === txId ? parsedUpdatedTx : t));
             
-            return updatedTx;
+            return parsedUpdatedTx;
         } catch (error: any) {
             alert(`Error: ${error.message}`);
             return null;
