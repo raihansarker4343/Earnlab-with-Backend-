@@ -13,6 +13,7 @@ const initDb = async () => {
   const client = await pool.connect();
   try {
     console.log('Initializing database schema...');
+    // Main CREATE TABLE statements (includes 'balance' for new setups)
     await client.query(`
       CREATE TABLE IF NOT EXISTS users (
         id SERIAL PRIMARY KEY,
@@ -51,6 +52,11 @@ const initDb = async () => {
         source VARCHAR(50)
       );
     `);
+
+    // Add 'balance' column to 'users' table if it doesn't exist.
+    // This serves as a migration for older database schemas.
+    await client.query('ALTER TABLE users ADD COLUMN IF NOT EXISTS balance NUMERIC(10, 2) DEFAULT 0');
+
     console.log('Database schema initialized successfully.');
   } catch (err) {
     console.error('Error initializing database schema:', err.stack);
