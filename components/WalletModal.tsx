@@ -1,6 +1,6 @@
 import React, { useContext, useState } from 'react';
 import { AppContext } from '../App';
-import { MOCK_TRANSACTIONS } from '../constants';
+import { API_URL } from '../constants';
 import type { Transaction } from '../types';
 
 const WithdrawalConfirmation: React.FC<{
@@ -113,7 +113,7 @@ const WithdrawalForm: React.FC<{
                         />
                          <button className="absolute inset-y-0 right-0 flex items-center justify-center w-12 bg-sky-500 text-white rounded-r-lg hover:bg-sky-600">
                            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                             <path d="M7 3a1 1 0 000 2h6a1 1 0 100-2H7zM4 7a1 1 0 011-1h10a1 1 0 110 2H5a1 1 0 01-1-1zM2 11a2 2 0 012-2h12a2 2 0 012 2v4a2 2 0 01-2 2H4a2 2 0 01-2-2v-4z" />
+                             <path d="M7 3a1 1 0 000 2h6a1 1 0 100-2H7zM4 7a1 1 0 011-1h10a1 1 0 110 2H5a1 1 0 01-1-1zM2 11a2 2 0 012-2h12a2 2 0 012 2v4a2 2 0 01-2-2H4a2 2 0 01-2-2v-4z" />
                            </svg>
                         </button>
                     </div>
@@ -156,18 +156,20 @@ const WithdrawalForm: React.FC<{
 };
 
 const TransactionHistory: React.FC = () => {
+    const { transactions } = useContext(AppContext);
     const getStatusBadge = (status: Transaction['status']) => {
         switch (status) {
             case 'Completed': return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300';
             case 'Pending': return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300';
             case 'Failed': return 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300';
+            case 'Rejected': return 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300';
             default: return 'bg-slate-100 text-slate-800 dark:bg-slate-700 dark:text-slate-300';
         }
     };
     
     return (
         <div className="overflow-x-auto">
-            {MOCK_TRANSACTIONS.length > 0 ? (
+            {transactions.length > 0 ? (
                 <table className="w-full text-sm text-left">
                     <thead className="text-xs text-slate-500 dark:text-slate-400 uppercase bg-slate-100 dark:bg-[#1e293b]">
                         <tr>
@@ -180,7 +182,7 @@ const TransactionHistory: React.FC = () => {
                         </tr>
                     </thead>
                     <tbody className="text-slate-700 dark:text-slate-300">
-                        {MOCK_TRANSACTIONS.map(tx => (
+                        {transactions.map(tx => (
                             <tr key={tx.id} className="border-b border-slate-200 dark:border-slate-800 last:border-b-0">
                                 <td className="px-4 py-3 font-mono text-xs">{tx.id}</td>
                                 <td className="px-4 py-3 whitespace-nowrap">
@@ -198,7 +200,7 @@ const TransactionHistory: React.FC = () => {
                                 <td className="px-4 py-3">
                                     <span className={`text-xs font-semibold px-2 py-1 rounded-full ${getStatusBadge(tx.status)}`}>{tx.status}</span>
                                 </td>
-                                <td className="px-4 py-3 text-xs whitespace-nowrap">{tx.date}</td>
+                                <td className="px-4 py-3 text-xs whitespace-nowrap">{new Date(tx.date).toLocaleDateString()}</td>
                             </tr>
                         ))}
                     </tbody>
@@ -215,7 +217,7 @@ const TransactionHistory: React.FC = () => {
 
 
 const WalletModal: React.FC = () => {
-    const { isWalletModalOpen, setIsWalletModalOpen, setBalance } = useContext(AppContext);
+    const { isWalletModalOpen, setIsWalletModalOpen, balance, setBalance, setTransactions } = useContext(AppContext);
     const [activeTab, setActiveTab] = useState<'withdraw' | 'history'>('withdraw');
     const [withdrawalStep, setWithdrawalStep] = useState<'select' | 'form' | 'confirm'>('select');
     const [withdrawalDetails, setWithdrawalDetails] = useState({
@@ -242,12 +244,56 @@ const WalletModal: React.FC = () => {
         setWithdrawalStep('confirm');
     };
 
-    const handleConfirmWithdrawal = () => {
+    const handleConfirmWithdrawal = async () => {
+        const token = localStorage.getItem('token');
+        if (!token) {
+            alert("You are not logged in.");
+            return;
+        }
+
         const withdrawalAmount = parseFloat(withdrawalDetails.amount);
-        const fee = withdrawalAmount * 0.01;
-        setBalance(prev => prev - (withdrawalAmount + fee));
-        alert(`Successfully created withdrawal of ${withdrawalAmount.toFixed(2)} ${withdrawalDetails.cryptoName.split(' ')[0]}.`);
-        setWithdrawalStep('select'); // Go back to the main wallet view
+        const fee = withdrawalAmount * 0.01; // 1% fee
+        const totalDeducted = withdrawalAmount + fee;
+
+        if (totalDeducted > balance) {
+            alert("Insufficient funds to cover amount and network fee.");
+            return;
+        }
+
+        const newTransactionPayload = {
+            id: `WDR${Date.now()}`,
+            type: 'Withdrawal',
+            method: withdrawalDetails.cryptoName,
+            amount: withdrawalAmount,
+            status: 'Pending',
+        };
+        
+        try {
+            const response = await fetch(`${API_URL}/api/transactions/withdraw`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify(newTransactionPayload)
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.message || 'Failed to submit withdrawal.');
+            }
+
+            const savedTransaction: Transaction = await response.json();
+
+            setTransactions(prev => [savedTransaction, ...prev]);
+            setBalance(prev => prev - totalDeducted);
+
+            alert(`Withdrawal request for $${withdrawalAmount.toFixed(2)} has been submitted and is now pending review.`);
+            closeModal();
+        } catch (error: any) {
+            console.error("Withdrawal failed:", error);
+            alert(`Error: ${error.message}`);
+        }
     };
 
     if (!isWalletModalOpen) return null;

@@ -2,34 +2,18 @@ import React, { useContext, useState, useEffect } from 'react';
 import { AppContext } from '../../App';
 import SkeletonLoader from '../SkeletonLoader';
 
-const mockHistory: Record<string, any[]> = {
-    Tasks: [],
-    Surveys: [
-        { name: 'Market Research Survey', id: 'SURV582', category: 'Shopping', provider: 'CPX Research', status: 'Completed', total: '$1.50', date: '2025-11-10' },
-        { name: 'Product Feedback', id: 'SURV931', category: 'Technology', provider: 'BitLabs', status: 'Completed', total: '$0.85', date: '2025-11-08' },
-    ],
-    Offers: [
-        { name: 'Dice Dreams - Lvl 10', id: 'OFF744', category: 'Game', provider: 'Torox', status: 'Completed', total: '$25.00', date: '2025-11-05' },
-    ],
-    Withdrawals: [
-        { name: 'Bitcoin (BTC)', id: 'WDR123', category: 'Crypto', provider: 'Coinbase', status: 'Completed', total: '$50.00', date: '2025-11-01' },
-         { name: 'Litecoin (LTC)', id: 'WDR124', category: 'Crypto', provider: 'Wallet', status: 'Pending', total: '$15.00', date: '2025-11-12' },
-    ],
-    Openings: [],
-    Battles: [],
-};
-
 const getStatusBadge = (status: string) => {
     switch (status) {
         case 'Completed': return 'bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300';
         case 'Pending': return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/50 dark:text-yellow-300';
         case 'Failed': return 'bg-red-100 text-red-800 dark:bg-red-900/50 dark:text-red-300';
+        case 'Rejected': return 'bg-red-100 text-red-800 dark:bg-red-900/50 dark:text-red-300';
         default: return 'bg-slate-100 text-slate-800 dark:bg-slate-700 dark:text-slate-300';
     }
 };
 
 const DashboardPage: React.FC = () => {
-    const { user, setCurrentPage } = useContext(AppContext);
+    const { user, setCurrentPage, transactions } = useContext(AppContext);
     const [activeTab, setActiveTab] = useState('Tasks');
     const [isLoading, setIsLoading] = useState(true);
 
@@ -53,49 +37,46 @@ const DashboardPage: React.FC = () => {
             )
         }
         
-        const dataForTab = mockHistory[activeTab as keyof typeof mockHistory] || [];
+        const dataForTab = transactions.filter(tx => {
+            if (activeTab === 'Withdrawals') return tx.type === 'Withdrawal';
+            if (activeTab === 'Tasks') return tx.source === 'Task';
+            if (activeTab === 'Surveys') return tx.source === 'Survey';
+            if (activeTab === 'Offers') return tx.source === 'Offer';
+            return false;
+        });
         
-        const headersConfig = {
-            Tasks: ['Task', 'ID', 'Category', 'Provider', 'Status', 'Total', 'Date'],
-            Surveys: ['Survey', 'ID', 'Category', 'Provider', 'Status', 'Total', 'Date'],
-            Offers: ['Offer', 'ID', 'Category', 'Provider', 'Status', 'Total', 'Date'],
-            Withdrawals: ['Method', 'ID', 'Category', 'Provider', 'Status', 'Total', 'Date'],
-            Openings: ['Opening', 'ID', 'Game', 'Wager', 'Profit', 'Date'],
-            Battles: ['Battle', 'ID', 'Opponent', 'Wager', 'Profit', 'Date'],
-        };
-
-        const currentHeaders = headersConfig[activeTab as keyof typeof headersConfig];
+        const headers = ['Method', 'ID', 'Category', 'Provider', 'Status', 'Total', 'Date'];
 
         return (
              <div className="overflow-x-auto">
                  <table className="w-full text-sm text-left text-slate-600 dark:text-slate-400">
                      <thead className="text-xs text-slate-700 dark:text-slate-400 uppercase bg-slate-100 dark:bg-slate-900/50">
                          <tr>
-                             {currentHeaders.map(header => (
+                             {headers.map(header => (
                                 <th scope="col" key={header} className="px-6 py-3">{header}</th>
                              ))}
                          </tr>
                      </thead>
                      <tbody>
                         {dataForTab.length > 0 ? (
-                            dataForTab.map((item, index) => (
-                                <tr key={index} className="border-t border-slate-200 dark:border-slate-700">
-                                    <td className="px-6 py-4 font-medium text-slate-900 dark:text-white whitespace-nowrap">{item.name}</td>
+                            dataForTab.map((item) => (
+                                <tr key={item.id} className="border-t border-slate-200 dark:border-slate-700">
+                                    <td className="px-6 py-4 font-medium text-slate-900 dark:text-white whitespace-nowrap">{item.method}</td>
                                     <td className="px-6 py-4">{item.id}</td>
-                                    <td className="px-6 py-4">{item.category}</td>
-                                    <td className="px-6 py-4">{item.provider}</td>
+                                    <td className="px-6 py-4">{item.source || item.type}</td>
+                                    <td className="px-6 py-4">N/A</td>
                                     <td className="px-6 py-4">
                                         <span className={`text-xs font-semibold px-2 py-1 rounded-full ${getStatusBadge(item.status)}`}>
                                             {item.status}
                                         </span>
                                     </td>
-                                    <td className="px-6 py-4 font-semibold text-green-500 dark:text-green-400">{item.total}</td>
+                                    <td className="px-6 py-4 font-semibold text-green-500 dark:text-green-400">${item.amount.toFixed(2)}</td>
                                     <td className="px-6 py-4">{item.date}</td>
                                 </tr>
                             ))
                         ) : (
                             <tr className="border-t border-slate-200 dark:border-slate-700">
-                                <td colSpan={currentHeaders.length} className="text-center py-16">
+                                <td colSpan={headers.length} className="text-center py-16">
                                     <div className="flex flex-col items-center gap-4">
                                         <i className="fas fa-folder-open text-4xl text-slate-400 dark:text-slate-500"></i>
                                         <h3 className="font-semibold text-slate-800 dark:text-slate-300">No History Found</h3>

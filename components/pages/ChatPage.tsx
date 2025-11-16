@@ -37,7 +37,8 @@ const ChatPage: React.FC = () => {
                   contents: moderationPrompt,
                 });
                 
-                if (!response.text.includes('YES')) {
+                const moderationResult = response.text.trim().toUpperCase();
+                if (moderationResult !== 'YES') {
                     alert('This message has been flagged as inappropriate and cannot be sent.');
                     setIsSending(false);
                     setNewMessage('');

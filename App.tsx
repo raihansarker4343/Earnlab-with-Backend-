@@ -5,11 +5,13 @@ import LoggedOutHeader from './components/LoggedOutHeader';
 import WalletModal from './components/WalletModal';
 import LiveEarningFeed from './components/LiveEarningFeed';
 import Footer from './components/Footer';
-import type { User } from './types';
+import type { User, Transaction } from './types';
 import LoggedOutSidebar from './components/LoggedOutSidebar';
 import SigninModal from './components/SigninModal';
 import SignupModal from './components/SignupModal';
 import SupportChatModal from './components/SupportChatModal';
+import { API_URL } from './constants';
+
 
 // Lazy load page components
 const HomePageContent = React.lazy(() => import('./components/pages/HomePage'));
@@ -32,6 +34,7 @@ const BitLabsSurveysPage = React.lazy(() => import('./components/pages/survey/Bi
 const InBrainPage = React.lazy(() => import('./components/pages/survey/InBrainPage'));
 const TheoremReachPage = React.lazy(() => import('./components/pages/survey/TheoremReachPage'));
 const PollfishSurveysPage = React.lazy(() => import('./components/pages/survey/PollfishSurveysPage'));
+const YourSurveysPage = React.lazy(() => import('./components/pages/survey/YourSurveysPage'));
 
 // Lazy load offer provider pages
 const ToroxPage = React.lazy(() => import('./components/pages/offers/ToroxPage'));
@@ -56,9 +59,12 @@ const AdminLoginPage = React.lazy(() => import('./components/admin/AdminLoginPag
 export const AppContext = React.createContext<{
   isLoggedIn: boolean;
   user: User | null;
+  setUser: React.Dispatch<React.SetStateAction<User | null>>;
   balance: number;
   setBalance: React.Dispatch<React.SetStateAction<number>>;
-  handleLogin: (token: string, user: User) => void;
+  transactions: Transaction[];
+  setTransactions: React.Dispatch<React.SetStateAction<Transaction[]>>;
+  handleLogin: (token: string, user: User) => Promise<void>;
   handleLogout: () => void;
   isWalletModalOpen: boolean;
   setIsWalletModalOpen: React.Dispatch<React.SetStateAction<boolean>>;
@@ -81,9 +87,12 @@ export const AppContext = React.createContext<{
 }>({
   isLoggedIn: false,
   user: null,
+  setUser: () => {},
   balance: 0,
   setBalance: () => {},
-  handleLogin: () => {},
+  transactions: [],
+  setTransactions: () => {},
+  handleLogin: async () => {},
   handleLogout: () => {},
   isWalletModalOpen: false,
   setIsWalletModalOpen: () => {},
@@ -124,6 +133,7 @@ const pageComponentsMap: { [key: string]: React.ReactNode } = {
     'inBrain': <InBrainPage />,
     'Pollfish': <PollfishSurveysPage />,
     'TheoremReach': <TheoremReachPage />,
+    'Your-Surveys': <YourSurveysPage />,
     'Torox': <ToroxPage />,
     'Adscend Media': <AdscendMediaPage />,
     'AdToWall': <AdToWallPage />,
@@ -171,18 +181,30 @@ const sanitizeUser = (rawUser: User): User => {
     return user;
 };
 
+const getPageFromHash = (hash: string): string => {
+    if (!hash || hash === '#' || hash === '#/') return 'Home';
+    // Remove # or #/ from the beginning of the string
+    const pageKey = hash.startsWith('#/') ? hash.substring(2) : hash.substring(1);
+    const cleanPageKey = pageKey.split('?')[0];
+
+    if (cleanPageKey.toLowerCase().startsWith('admin')) return cleanPageKey;
+
+    return pageKeyLookup[cleanPageKey] || Object.keys(pageComponentsMap).find(k => k === cleanPageKey) || 'Home';
+};
+
 
 const App: React.FC = () => {
   const [isAdmin, setIsAdmin] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [user, setUser] = useState<User | null>(null);
   const [balance, setBalance] = useState(0);
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [isWalletModalOpen, setIsWalletModalOpen] = useState(false);
   const [isSupportChatModalOpen, setIsSupportChatModalOpen] = useState(false);
   const [isSigninModalOpen, setIsSigninModalOpen] = useState(false);
   const [isSignupModalOpen, setIsSignupModalOpen] = useState(false);
   const [signupInitialEmail, setSignupInitialEmail] = useState('');
-  const [currentPage, setCurrentPage] = useState('Home');
+  const [page, setPage] = useState('Home');
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
   const [theme, setTheme] = useState<'light' | 'dark'>(() => {
@@ -193,110 +215,104 @@ const App: React.FC = () => {
   const [isLoadingAuth, setIsLoadingAuth] = useState(true);
 
   const navigate = useCallback((pageName: string) => {
-    const pathName = pageName === 'Home' ? '/' : `/${pageName.replace(/\s/g, '')}`;
-    if (window.location.pathname !== pathName) {
-        window.history.pushState({ page: pageName }, pageName, pathName);
-        // Dispatch popstate event to trigger URL change handling
-        window.dispatchEvent(new PopStateEvent('popstate'));
-    }
+      const pageKey = pageName === 'Home' ? '/' : `/${pageName.replace(/\s/g, '')}`;
+      const newHash = `#${pageKey}`;
+      if (window.location.hash !== newHash) {
+          window.location.hash = newHash;
+      }
   }, []);
-
-  const handleLogin = useCallback((token: string, userData: User) => {
-    localStorage.setItem('token', token);
-    const sanitizedUser = sanitizeUser(userData);
-    localStorage.setItem('user', JSON.stringify(sanitizedUser));
-    setUser(sanitizedUser);
-    setBalance(sanitizedUser.totalEarned || 0);
-    setIsLoggedIn(true);
-
-    if (redirectAfterLogin) {
-      navigate(redirectAfterLogin);
-      setRedirectAfterLogin(null);
-    } else {
-      navigate('Home');
-    }
-    
-    setIsSigninModalOpen(false);
-    setIsSignupModalOpen(false);
-  }, [navigate, redirectAfterLogin]);
-
+  
   const handleLogout = useCallback(() => {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
     setUser(null);
     setIsLoggedIn(false);
     setRedirectAfterLogin(null);
+    setTransactions([]);
     navigate('Home');
   }, [navigate]);
-  
-  useEffect(() => {
-      try {
-        const token = localStorage.getItem('token');
-        const storedUser = localStorage.getItem('user');
-        if (token && storedUser) {
-            const userData = JSON.parse(storedUser);
-            if (userData && typeof userData === 'object') {
-                const sanitizedUser = sanitizeUser(userData as User);
-                setUser(sanitizedUser);
-                setBalance(sanitizedUser.totalEarned || 0);
-                setIsLoggedIn(true);
-            } else {
-                handleLogout();
-            }
-        } else {
-            setIsLoggedIn(false);
-            setUser(null);
-        }
-      } catch (error) {
-        console.error("Failed to parse user data from localStorage", error);
-        handleLogout();
-      } finally {
-        setIsLoadingAuth(false);
-      }
-  }, [handleLogout]);
 
-
-  useEffect(() => {
-    if (isLoadingAuth) {
-        return;
-    }
+  const handleLogin = useCallback(async (token: string, userData: User) => {
+    localStorage.setItem('token', token);
+    const sanitizedUser = sanitizeUser(userData);
+    localStorage.setItem('user', JSON.stringify(sanitizedUser));
     
-    const handleUrlChange = () => {
-        const path = window.location.pathname;
-        const getPageFromPath = () => {
-            if (path === '/') return 'Home';
-            const pageName = path.substring(1);
-            if (pageName.toLowerCase().startsWith('admin')) return pageName;
-            return decodeURIComponent(pageName.split('?')[0]);
-        };
-
-        const pageFromPath = getPageFromPath();
-
-        if (pageFromPath?.toLowerCase().startsWith('admin')) {
-            // Admin routing is handled separately and does not set currentPage
-            return;
-        }
-
-        const requestedPageKey = pageFromPath || 'Home';
-        const requestedPageName = pageKeyLookup[requestedPageKey] || Object.keys(pageComponentsMap).find(k => k === requestedPageKey) || 'Home';
+    try {
+        const response = await fetch(`${API_URL}/api/transactions`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (!response.ok) throw new Error('Failed to fetch transactions');
+        const userTransactions: Transaction[] = await response.json();
         
-        const isProtectedRoute = requestedPageName !== 'Home';
+        setTransactions(userTransactions);
+        
+        const pendingWithdrawals = userTransactions
+          .filter(tx => tx.type === 'Withdrawal' && tx.status === 'Pending')
+          .reduce((sum, tx) => sum + tx.amount, 0);
 
+        setBalance((sanitizedUser.totalEarned || 0) - (sanitizedUser.totalWithdrawn || 0) - pendingWithdrawals);
+        setUser(sanitizedUser);
+        setIsLoggedIn(true);
+
+        const targetPage = redirectAfterLogin || 'Home';
+        navigate(targetPage);
+        setRedirectAfterLogin(null);
+        
+        setIsSigninModalOpen(false);
+        setIsSignupModalOpen(false);
+    } catch (error) {
+        console.error("Login failed:", error);
+        handleLogout(); // Log out if we can't fetch essential data
+    }
+  }, [navigate, redirectAfterLogin, handleLogout]);
+
+  // Effect for initial auth check from localStorage.
+  useEffect(() => {
+      const checkAuth = async () => {
+        try {
+          const token = localStorage.getItem('token');
+          const storedUser = localStorage.getItem('user');
+          if (token && storedUser) {
+              const userData = JSON.parse(storedUser);
+              if (userData && typeof userData === 'object') {
+                  await handleLogin(token, userData as User);
+              }
+          }
+        } catch (error) {
+          console.error("Failed to parse user data from localStorage", error);
+          localStorage.removeItem('token');
+          localStorage.removeItem('user');
+        } finally {
+          setIsLoadingAuth(false);
+        }
+      };
+      checkAuth();
+  }, [handleLogin]);
+
+  // Effect to handle routing via hash changes.
+  useEffect(() => {
+    if (isLoadingAuth) return; // Wait for auth check to complete
+
+    const handleHashChange = () => {
+        const pageFromHash = getPageFromHash(window.location.hash);
+        
+        const isProtectedRoute = pageFromHash !== 'Home';
         if (isProtectedRoute && !isLoggedIn) {
-            setRedirectAfterLogin(requestedPageName);
-            navigate('Home'); 
+            setRedirectAfterLogin(pageFromHash);
+            navigate('Home');
             setIsSigninModalOpen(true);
         } else {
-            setCurrentPage(requestedPageName);
+            setPage(pageFromHash);
         }
     };
-  
-    handleUrlChange(); // Set initial page
-    window.addEventListener('popstate', handleUrlChange);
+
+    window.addEventListener('hashchange', handleHashChange);
+    handleHashChange(); // Handle initial page load
+
     return () => {
-        window.removeEventListener('popstate', handleUrlChange);
+      window.removeEventListener('hashchange', handleHashChange);
     };
-  }, [isLoggedIn, navigate, isLoadingAuth]);
+  }, [isLoadingAuth, isLoggedIn, navigate]);
   
   const openSignupModal = (email = '') => {
       setSignupInitialEmail(email);
@@ -304,10 +320,11 @@ const App: React.FC = () => {
   };
 
   const appContextValue = { 
-      isLoggedIn, user, balance, setBalance, handleLogin, handleLogout,
+      isLoggedIn, user, setUser, balance, setBalance, transactions, setTransactions, handleLogin, handleLogout,
       isWalletModalOpen, setIsWalletModalOpen, isSigninModalOpen, 
       setIsSigninModalOpen, isSignupModalOpen, openSignupModal, 
-      currentPage, setCurrentPage: navigate, 
+      currentPage: page,
+      setCurrentPage: navigate,
       isSidebarCollapsed, setIsSidebarCollapsed, isMobileSidebarOpen, 
       setIsMobileSidebarOpen, theme, setTheme, isSupportChatModalOpen, 
       setIsSupportChatModalOpen, isAdmin, setIsAdmin
@@ -330,6 +347,7 @@ const App: React.FC = () => {
     );
   }
 
+  // Admin panel routing
   if (window.location.pathname.startsWith('/admin')) {
       if (!isAdmin) {
           return (
@@ -347,24 +365,13 @@ const App: React.FC = () => {
       );
   }
   
-  const getPageFromPath = () => {
-      const path = window.location.pathname;
-      if (path === '/' || path === '') return null;
-      const pageName = path.substring(1);
-      if (pageName.toLowerCase().startsWith('admin')) return null;
-      return decodeURIComponent(pageName.split('?')[0]);
-  };
-  
-  const dedicatedPageNameFromPath = getPageFromPath();
-  const dedicatedPageName = dedicatedPageNameFromPath ? (pageKeyLookup[dedicatedPageNameFromPath] || Object.keys(pageComponentsMap).find(k => k === dedicatedPageNameFromPath)) : null;
-
   const dedicatedPageNames = new Set([
-    'Prime Surveys', 'CPX Research', 'Adscend Media Surveys', 'BitLabs', 'inBrain', 'Pollfish', 'TheoremReach',
+    'Prime Surveys', 'CPX Research', 'Adscend Media Surveys', 'BitLabs', 'inBrain', 'Pollfish', 'TheoremReach', 'Your-Surveys',
     'Torox', 'Adscend Media', 'AdToWall', 'RevU', 'AdGate Media', 'MyChips', 'MM Wall', 'Aye-T Studios',
     'Monlix', 'Hang My Ads', 'Lootably', 'Time Wall', 'AdGem'
   ]);
   
-  const isDedicatedView = !!dedicatedPageName && dedicatedPageNames.has(dedicatedPageName);
+  const isDedicatedView = dedicatedPageNames.has(page);
   
   const switchToSignup = () => {
       setIsSigninModalOpen(false);
@@ -377,9 +384,7 @@ const App: React.FC = () => {
   };
 
   if (isDedicatedView) {
-      const pageName = dedicatedPageName;
-      const ComponentToRender = pageName ? pageComponentsMap[pageName] : null;
-
+      const ComponentToRender = pageComponentsMap[page];
       if (!ComponentToRender) {
           return (
               <div className="bg-slate-100 dark:bg-[#0f172a] text-slate-800 dark:text-slate-300 min-h-screen flex items-center justify-center">
@@ -405,10 +410,10 @@ const App: React.FC = () => {
     const pagePadding = "p-4 sm:p-6 lg:p-8";
     let componentToRender;
 
-    if (currentPage === 'Home') {
+    if (page === 'Home') {
         componentToRender = isLoggedIn ? <LoggedInHomePage /> : <HomePageContent />;
     } else {
-        componentToRender = pageComponentsMap[currentPage];
+        componentToRender = pageComponentsMap[page];
     }
     
     // Fallback to the homepage if the page is not found

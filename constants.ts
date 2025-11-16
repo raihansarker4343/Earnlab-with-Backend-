@@ -1,6 +1,9 @@
 import type { User, EarningFeedItem, SurveyProvider, FaqItem, RewardOption, LeaderboardUser, Achievement, ChatMessage, Testimonial, FeaturedOffer, Transaction, OfferWall } from './types';
 
-export const API_URL = 'https://earnlab-with-backend.onrender.com'; // Replace with your deployed backend URL
+// The backend API is hosted at a single, consistent URL.
+// We will use this absolute URL for all API calls, regardless of the frontend's environment.
+// The backend server is configured with CORS to accept requests from any origin, which is why this works.
+export const API_URL = 'https://earnlab-with-backend.onrender.com';
 
 export const EARNING_FEED_ITEMS: EarningFeedItem[] = [
   { id: 1, user: 'Sparkb6', avatar: 'https://i.pravatar.cc/32?u=sparkb6', task: 'Bitcoin (BTC)', provider: '', amount: 141.96 },
@@ -138,12 +141,4 @@ export const TESTIMONIALS: Testimonial[] = [
     author: 'Gerd T.',
     rating: 5,
   },
-];
-
-export const MOCK_TRANSACTIONS: Transaction[] = [
-  { id: 'tx123', type: 'Withdrawal', method: 'Bitcoin (BTC)', amount: 25.00, status: 'Completed', date: '2025-11-01' },
-  { id: 'tx124', type: 'Task Reward', method: 'RevU Offer', amount: 5.50, status: 'Completed', date: '2025-10-28' },
-  { id: 'tx125', type: 'Withdrawal', method: 'Litecoin (LTC)', amount: 15.00, status: 'Pending', date: '2025-11-02' },
-  { id: 'tx126', type: 'Deposit', method: 'Visa', amount: 10.00, status: 'Failed', date: '2025-10-25' },
-  { id: 'tx127', type: 'Task Reward', method: 'Torox Offer', amount: 12.75, status: 'Completed', date: '2025-10-22' },
 ];

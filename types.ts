@@ -114,6 +114,10 @@ export interface Transaction {
   type: 'Withdrawal' | 'Deposit' | 'Task Reward';
   method: string;
   amount: number;
-  status: 'Completed' | 'Pending' | 'Failed';
+  status: 'Completed' | 'Pending' | 'Failed' | 'Rejected';
   date: string;
+  source?: 'Task' | 'Survey' | 'Offer';
+  // FIX: Added `userId` to the Transaction type to resolve an error in `AdminDashboardPage.tsx`.
+  // The backend includes this field, so it's necessary for logic involving user identification.
+  userId: number;
 }

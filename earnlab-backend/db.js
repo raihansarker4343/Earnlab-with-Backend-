@@ -38,6 +38,17 @@ const initDb = async () => {
           email VARCHAR(255) UNIQUE NOT NULL,
           password_hash VARCHAR(255) NOT NULL
       );
+
+      CREATE TABLE IF NOT EXISTS transactions (
+        id VARCHAR(255) PRIMARY KEY,
+        user_id INTEGER NOT NULL REFERENCES users(id),
+        type VARCHAR(50) NOT NULL,
+        method VARCHAR(100) NOT NULL,
+        amount NUMERIC(10, 2) NOT NULL,
+        status VARCHAR(50) NOT NULL,
+        date TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+        source VARCHAR(50)
+      );
     `);
     console.log('Database schema initialized successfully.');
   } catch (err) {

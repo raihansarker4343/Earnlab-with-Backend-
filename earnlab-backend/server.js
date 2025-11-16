@@ -12,6 +12,19 @@ const port = process.env.PORT || 3001;
 app.use(cors());
 app.use(express.json());
 
+// Middleware to verify JWT and attach user to request
+const authMiddleware = (req, res, next) => {
+    const authHeader = req.headers['authorization'];
+    const token = authHeader && authHeader.split(' ')[1];
+    if (token == null) return res.sendStatus(401);
+
+    jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
+        if (err) return res.sendStatus(403);
+        req.user = user;
+        next();
+    });
+};
+
 // --- AUTH ROUTES ---
 app.post('/api/auth/signup', async (req, res) => {
     const { email, password, username } = req.body;
@@ -24,10 +37,10 @@ app.post('/api/auth/signup', async (req, res) => {
         
         // Create a default user object
         const newUserQuery = await pool.query(
-            `INSERT INTO users (username, email, password_hash, avatar_url, referral_earnings) 
-             VALUES ($1, $2, $3, $4, $5) 
+            `INSERT INTO users (username, email, password_hash, avatar_url, referral_earnings, total_earned) 
+             VALUES ($1, $2, $3, $4, $5, $6) 
              RETURNING id, username, email, avatar_url, created_at, total_earned, last_30_days_earned, completed_tasks, total_wagered, total_profit, total_withdrawn, total_referrals, referral_earnings, xp, rank`,
-            [username, email, password_hash, `https://i.pravatar.cc/150?u=${username}`, 25.75]
+            [username, email, password_hash, `https://i.pravatar.cc/150?u=${username}`, 25.75, 50.00] // Start with some earnings
         );
 
         const user = newUserQuery.rows[0];
@@ -75,12 +88,126 @@ app.post('/api/auth/admin-login', async (req, res) => {
     }
 });
 
+// --- TRANSACTION ROUTES ---
+
+// Get transactions for the logged-in user
+app.get('/api/transactions', authMiddleware, async (req, res) => {
+    try {
+        const result = await pool.query(
+            'SELECT * FROM transactions WHERE user_id = $1 ORDER BY date DESC',
+            [req.user.id]
+        );
+        res.json(result.rows.map(snakeToCamel));
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Server error fetching transactions.' });
+    }
+});
+
+// Create a new withdrawal transaction
+app.post('/api/transactions/withdraw', authMiddleware, async (req, res) => {
+    const { id, method, amount, status, type } = req.body;
+    if (!id || !method || !amount || !status || !type) {
+        return res.status(400).json({ message: 'Missing required transaction fields.' });
+    }
+
+    try {
+        const newTransactionQuery = await pool.query(
+            `INSERT INTO transactions (id, user_id, type, method, amount, status, date) 
+             VALUES ($1, $2, $3, $4, $5, $6, NOW()) 
+             RETURNING *`,
+            [id, req.user.id, type, method, amount, status]
+        );
+        res.status(201).json(snakeToCamel(newTransactionQuery.rows[0]));
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Server error creating withdrawal.' });
+    }
+});
+
+// --- ADMIN ROUTES ---
+
+// Get all withdrawal transactions for admin panel
+app.get('/api/admin/transactions', authMiddleware, async (req, res) => {
+    try {
+        const result = await pool.query(`
+            SELECT t.*, u.email 
+            FROM transactions t
+            JOIN users u ON t.user_id = u.id
+            WHERE t.type = 'Withdrawal' 
+            ORDER BY 
+                CASE t.status
+                    WHEN 'Pending' THEN 1
+                    WHEN 'Completed' THEN 2
+                    WHEN 'Rejected' THEN 3
+                    ELSE 4
+                END, 
+                t.date DESC
+        `);
+        res.json(result.rows.map(snakeToCamel));
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Server error fetching admin transactions.' });
+    }
+});
+
+// Update a transaction's status (approve/reject)
+app.patch('/api/admin/transactions/:id', authMiddleware, async (req, res) => {
+    const { id } = req.params;
+    const { status } = req.body; 
+
+    if (!status || !['Completed', 'Rejected'].includes(status)) {
+        return res.status(400).json({ message: 'Invalid status provided.' });
+    }
+
+    const client = await pool.connect();
+    try {
+        await client.query('BEGIN');
+
+        const transactionResult = await client.query('SELECT * FROM transactions WHERE id = $1', [id]);
+        if (transactionResult.rows.length === 0) {
+            throw new Error('Transaction not found');
+        }
+        const transaction = transactionResult.rows[0];
+        
+        if (transaction.status !== 'Pending') {
+            throw new Error('Transaction is not in a pending state.');
+        }
+
+        const updatedTransactionQuery = await client.query(
+            'UPDATE transactions SET status = $1 WHERE id = $2 RETURNING *',
+            [status, id]
+        );
+        const updatedTransaction = updatedTransactionQuery.rows[0];
+
+        if (status === 'Completed') {
+            await client.query(
+                'UPDATE users SET total_withdrawn = total_withdrawn + $1 WHERE id = $2',
+                [transaction.amount, transaction.user_id]
+            );
+        }
+
+        await client.query('COMMIT');
+        res.json(snakeToCamel(updatedTransaction));
+
+    } catch (error) {
+        await client.query('ROLLBACK');
+        console.error(error);
+        res.status(500).json({ message: error.message || 'Server error updating transaction.' });
+    } finally {
+        client.release();
+    }
+});
+
+
 // Helper to convert snake_case from DB to camelCase for frontend
 const snakeToCamel = (obj) => {
     if (typeof obj !== 'object' || obj === null) return obj;
+    if (Array.isArray(obj)) return obj.map(snakeToCamel);
+    
     return Object.entries(obj).reduce((acc, [key, value]) => {
         const camelKey = key.replace(/_([a-z])/g, (g) => g[1].toUpperCase());
-        acc[camelKey] = value;
+        acc[camelKey] = snakeToCamel(value); // Recursively convert nested objects
         return acc;
     }, {});
 };

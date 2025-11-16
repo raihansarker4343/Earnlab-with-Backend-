@@ -17,12 +17,18 @@ const SurveyProviderCard: React.FC<{ provider: SurveyProvider }> = ({ provider }
     };
     const gradient = gradients[provider.name] || 'from-slate-800/40 to-slate-900/10';
 
+    const handleClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
+        if (provider.isLocked) {
+            e.preventDefault();
+        }
+    };
+
     return (
         <a
-            href={provider.isLocked ? '#' : `/${encodeURIComponent(provider.name.replace(/\s/g, ''))}`}
-            target={provider.isLocked ? '_self' : '_blank'}
+            href={`/#/${encodeURIComponent(provider.name.replace(/\s/g, ''))}`}
+            onClick={handleClick}
+            target="_blank"
             rel="noopener noreferrer"
-            onClick={(e) => { if (provider.isLocked) e.preventDefault(); }}
             className={`bg-[#2a3044] rounded-2xl p-4 flex flex-col items-center justify-between text-center h-48 relative overflow-hidden transition-all duration-300 border border-slate-700/50 group hover:-translate-y-1 ${provider.isLocked ? 'cursor-not-allowed' : 'cursor-pointer'}`}
         >
             <div className={`absolute inset-0 bg-gradient-to-br ${gradient}`}></div>
