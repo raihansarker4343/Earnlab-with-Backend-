@@ -13,6 +13,7 @@ const WithdrawalsPage: React.FC = () => {
 
     const fetchData = async (page = 1) => {
         setIsLoading(true);
+        setError(null);
         const token = localStorage.getItem('token');
         if (!token) {
             setError("Authentication token not found.");
@@ -106,34 +107,42 @@ const WithdrawalsPage: React.FC = () => {
                         </tr>
                     </thead>
                     <tbody className="text-slate-700">
-                        {withdrawalRequests.map(tx => (
-                            <tr key={tx.id} className="border-t border-slate-200">
-                                <td className="p-2 font-medium">{tx.id}</td>
-                                <td className="p-2">{tx.email}</td>
-                                <td className="p-2">{new Date(tx.date).toLocaleDateString()}</td>
-                                <td className="p-2">{tx.method}</td>
-                                <td className="p-2 font-bold">${(Number(tx.amount) || 0).toFixed(2)}</td>
-                                <td className="p-2">
-                                    <span className={`px-2 py-1 rounded-full text-xs font-semibold ${
-                                        tx.status === 'Completed' ? 'bg-green-100 text-green-800' :
-                                        tx.status === 'Pending' ? 'bg-yellow-100 text-yellow-800' :
-                                        'bg-red-100 text-red-800'
-                                    }`}>
-                                        {tx.status}
-                                    </span>
-                                </td>
-                                <td className="p-2">
-                                    {tx.status === 'Pending' ? (
-                                        <div className="flex gap-2">
-                                            <button onClick={() => handleApprove(tx.id)} className="bg-green-500 text-white px-3 py-1 rounded text-xs hover:bg-green-600">Approve</button>
-                                            <button onClick={() => handleReject(tx.id)} className="bg-red-500 text-white px-3 py-1 rounded text-xs hover:bg-red-600">Reject</button>
-                                        </div>
-                                    ) : (
-                                        <span>-</span>
-                                    )}
+                        {withdrawalRequests.length > 0 ? (
+                            withdrawalRequests.map(tx => (
+                                <tr key={tx.id} className="border-t border-slate-200">
+                                    <td className="p-2 font-medium">{tx.id}</td>
+                                    <td className="p-2">{tx.email}</td>
+                                    <td className="p-2">{new Date(tx.date).toLocaleDateString()}</td>
+                                    <td className="p-2">{tx.method}</td>
+                                    <td className="p-2 font-bold">${(Number(tx.amount) || 0).toFixed(2)}</td>
+                                    <td className="p-2">
+                                        <span className={`px-2 py-1 rounded-full text-xs font-semibold ${
+                                            tx.status === 'Completed' ? 'bg-green-100 text-green-800' :
+                                            tx.status === 'Pending' ? 'bg-yellow-100 text-yellow-800' :
+                                            'bg-red-100 text-red-800'
+                                        }`}>
+                                            {tx.status}
+                                        </span>
+                                    </td>
+                                    <td className="p-2">
+                                        {tx.status === 'Pending' ? (
+                                            <div className="flex gap-2">
+                                                <button onClick={() => handleApprove(tx.id)} className="bg-green-500 text-white px-3 py-1 rounded text-xs hover:bg-green-600">Approve</button>
+                                                <button onClick={() => handleReject(tx.id)} className="bg-red-500 text-white px-3 py-1 rounded text-xs hover:bg-red-600">Reject</button>
+                                            </div>
+                                        ) : (
+                                            <span>-</span>
+                                        )}
+                                    </td>
+                                </tr>
+                            ))
+                        ) : (
+                            <tr>
+                                <td colSpan={7} className="text-center p-4 text-slate-500">
+                                    No withdrawal requests found.
                                 </td>
                             </tr>
-                        ))}
+                        )}
                     </tbody>
                 </table>
                 }
@@ -141,8 +150,8 @@ const WithdrawalsPage: React.FC = () => {
             <div className="mt-4 flex justify-between items-center text-sm">
                 <span className="text-slate-500">Page {currentPage} of {totalPages}</span>
                 <div className="flex gap-2">
-                    <button onClick={() => handlePageChange(currentPage - 1)} disabled={currentPage === 1} className="px-3 py-1 border rounded-md bg-white hover:bg-slate-50 disabled:opacity-50">Previous</button>
-                    <button onClick={() => handlePageChange(currentPage + 1)} disabled={currentPage === totalPages} className="px-3 py-1 border rounded-md bg-white hover:bg-slate-50 disabled:opacity-50">Next</button>
+                    <button onClick={() => handlePageChange(currentPage - 1)} disabled={currentPage === 1 || isLoading} className="px-3 py-1 border rounded-md bg-white hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed">Previous</button>
+                    <button onClick={() => handlePageChange(currentPage + 1)} disabled={currentPage === totalPages || isLoading} className="px-3 py-1 border rounded-md bg-white hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed">Next</button>
                 </div>
             </div>
         </div>

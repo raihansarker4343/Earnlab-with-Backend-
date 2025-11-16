@@ -22,8 +22,20 @@ interface RecentSignup {
     joinedDate: string;
 }
 
-const StatCard: React.FC<{ title: string, value: string, icon: string, color: string }> = ({ title, value, icon, color }) => (
-    <div className={`p-5 rounded-lg text-white shadow-md`} style={{ background: color }}>
+const StatCard: React.FC<{ title: string, value: string, icon: string, color: string, onClick?: () => void }> = ({ title, value, icon, color, onClick }) => (
+    <div
+        onClick={onClick}
+        className={`p-5 rounded-lg text-white shadow-md ${onClick ? 'cursor-pointer hover:opacity-90 transition-opacity' : ''}`}
+        style={{ background: color }}
+        role={onClick ? "button" : undefined}
+        tabIndex={onClick ? 0 : undefined}
+        onKeyDown={e => {
+            if (onClick && (e.key === 'Enter' || e.key === ' ')) {
+                e.preventDefault();
+                onClick();
+            }
+        }}
+    >
         <div className="flex justify-between items-center">
             <div>
                 <p className="text-lg font-semibold">{title}</p>
@@ -34,7 +46,7 @@ const StatCard: React.FC<{ title: string, value: string, icon: string, color: st
             </div>
         </div>
         <div className="mt-4 text-right">
-            <a href="#" className="text-sm hover:underline">View All</a>
+             <span className="text-sm hover:underline">{onClick ? 'View All' : ''}</span>
         </div>
     </div>
 );
@@ -213,12 +225,12 @@ const AdminDashboardPage: React.FC<{ onNavigate: (page: string) => void }> = ({ 
 
             {/* Stat Cards */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                <StatCard title="Pending Withdrawals!" value={isStatsLoading ? '...' : (stats?.pendingWithdrawals ?? 0).toString()} icon="fas fa-dollar-sign" color="linear-gradient(to right, #ef4444, #dc2626)" />
-                <StatCard title="Active Offers!" value="414" icon="fas fa-dollar-sign" color="linear-gradient(to right, #f97316, #ea580c)" />
+                <StatCard title="Pending Withdrawals!" value={isStatsLoading ? '...' : (stats?.pendingWithdrawals ?? 0).toString()} icon="fas fa-dollar-sign" color="linear-gradient(to right, #ef4444, #dc2626)" onClick={() => onNavigate('Withdrawals')} />
+                <StatCard title="Active Offers!" value="414" icon="fas fa-dollar-sign" color="linear-gradient(to right, #f97316, #ea580c)" onClick={() => onNavigate('OfferControl')} />
                 <StatCard title="Completed Tasks!" value={isStatsLoading ? '...' : (stats?.tasksCompletedAllTime ?? 0).toString()} icon="fas fa-check-circle" color="linear-gradient(to right, #22c55e, #16a34a)" />
-                <StatCard title="Total Offer Walls!" value="6" icon="fas fa-shopping-cart" color="linear-gradient(to right, #8b5cf6, #7c3aed)" />
+                <StatCard title="Total Offer Walls!" value="6" icon="fas fa-shopping-cart" color="linear-gradient(to right, #8b5cf6, #7c3aed)" onClick={() => onNavigate('OfferControl')} />
                 <StatCard title="Total Blog Posts!" value="15" icon="fas fa-newspaper" color="linear-gradient(to right, #14b8a6, #0d9488)" />
-                <StatCard title="Total Paid Out!" value={isStatsLoading ? '...' : `$${(stats?.totalPaidOut ?? 0).toFixed(2)}`} icon="fas fa-receipt" color="linear-gradient(to right, #3b82f6, #2563eb)" />
+                <StatCard title="Total Paid Out!" value={isStatsLoading ? '...' : `$${(stats?.totalPaidOut ?? 0).toFixed(2)}`} icon="fas fa-receipt" color="linear-gradient(to right, #3b82f6, #2563eb)" onClick={() => onNavigate('Withdrawals')} />
             </div>
 
             {/* Circle Stats */}
