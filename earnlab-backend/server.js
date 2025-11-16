@@ -390,6 +390,11 @@ app.patch('/api/admin/transactions/:id', authMiddleware, async (req, res) => {
             throw new Error('Transaction is not in a pending state.');
         }
 
+        const transactionAmount = Number(transaction.amount);
+        if (isNaN(transactionAmount)) {
+            throw new Error('Invalid transaction amount in database.');
+        }
+
         const updatedTransactionQuery = await client.query(
             'UPDATE transactions SET status = $1 WHERE id = $2 RETURNING *',
             [status, id]
@@ -399,18 +404,18 @@ app.patch('/api/admin/transactions/:id', authMiddleware, async (req, res) => {
         if (status === 'Completed') {
             await client.query(
                 'UPDATE users SET total_withdrawn = total_withdrawn + $1 WHERE id = $2',
-                [transaction.amount, transaction.user_id]
+                [transactionAmount, transaction.user_id]
             );
         } else if (status === 'Rejected') {
             await client.query(
                 'UPDATE users SET balance = balance + $1 WHERE id = $2',
-                [transaction.amount, transaction.user_id]
+                [transactionAmount, transaction.user_id]
             );
         }
 
         await client.query('COMMIT');
 
-        const notificationMessage = `Your withdrawal request for $${transaction.amount.toFixed(2)} has been ${status}.`;
+        const notificationMessage = `Your withdrawal request for $${transactionAmount.toFixed(2)} has been ${status}.`;
         await pool.query(
             'INSERT INTO notifications (user_id, message, link_to) VALUES ($1, $2, $3)',
             [transaction.user_id, notificationMessage, '/Profile']
