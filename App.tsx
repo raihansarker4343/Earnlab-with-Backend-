@@ -239,6 +239,7 @@ const App: React.FC = () => {
     localStorage.removeItem('user');
     setUser(null);
     setIsLoggedIn(false);
+    setIsAdmin(false);
     setBalance(0);
     setRedirectAfterLogin(null);
     setTransactions([]);
@@ -309,14 +310,30 @@ const App: React.FC = () => {
   // Effect for initial auth check from localStorage.
   useEffect(() => {
       const checkAuth = async () => {
+        setIsLoadingAuth(true);
         const token = localStorage.getItem('token');
         if (token) {
-          await fetchAndSetUserData();
+            try {
+                const parts = token.split('.');
+                if (parts.length !== 3) throw new Error('Invalid JWT structure');
+
+                const payload = JSON.parse(atob(parts[1]));
+                if (payload.role === 'admin') {
+                    setIsAdmin(true);
+                } else if (payload.id) {
+                    await fetchAndSetUserData();
+                } else {
+                    throw new Error('Invalid token payload');
+                }
+            } catch(e) {
+                console.error("Token validation failed, logging out.", e);
+                handleLogout();
+            }
         }
         setIsLoadingAuth(false);
       };
       checkAuth();
-  }, [fetchAndSetUserData]);
+  }, [fetchAndSetUserData, handleLogout]);
 
   // Effect to handle routing via hash changes.
   useEffect(() => {

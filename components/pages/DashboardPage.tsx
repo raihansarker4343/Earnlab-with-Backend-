@@ -70,7 +70,7 @@ const DashboardPage: React.FC = () => {
                                             {item.status}
                                         </span>
                                     </td>
-                                    <td className="px-6 py-4 font-semibold text-green-500 dark:text-green-400">${item.amount.toFixed(2)}</td>
+                                    <td className="px-6 py-4 font-semibold text-green-500 dark:text-green-400">${(Number(item.amount) || 0).toFixed(2)}</td>
                                     <td className="px-6 py-4">{item.date}</td>
                                 </tr>
                             ))

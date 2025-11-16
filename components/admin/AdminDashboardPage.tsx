@@ -216,7 +216,7 @@ const AdminDashboardPage: React.FC<{ onNavigate: (page: string) => void }> = ({ 
                                     <td className="p-2 font-medium">{tx.id}</td>
                                     <td className="p-2">{new Date(tx.date).toLocaleDateString()}</td>
                                     <td className="p-2">{tx.method}</td>
-                                    <td className="p-2 font-bold">${tx.amount.toFixed(2)}</td>
+                                    <td className="p-2 font-bold">${(Number(tx.amount) || 0).toFixed(2)}</td>
                                     <td className="p-2">
                                         <span className={`px-2 py-1 rounded-full text-xs font-semibold ${
                                             tx.status === 'Completed' ? 'bg-green-100 text-green-800' :
@@ -266,7 +266,7 @@ const AdminDashboardPage: React.FC<{ onNavigate: (page: string) => void }> = ({ 
                                         <td className="p-2 font-medium">{task.transactionId}</td>
                                         <td className="p-2">{new Date(task.date).toLocaleDateString()}</td>
                                         <td className="p-2">{task.email}</td>
-                                        <td className="p-2 font-bold">${task.amount.toFixed(2)}</td>
+                                        <td className="p-2 font-bold">${(Number(task.amount) || 0).toFixed(2)}</td>
                                         <td className="p-2">
                                             <button className="bg-slate-800 text-white px-3 py-1 rounded text-xs hover:bg-slate-700">Details</button>
                                         </td>

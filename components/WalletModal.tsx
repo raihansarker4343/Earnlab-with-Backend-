@@ -196,7 +196,7 @@ const TransactionHistory: React.FC = () => {
                                 </td>
                                 <td className="px-4 py-3 whitespace-nowrap">{tx.method}</td>
                                 <td className={`px-4 py-3 font-semibold whitespace-nowrap ${tx.type === 'Withdrawal' ? 'text-red-500' : 'text-green-500'}`}>
-                                    ${tx.amount.toFixed(2)}
+                                    ${(Number(tx.amount) || 0).toFixed(2)}
                                 </td>
                                 <td className="px-4 py-3">
                                     <span className={`text-xs font-semibold px-2 py-1 rounded-full ${getStatusBadge(tx.status)}`}>{tx.status}</span>
