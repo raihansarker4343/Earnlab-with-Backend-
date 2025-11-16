@@ -25,7 +25,7 @@ const SurveyProviderCard: React.FC<{ provider: SurveyProvider }> = ({ provider }
 
     return (
         <a
-            href={`/#/${encodeURIComponent(provider.name.replace(/\s/g, ''))}`}
+            href={`/#/${encodeURIComponent(provider.name.replace(/\s/g, '').toLowerCase())}`}
             onClick={handleClick}
             target="_blank"
             rel="noopener noreferrer"

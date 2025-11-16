@@ -158,7 +158,7 @@ const pageComponentsMap: { [key: string]: React.ReactNode } = {
 
 // Create a lookup map to find the original page name (with spaces) from a URL-friendly version (without spaces)
 const pageKeyLookup = Object.keys(pageComponentsMap).reduce((lookup, key) => {
-    const keyWithoutSpaces = key.replace(/\s/g, '');
+    const keyWithoutSpaces = key.replace(/\s/g, '').toLowerCase();
     lookup[keyWithoutSpaces] = key;
     return lookup;
 }, {} as Record<string, string>);
@@ -189,7 +189,8 @@ const getPageFromHash = (hash: string): string => {
 
     if (cleanPageKey.toLowerCase().startsWith('admin')) return cleanPageKey;
 
-    return pageKeyLookup[cleanPageKey] || Object.keys(pageComponentsMap).find(k => k === cleanPageKey) || 'Home';
+    const lookupKey = cleanPageKey.toLowerCase();
+    return pageKeyLookup[lookupKey] || 'Home';
 };
 
 
@@ -215,7 +216,7 @@ const App: React.FC = () => {
   const [isLoadingAuth, setIsLoadingAuth] = useState(true);
 
   const navigate = useCallback((pageName: string) => {
-      const pageKey = pageName === 'Home' ? '/' : `/${pageName.replace(/\s/g, '')}`;
+      const pageKey = pageName === 'Home' ? '/' : `/${pageName.replace(/\s/g, '').toLowerCase()}`;
       const newHash = `#${pageKey}`;
       if (window.location.hash !== newHash) {
           window.location.hash = newHash;

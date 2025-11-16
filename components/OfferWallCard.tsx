@@ -28,7 +28,7 @@ const OfferWallCard: React.FC<{ wall: OfferWall }> = ({ wall }) => {
 
     return (
         <a
-            href={`/#/${encodeURIComponent(wall.name.replace(/\s/g, ''))}`}
+            href={`/#/${encodeURIComponent(wall.name.replace(/\s/g, '').toLowerCase())}`}
             onClick={handleClick}
             target="_blank"
             rel="noopener noreferrer"
