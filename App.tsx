@@ -257,9 +257,12 @@ const App: React.FC = () => {
         setUser(sanitizedUser);
         setIsLoggedIn(true);
 
-        const targetPage = redirectAfterLogin || 'Home';
-        navigate(targetPage);
-        setRedirectAfterLogin(null);
+        // ONLY navigate if there's a specific page to redirect to after a manual login attempt.
+        // On initial auth check (when a new tab is opened), this avoids overwriting the URL hash.
+        if (redirectAfterLogin) {
+            navigate(redirectAfterLogin);
+            setRedirectAfterLogin(null);
+        }
         
         setIsSigninModalOpen(false);
         setIsSignupModalOpen(false);
