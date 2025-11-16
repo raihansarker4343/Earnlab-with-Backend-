@@ -85,9 +85,9 @@ const SignupModal: React.FC<SignupModalProps> = ({ isOpen, onClose, initialEmail
                 onClick={e => e.stopPropagation()}
             >
                 <div className="relative text-center mb-6">
-                    <h2 className="text-3xl font-bold">Don't leave without your gift!</h2>
+                    <h2 className="text-3xl font-bold">Create Your Account</h2>
                      <p className="text-slate-300 mt-2">
-                        Sign up now and receive <span className="font-bold text-[#22c55e]">$5.00</span> as a sign up bonus! ✨
+                        Join our community to start earning today.
                     </p>
                     <button 
                         onClick={onClose} 

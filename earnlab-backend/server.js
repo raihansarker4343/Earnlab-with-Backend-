@@ -31,28 +31,36 @@ app.post('/api/auth/signup', async (req, res) => {
     if (!email || !password || !username) {
         return res.status(400).json({ message: 'All fields are required' });
     }
+    const client = await pool.connect();
     try {
+        await client.query('BEGIN');
         const salt = await bcrypt.genSalt(10);
         const password_hash = await bcrypt.hash(password, salt);
         
-        // Create a default user object
-        const newUserQuery = await pool.query(
-            `INSERT INTO users (username, email, password_hash, avatar_url, referral_earnings, total_earned) 
-             VALUES ($1, $2, $3, $4, $5, $6) 
+        // Create a default user object with an explicit total_earned of 0
+        const newUserQuery = await client.query(
+            `INSERT INTO users (username, email, password_hash, avatar_url, total_earned) 
+             VALUES ($1, $2, $3, $4, 0.00) 
              RETURNING id, username, email, avatar_url, created_at, total_earned, last_30_days_earned, completed_tasks, total_wagered, total_profit, total_withdrawn, total_referrals, referral_earnings, xp, rank`,
-            [username, email, password_hash, `https://i.pravatar.cc/150?u=${username}`, 25.75, 50.00] // Start with some earnings
+            [username, email, password_hash, `https://i.pravatar.cc/150?u=${username}`]
         );
 
         const user = newUserQuery.rows[0];
+
+        await client.query('COMMIT');
+        
         const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET, { expiresIn: '7d' });
         
         res.status(201).json({ token, user: snakeToCamel(user) });
     } catch (error) {
+        await client.query('ROLLBACK');
         console.error(error);
         if (error.code === '23505') { // Unique constraint violation
              return res.status(400).json({ message: 'Username or email already exists.' });
         }
         res.status(500).json({ message: 'Server error during signup.' });
+    } finally {
+        client.release();
     }
 });
 

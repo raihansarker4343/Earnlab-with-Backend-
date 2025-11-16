@@ -140,7 +140,7 @@ const DashboardPage: React.FC = () => {
                         <StatCard title="Last 30 Days Earned" value={`$${(user.last30DaysEarned || 0).toFixed(2)}`} icon="fas fa-calendar-alt" />
                         <StatCard title="Completed Tasks" value={(user.completedTasks || 0).toString()} icon="fas fa-check-circle" />
                         <StatCard title="Total Wagered" value={`$${(user.totalWagered || 0).toFixed(2)}`} icon="fas fa-dice" />
-                        <StatCard title="Total Profit" value={`$${(user.totalProfit || 0).toFixed(2)}`} icon="fas fa-chart-line" />
+                        <StatCard title="Total Profit" value={`$${(user.referralEarnings || 0).toFixed(2)}`} icon="fas fa-chart-line" />
                         <StatCard title="Total Withdrawn" value={`$${(user.totalWithdrawn || 0).toFixed(2)}`} icon="fas fa-university" />
                     </>
                 )}
