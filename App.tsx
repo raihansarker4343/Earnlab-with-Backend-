@@ -65,7 +65,7 @@ export const AppContext = React.createContext<{
   setBalance: React.Dispatch<React.SetStateAction<number>>;
   transactions: Transaction[];
   setTransactions: React.Dispatch<React.SetStateAction<Transaction[]>>;
-  handleLogin: (token: string, user: User) => Promise<void>;
+  handleLogin: (token: string) => Promise<void>;
   handleLogout: () => void;
   isWalletModalOpen: boolean;
   setIsWalletModalOpen: React.Dispatch<React.SetStateAction<boolean>>;
@@ -234,81 +234,83 @@ const App: React.FC = () => {
     localStorage.removeItem('user');
     setUser(null);
     setIsLoggedIn(false);
+    setBalance(0);
     setRedirectAfterLogin(null);
     setTransactions([]);
     navigate('Home');
   }, [navigate]);
 
-  const handleLogin = useCallback(async (token: string, userData: User) => {
-    localStorage.setItem('token', token);
-    const sanitizedUser = sanitizeUser(userData);
-    localStorage.setItem('user', JSON.stringify(sanitizedUser));
-    
+  const fetchAndSetUserData = useCallback(async () => {
+    const token = localStorage.getItem('token');
+    if (!token) {
+        if (isLoggedIn) handleLogout();
+        return;
+    }
+
     try {
-        const response = await fetch(`${API_URL}/api/transactions`, {
-            headers: { 'Authorization': `Bearer ${token}` }
-        });
-        if (!response.ok) throw new Error('Failed to fetch transactions');
-        const userTransactions: Transaction[] = await response.json();
+        const [userRes, transactionsRes] = await Promise.all([
+            fetch(`${API_URL}/api/auth/me`, { headers: { 'Authorization': `Bearer ${token}` } }),
+            fetch(`${API_URL}/api/transactions`, { headers: { 'Authorization': `Bearer ${token}` } })
+        ]);
+
+        if (!userRes.ok || !transactionsRes.ok) {
+            throw new Error('Authentication failed or server error.');
+        }
+
+        const userData: User = await userRes.json();
+        const userTransactions: Transaction[] = await transactionsRes.json();
         
-        // FIX: The amount from the backend is a string, convert it to a number.
+        const sanitizedUser = sanitizeUser(userData);
+        localStorage.setItem('user', JSON.stringify(sanitizedUser));
+
         const parsedTransactions = userTransactions.map(tx => ({
             ...tx,
             amount: Number(tx.amount)
         }));
         
-        setTransactions(parsedTransactions);
-        
-        setBalance(sanitizedUser.balance || 0);
         setUser(sanitizedUser);
+        setBalance(sanitizedUser.balance || 0);
+        setTransactions(parsedTransactions);
         setIsLoggedIn(true);
 
-        // ONLY navigate if there's a specific page to redirect to after a manual login attempt.
-        // On initial auth check (when a new tab is opened), this avoids overwriting the URL hash.
-        if (redirectAfterLogin) {
-            navigate(redirectAfterLogin);
-            setRedirectAfterLogin(null);
-        }
-        
-        setIsSigninModalOpen(false);
-        setIsSignupModalOpen(false);
     } catch (error) {
-        console.error("Login failed:", error);
-        handleLogout(); // Log out if we can't fetch essential data
+        console.error("Failed to fetch user data:", error);
+        handleLogout();
     }
-  }, [navigate, redirectAfterLogin, handleLogout]);
+  }, [isLoggedIn, handleLogout]);
+
+  const handleLogin = useCallback(async (token: string) => {
+    localStorage.setItem('token', token);
+    await fetchAndSetUserData();
+    
+    if (redirectAfterLogin) {
+        navigate(redirectAfterLogin);
+        setRedirectAfterLogin(null);
+    }
+    
+    setIsSigninModalOpen(false);
+    setIsSignupModalOpen(false);
+  }, [fetchAndSetUserData, redirectAfterLogin, navigate]);
 
   // Effect for initial auth check from localStorage.
   useEffect(() => {
       const checkAuth = async () => {
-        try {
-          const token = localStorage.getItem('token');
-          const storedUser = localStorage.getItem('user');
-          if (token && storedUser) {
-              const userData = JSON.parse(storedUser);
-              if (userData && typeof userData === 'object') {
-                  await handleLogin(token, userData as User);
-              }
-          }
-        } catch (error) {
-          console.error("Failed to parse user data from localStorage", error);
-          localStorage.removeItem('token');
-          localStorage.removeItem('user');
-        } finally {
-          setIsLoadingAuth(false);
+        const token = localStorage.getItem('token');
+        if (token) {
+          await fetchAndSetUserData();
         }
+        setIsLoadingAuth(false);
       };
       checkAuth();
-  }, [handleLogin]);
+  }, [fetchAndSetUserData]);
 
   // Effect to handle routing via hash changes.
   useEffect(() => {
-    if (isLoadingAuth) return; // Wait for auth check to complete
+    if (isLoadingAuth) return;
 
     const handleHashChange = () => {
         const pageFromHash = getPageFromHash(window.location.hash);
 
-        // If it's an admin page, just set the page and let the main component's logic handle it
         if (pageFromHash.toLowerCase().startsWith('admin')) {
             setPage(pageFromHash);
             return;
@@ -327,13 +329,26 @@ const App: React.FC = () => {
     };
 
     window.addEventListener('hashchange', handleHashChange);
-    handleHashChange(); // Handle initial page load
+    handleHashChange();
 
     return () => {
       window.removeEventListener('hashchange', handleHashChange);
     };
   }, [isLoadingAuth, isLoggedIn, navigate]);
   
+  // Effect to refetch data when tab becomes visible/focused
+  useEffect(() => {
+    const handleFocus = () => {
+      if (localStorage.getItem('token')) {
+        fetchAndSetUserData();
+      }
+    };
+    window.addEventListener('focus', handleFocus);
+    return () => {
+      window.removeEventListener('focus', handleFocus);
+    };
+  }, [fetchAndSetUserData]);
+
   const openSignupModal = (email = '') => {
       setSignupInitialEmail(email);
       setIsSignupModalOpen(true);

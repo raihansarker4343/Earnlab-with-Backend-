@@ -91,6 +91,24 @@ app.post('/api/auth/signin', async (req, res) => {
     }
 });
 
+app.get('/api/auth/me', authMiddleware, async (req, res) => {
+    try {
+        const result = await pool.query(
+            `SELECT id, username, email, avatar_url, created_at AS joined_date, total_earned, balance, last_30_days_earned, completed_tasks, total_wagered, total_profit, total_withdrawn, total_referrals, referral_earnings, xp, rank, earn_id 
+             FROM users WHERE id = $1`, 
+            [req.user.id]
+        );
+        if (result.rows.length === 0) {
+            return res.status(404).json({ message: 'User not found.' });
+        }
+        const user = result.rows[0];
+        res.json(snakeToCamel(user));
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Server error fetching user profile.' });
+    }
+});
+
 app.post('/api/auth/admin-login', async (req, res) => {
     const { email, password } = req.body;
     try {

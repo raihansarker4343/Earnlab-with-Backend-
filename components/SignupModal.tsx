@@ -56,7 +56,7 @@ const SignupModal: React.FC<SignupModalProps> = ({ isOpen, onClose, initialEmail
             });
             const data = await response.json();
             if (response.ok) {
-                handleLogin(data.token, data.user);
+                handleLogin(data.token);
             } else {
                 setError(data.message || 'Failed to sign up.');
             }
