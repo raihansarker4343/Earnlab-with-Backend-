@@ -22,11 +22,16 @@ const AdminLoginPage: React.FC<AdminLoginPageProps> = ({ onLoginSuccess }) => {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ email, password }),
             });
-
+            
+            const data = await response.json();
             if (response.ok) {
-                onLoginSuccess();
+                if (data.token) {
+                    localStorage.setItem('token', data.token);
+                    onLoginSuccess();
+                } else {
+                     setError('Login succeeded but no token was received.');
+                }
             } else {
-                const data = await response.json();
                 setError(data.message || 'Invalid credentials.');
             }
         } catch (err) {

@@ -93,11 +93,21 @@ app.post('/api/auth/signin', async (req, res) => {
 
 app.post('/api/auth/admin-login', async (req, res) => {
     const { email, password } = req.body;
-    // This is a mock admin login. For a real app, you would check credentials against the 'admins' table.
-    if (email === 'admin@earnlab.com' && password === 'password') {
-         res.status(200).json({ message: 'Admin login successful' });
-    } else {
-        res.status(401).json({ message: 'Invalid admin credentials' });
+    try {
+        const result = await pool.query('SELECT * FROM admins WHERE email = $1', [email]);
+        if (result.rows.length === 0) {
+            return res.status(401).json({ message: 'Invalid credentials' });
+        }
+        const admin = result.rows[0];
+        const isMatch = await bcrypt.compare(password, admin.password_hash);
+        if (!isMatch) {
+            return res.status(401).json({ message: 'Invalid credentials' });
+        }
+        const token = jwt.sign({ id: admin.id, role: 'admin' }, process.env.JWT_SECRET, { expiresIn: '1d' });
+        res.json({ token, message: 'Admin login successful' });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Server error during admin signin.' });
     }
 });
 
@@ -161,6 +171,66 @@ app.post('/api/transactions/withdraw', authMiddleware, async (req, res) => {
 });
 
 // --- ADMIN ROUTES ---
+
+app.get('/api/admin/stats', authMiddleware, async (req, res) => {
+    try {
+        const stats = {};
+        const totalUsersRes = await pool.query('SELECT COUNT(*) FROM users');
+        stats.totalUsers = parseInt(totalUsersRes.rows[0].count, 10);
+
+        const newUsersRes = await pool.query("SELECT COUNT(*) FROM users WHERE created_at >= NOW() - INTERVAL '30 days'");
+        stats.newUsersLast30Days = parseInt(newUsersRes.rows[0].count, 10);
+
+        const totalTasksRes = await pool.query("SELECT COUNT(*) FROM transactions WHERE type = 'Task Reward' AND status = 'Completed'");
+        stats.tasksCompletedAllTime = parseInt(totalTasksRes.rows[0].count, 10);
+
+        const recentTasksRes = await pool.query("SELECT COUNT(*) FROM transactions WHERE type = 'Task Reward' AND status = 'Completed' AND date >= NOW() - INTERVAL '30 days'");
+        stats.tasksCompletedLast30Days = parseInt(recentTasksRes.rows[0].count, 10);
+
+        const totalPaidOutRes = await pool.query("SELECT SUM(amount) FROM transactions WHERE type = 'Withdrawal' AND status = 'Completed'");
+        stats.totalPaidOut = parseFloat(totalPaidOutRes.rows[0].sum) || 0;
+        
+        const pendingWithdrawalsRes = await pool.query("SELECT COUNT(*) FROM transactions WHERE type = 'Withdrawal' AND status = 'Pending'");
+        stats.pendingWithdrawals = parseInt(pendingWithdrawalsRes.rows[0].count, 10);
+        
+        res.json(stats);
+    } catch (error) {
+        console.error('Error fetching admin stats:', error);
+        res.status(500).json({ message: 'Server error fetching stats.' });
+    }
+});
+
+app.get('/api/admin/recent-tasks', authMiddleware, async (req, res) => {
+    try {
+        const result = await pool.query(`
+            SELECT t.id AS transaction_id, t.date, u.email, t.amount
+            FROM transactions t
+            JOIN users u ON t.user_id = u.id
+            WHERE t.type = 'Task Reward' AND t.status = 'Completed'
+            ORDER BY t.date DESC
+            LIMIT 5
+        `);
+        res.json(result.rows.map(snakeToCamel));
+    } catch (error) {
+        console.error('Error fetching recent tasks:', error);
+        res.status(500).json({ message: 'Server error fetching recent tasks.' });
+    }
+});
+
+app.get('/api/admin/recent-signups', authMiddleware, async (req, res) => {
+    try {
+        const result = await pool.query(`
+            SELECT email, created_at AS joined_date
+            FROM users
+            ORDER BY created_at DESC
+            LIMIT 5
+        `);
+        res.json(result.rows.map(snakeToCamel));
+    } catch (error) {
+        console.error('Error fetching recent signups:', error);
+        res.status(500).json({ message: 'Server error fetching recent signups.' });
+    }
+});
 
 // Get all withdrawal transactions for admin panel
 app.get('/api/admin/transactions', authMiddleware, async (req, res) => {
@@ -252,8 +322,27 @@ const snakeToCamel = (obj) => {
     }, {});
 };
 
+const seedAdmin = async () => {
+    const client = await pool.connect();
+    try {
+        const adminCheck = await client.query('SELECT * FROM admins WHERE email = $1', ['admin@earnlab.com']);
+        if (adminCheck.rows.length === 0) {
+            console.log('Creating default admin user...');
+            const salt = await bcrypt.genSalt(10);
+            const adminPasswordHash = await bcrypt.hash('password', salt);
+            await client.query('INSERT INTO admins (email, password_hash) VALUES ($1, $2)', ['admin@earnlab.com', adminPasswordHash]);
+            console.log('Default admin user created.');
+        }
+    } catch (err) {
+        console.error('Error seeding admin user:', err.stack);
+    } finally {
+        client.release();
+    }
+};
+
 // Start Server
 app.listen(port, () => {
   initDb();
+  seedAdmin();
   console.log(`Server running on http://localhost:${port}`);
 });

@@ -1,7 +1,26 @@
 import React, { useContext, useState, useEffect } from 'react';
 import { AppContext } from '../../App';
-import type { Transaction, User } from '../../types';
+import type { Transaction } from '../../types';
 import { API_URL } from '../../constants';
+
+interface AdminStats {
+    totalUsers: number;
+    newUsersLast30Days: number;
+    tasksCompletedAllTime: number;
+    tasksCompletedLast30Days: number;
+    totalPaidOut: number;
+    pendingWithdrawals: number;
+}
+interface RecentTask {
+    transactionId: string;
+    date: string;
+    email: string;
+    amount: number;
+}
+interface RecentSignup {
+    email: string;
+    joinedDate: string;
+}
 
 const StatCard: React.FC<{ title: string, value: string, icon: string, color: string }> = ({ title, value, icon, color }) => (
     <div className={`p-5 rounded-lg text-white shadow-md`} style={{ background: color }}>
@@ -51,54 +70,64 @@ const CircleStat: React.FC<{ title: string, value: string, percentage: number, c
     </div>
 );
 
-const recentTaskCompletions = [
-    { transaction: 'DnRQ1762848905', date: '2025-11-11', user: 'testuser1@gmail.com', amount: '$28.13' },
-    { transaction: 'ZVcvy1762669353', date: '2025-11-09', user: 'web4evrs@gmail.com', amount: '$47.85' },
-    { transaction: 'ft7V1762669281', date: '2025-11-09', user: 'eliassemboy@gmail.com', amount: '$24.01' },
-    { transaction: '8in61762004826', date: '2025-11-01', user: 'alazarcherzav142@gmail.com', amount: '$1.11' },
-];
-
-const recentSignups = [
-    { email: 'testbd@gmail.com', joined: '2025-10-06 02:46:54' },
-    { email: 'web4evrs@gmail.com', joined: '2025-09-08 17:46:59' },
-    { email: 'eliassemboy@gmail.com', joined: '2025-07-26 14:06:50' },
-    { email: 'alazarcherzav142@gmail.com', joined: '2025-06-20 16:27:39' },
-];
-
-
 const AdminDashboardPage: React.FC = () => {
-    const { setUser, setBalance, setTransactions: setGlobalTransactions } = useContext(AppContext);
+    const { setTransactions: setGlobalTransactions } = useContext(AppContext);
     const [withdrawalRequests, setWithdrawalRequests] = useState<Transaction[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
-    const fetchWithdrawals = async () => {
+    const [stats, setStats] = useState<AdminStats | null>(null);
+    const [isStatsLoading, setIsStatsLoading] = useState(true);
+
+    const [recentTasks, setRecentTasks] = useState<RecentTask[]>([]);
+    const [recentSignups, setRecentSignups] = useState<RecentSignup[]>([]);
+    const [isTablesLoading, setIsTablesLoading] = useState(true);
+
+    const fetchData = async () => {
         const token = localStorage.getItem('token');
         if (!token) {
             setError("Authentication token not found.");
             setIsLoading(false);
+            setIsStatsLoading(false);
+            setIsTablesLoading(false);
             return;
         }
+
         try {
-            setIsLoading(true);
-            setError(null);
-            const response = await fetch(`${API_URL}/api/admin/transactions`, {
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
-            if (!response.ok) throw new Error("Failed to fetch withdrawal requests.");
-            const data: Transaction[] = await response.json();
-            // FIX: The amount from the backend is a string, convert it to a number.
-            const parsedData = data.map(tx => ({...tx, amount: Number(tx.amount)}));
-            setWithdrawalRequests(parsedData);
+            const [withdrawalsRes, statsRes, tasksRes, signupsRes] = await Promise.all([
+                fetch(`${API_URL}/api/admin/transactions`, { headers: { 'Authorization': `Bearer ${token}` } }),
+                fetch(`${API_URL}/api/admin/stats`, { headers: { 'Authorization': `Bearer ${token}` } }),
+                fetch(`${API_URL}/api/admin/recent-tasks`, { headers: { 'Authorization': `Bearer ${token}` } }),
+                fetch(`${API_URL}/api/admin/recent-signups`, { headers: { 'Authorization': `Bearer ${token}` } }),
+            ]);
+
+            if (!withdrawalsRes.ok) throw new Error("Failed to fetch withdrawal requests.");
+            const withdrawalsData: Transaction[] = await withdrawalsRes.json();
+            setWithdrawalRequests(withdrawalsData.map(tx => ({...tx, amount: Number(tx.amount)})));
+
+            if (!statsRes.ok) throw new Error("Failed to fetch dashboard stats.");
+            const statsData: AdminStats = await statsRes.json();
+            setStats(statsData);
+            
+            if (!tasksRes.ok) throw new Error("Failed to fetch recent tasks.");
+            const tasksData = await tasksRes.json();
+            setRecentTasks(tasksData);
+
+            if (!signupsRes.ok) throw new Error("Failed to fetch recent signups.");
+            const signupsData = await signupsRes.json();
+            setRecentSignups(signupsData);
+
         } catch (err: any) {
             setError(err.message);
         } finally {
             setIsLoading(false);
+            setIsStatsLoading(false);
+            setIsTablesLoading(false);
         }
     };
 
     useEffect(() => {
-        fetchWithdrawals();
+        fetchData();
     }, []);
 
     const updateTransactionStatus = async (txId: string, status: 'Completed' | 'Rejected'): Promise<Transaction | null> => {
@@ -118,15 +147,14 @@ const AdminDashboardPage: React.FC = () => {
                 throw new Error(errData.message || 'Failed to update transaction.');
             }
             const updatedTx: Transaction = await response.json();
-
-            // FIX: The amount from the backend is a string, convert it to a number.
-            const parsedUpdatedTx = {
-                ...updatedTx,
-                amount: Number(updatedTx.amount)
-            };
+            const parsedUpdatedTx = { ...updatedTx, amount: Number(updatedTx.amount) };
             
             setWithdrawalRequests(prev => prev.map(t => t.id === txId ? parsedUpdatedTx : t));
             setGlobalTransactions(prev => prev.map(t => t.id === txId ? parsedUpdatedTx : t));
+            
+            // Re-fetch stats to show updated totals
+            const statsRes = await fetch(`${API_URL}/api/admin/stats`, { headers: { 'Authorization': `Bearer ${token}` } });
+            if (statsRes.ok) setStats(await statsRes.json());
             
             return parsedUpdatedTx;
         } catch (error: any) {
@@ -136,59 +164,31 @@ const AdminDashboardPage: React.FC = () => {
     };
 
     const handleApprove = async (txId: string) => {
-        const tx = withdrawalRequests.find(t => t.id === txId);
-        if (!tx) return;
-        
-        const updatedTx = await updateTransactionStatus(txId, 'Completed');
-        if (!updatedTx) return;
-
-        // The backend updated user's total_withdrawn. We update the local user state
-        // to match, so the UI is consistent without a page reload.
-        setUser(prevUser => {
-            if (!prevUser) return null;
-            // This assumes the admin is acting on the currently logged in user's transaction,
-            // which fits the single-user simulation of this app.
-            const newTotalWithdrawn = (prevUser.totalWithdrawn || 0) + tx.amount;
-            const updatedUser = { ...prevUser, totalWithdrawn: newTotalWithdrawn };
-            localStorage.setItem('user', JSON.stringify(updatedUser)); // Persist change locally
-            return updatedUser;
-        });
+        await updateTransactionStatus(txId, 'Completed');
     };
 
     const handleReject = async (txId: string) => {
-        const tx = withdrawalRequests.find(t => t.id === txId);
-        if (!tx) return;
-        
-        const updatedTx = await updateTransactionStatus(txId, 'Rejected');
-        if (!updatedTx) return;
-
-        // For this simulation, if the rejected transaction belongs to the current user,
-        // we add the amount back to their balance.
-        // In a real multi-user system, this logic would be more complex.
-        const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
-        if(currentUser && currentUser.id === tx.userId) {
-             setBalance(prevBalance => prevBalance + tx.amount);
-        }
+        await updateTransactionStatus(txId, 'Rejected');
     };
 
     return (
         <div className="space-y-6">
             {/* Stat Cards */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                <StatCard title="Pending Withdrawals!" value={withdrawalRequests.filter(w => w.status === 'Pending').length.toString()} icon="fas fa-dollar-sign" color="linear-gradient(to right, #ef4444, #dc2626)" />
+                <StatCard title="Pending Withdrawals!" value={isStatsLoading ? '...' : (stats?.pendingWithdrawals ?? 0).toString()} icon="fas fa-dollar-sign" color="linear-gradient(to right, #ef4444, #dc2626)" />
                 <StatCard title="Active Offers!" value="414" icon="fas fa-dollar-sign" color="linear-gradient(to right, #f97316, #ea580c)" />
-                <StatCard title="Completed Tasks!" value="12" icon="fas fa-check-circle" color="linear-gradient(to right, #22c55e, #16a34a)" />
+                <StatCard title="Completed Tasks!" value={isStatsLoading ? '...' : (stats?.tasksCompletedAllTime ?? 0).toString()} icon="fas fa-check-circle" color="linear-gradient(to right, #22c55e, #16a34a)" />
                 <StatCard title="Total Offer Walls!" value="6" icon="fas fa-shopping-cart" color="linear-gradient(to right, #8b5cf6, #7c3aed)" />
                 <StatCard title="Total Blog Posts!" value="15" icon="fas fa-newspaper" color="linear-gradient(to right, #14b8a6, #0d9488)" />
-                <StatCard title="Total Paid Out!" value="$0" icon="fas fa-receipt" color="linear-gradient(to right, #3b82f6, #2563eb)" />
+                <StatCard title="Total Paid Out!" value={isStatsLoading ? '...' : `$${(stats?.totalPaidOut ?? 0).toFixed(2)}`} icon="fas fa-receipt" color="linear-gradient(to right, #3b82f6, #2563eb)" />
             </div>
 
             {/* Circle Stats */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                <CircleStat title="New Users (Last 30 Days)" value="0" percentage={0} color="text-yellow-500" />
-                <CircleStat title="Total Users (All Time)" value="142" percentage={100} color="text-cyan-500" />
-                <CircleStat title="Tasks Completed (Last 30 days)" value="0" percentage={0} color="text-indigo-500" />
-                <CircleStat title="Tasks Completed (All Time)" value="12" percentage={100} color="text-green-500" />
+                <CircleStat title="New Users (Last 30 Days)" value={isStatsLoading ? '...' : (stats?.newUsersLast30Days ?? 0).toString()} percentage={isStatsLoading ? 0 : Math.min(100, ((stats?.newUsersLast30Days ?? 0) / 50) * 100)} color="text-yellow-500" />
+                <CircleStat title="Total Users (All Time)" value={isStatsLoading ? '...' : (stats?.totalUsers ?? 0).toString()} percentage={100} color="text-cyan-500" />
+                <CircleStat title="Tasks Completed (Last 30 days)" value={isStatsLoading ? '...' : (stats?.tasksCompletedLast30Days ?? 0).toString()} percentage={isStatsLoading ? 0 : Math.min(100, ((stats?.tasksCompletedLast30Days ?? 0) / 100) * 100)} color="text-indigo-500" />
+                <CircleStat title="Tasks Completed (All Time)" value={isStatsLoading ? '...' : (stats?.tasksCompletedAllTime ?? 0).toString()} percentage={100} color="text-green-500" />
             </div>
 
             {/* Withdrawal Requests Table */}
@@ -246,10 +246,11 @@ const AdminDashboardPage: React.FC = () => {
                 <div className="bg-white p-5 rounded-lg shadow-md">
                     <h3 className="font-bold text-lg mb-4 text-slate-800">Recent Task Completions</h3>
                     <div className="overflow-x-auto">
+                        {isTablesLoading ? <p>Loading...</p> : 
                         <table className="w-full text-sm">
                             <thead>
                                 <tr className="text-left text-slate-500">
-                                    <th className="p-2">Transaction Number</th>
+                                    <th className="p-2">Transaction ID</th>
                                     <th className="p-2">Date</th>
                                     <th className="p-2">User</th>
                                     <th className="p-2">Amount</th>
@@ -257,12 +258,12 @@ const AdminDashboardPage: React.FC = () => {
                                 </tr>
                             </thead>
                             <tbody className="text-slate-700">
-                                {recentTaskCompletions.map(task => (
-                                    <tr key={task.transaction} className="border-t border-slate-200">
-                                        <td className="p-2 font-medium">{task.transaction}</td>
-                                        <td className="p-2">{task.date}</td>
-                                        <td className="p-2">{task.user}</td>
-                                        <td className="p-2 font-bold">{task.amount}</td>
+                                {recentTasks.map(task => (
+                                    <tr key={task.transactionId} className="border-t border-slate-200">
+                                        <td className="p-2 font-medium">{task.transactionId}</td>
+                                        <td className="p-2">{new Date(task.date).toLocaleDateString()}</td>
+                                        <td className="p-2">{task.email}</td>
+                                        <td className="p-2 font-bold">${task.amount.toFixed(2)}</td>
                                         <td className="p-2">
                                             <button className="bg-slate-800 text-white px-3 py-1 rounded text-xs hover:bg-slate-700">Details</button>
                                         </td>
@@ -270,11 +271,13 @@ const AdminDashboardPage: React.FC = () => {
                                 ))}
                             </tbody>
                         </table>
+                        }
                     </div>
                 </div>
                 <div className="bg-white p-5 rounded-lg shadow-md">
                     <h3 className="font-bold text-lg mb-4 text-slate-800">Recent Signups</h3>
                      <div className="overflow-x-auto">
+                        {isTablesLoading ? <p>Loading...</p> :
                         <table className="w-full text-sm">
                             <thead>
                                 <tr className="text-left text-slate-500">
@@ -287,7 +290,7 @@ const AdminDashboardPage: React.FC = () => {
                                 {recentSignups.map(user => (
                                      <tr key={user.email} className="border-t border-slate-200">
                                         <td className="p-2 font-medium">{user.email}</td>
-                                        <td className="p-2">{user.joined}</td>
+                                        <td className="p-2">{new Date(user.joinedDate).toLocaleString()}</td>
                                         <td className="p-2">
                                             <button className="bg-slate-800 text-white px-3 py-1 rounded text-xs hover:bg-slate-700">Details</button>
                                         </td>
@@ -295,6 +298,7 @@ const AdminDashboardPage: React.FC = () => {
                                 ))}
                             </tbody>
                         </table>
+                        }
                     </div>
                 </div>
             </div>

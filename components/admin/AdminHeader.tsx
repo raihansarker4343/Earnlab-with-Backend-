@@ -10,6 +10,7 @@ const AdminHeader: React.FC<HeaderProps> = ({ onMenuClick }) => {
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
     const handleLogout = () => {
+        localStorage.removeItem('token');
         setIsAdmin(false);
     };
 
