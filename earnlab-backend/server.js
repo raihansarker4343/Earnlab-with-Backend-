@@ -37,11 +37,10 @@ app.post('/api/auth/signup', async (req, res) => {
         const salt = await bcrypt.genSalt(10);
         const password_hash = await bcrypt.hash(password, salt);
         
-        // Create a default user object with an explicit total_earned of 0
         const newUserQuery = await client.query(
             `INSERT INTO users (username, email, password_hash, avatar_url, total_earned) 
              VALUES ($1, $2, $3, $4, 0.00) 
-             RETURNING id, username, email, avatar_url, created_at, total_earned, balance, last_30_days_earned, completed_tasks, total_wagered, total_profit, total_withdrawn, total_referrals, referral_earnings, xp, rank`,
+             RETURNING id, username, email, avatar_url, created_at AS joined_date, total_earned, balance, last_30_days_earned, completed_tasks, total_wagered, total_profit, total_withdrawn, total_referrals, referral_earnings, xp, rank`,
             [username, email, password_hash, `https://i.pravatar.cc/150?u=${username}`]
         );
 
@@ -58,7 +57,7 @@ app.post('/api/auth/signup', async (req, res) => {
         if (error.code === '23505') { // Unique constraint violation
              return res.status(400).json({ message: 'Username or email already exists.' });
         }
-        res.status(500).json({ message: 'Server error during signup.' });
+        res.status(500).json({ message: error.message || 'Server error during signup.' });
     } finally {
         client.release();
     }
@@ -67,7 +66,11 @@ app.post('/api/auth/signup', async (req, res) => {
 app.post('/api/auth/signin', async (req, res) => {
     const { email, password } = req.body;
     try {
-        const result = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
+        const result = await pool.query(
+            `SELECT id, username, email, password_hash, avatar_url, created_at AS joined_date, total_earned, balance, last_30_days_earned, completed_tasks, total_wagered, total_profit, total_withdrawn, total_referrals, referral_earnings, xp, rank 
+             FROM users WHERE email = $1`, 
+            [email]
+        );
         if (result.rows.length === 0) {
             return res.status(400).json({ message: 'Invalid credentials' });
         }
