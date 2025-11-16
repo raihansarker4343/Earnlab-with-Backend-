@@ -5,7 +5,7 @@ import LoggedOutHeader from './components/LoggedOutHeader';
 import WalletModal from './components/WalletModal';
 import LiveEarningFeed from './components/LiveEarningFeed';
 import Footer from './components/Footer';
-import type { User, Transaction } from './types';
+import type { User, Transaction, Notification } from './types';
 import LoggedOutSidebar from './components/LoggedOutSidebar';
 import SigninModal from './components/SigninModal';
 import SignupModal from './components/SignupModal';
@@ -65,6 +65,8 @@ export const AppContext = React.createContext<{
   setBalance: React.Dispatch<React.SetStateAction<number>>;
   transactions: Transaction[];
   setTransactions: React.Dispatch<React.SetStateAction<Transaction[]>>;
+  notifications: Notification[];
+  setNotifications: React.Dispatch<React.SetStateAction<Notification[]>>;
   handleLogin: (token: string) => Promise<void>;
   handleLogout: () => void;
   isWalletModalOpen: boolean;
@@ -95,6 +97,8 @@ export const AppContext = React.createContext<{
   setBalance: () => {},
   transactions: [],
   setTransactions: () => {},
+  notifications: [],
+  setNotifications: () => {},
   handleLogin: async () => {},
   handleLogout: () => {},
   isWalletModalOpen: false,
@@ -205,6 +209,7 @@ const App: React.FC = () => {
   const [user, setUser] = useState<User | null>(null);
   const [balance, setBalance] = useState(0);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [notifications, setNotifications] = useState<Notification[]>([]);
   const [isWalletModalOpen, setIsWalletModalOpen] = useState(false);
   const [isSupportChatModalOpen, setIsSupportChatModalOpen] = useState(false);
   const [isSigninModalOpen, setIsSigninModalOpen] = useState(false);
@@ -237,6 +242,7 @@ const App: React.FC = () => {
     setBalance(0);
     setRedirectAfterLogin(null);
     setTransactions([]);
+    setNotifications([]);
     navigate('Home');
   }, [navigate]);
 
@@ -248,9 +254,10 @@ const App: React.FC = () => {
     }
 
     try {
-        const [userRes, transactionsRes] = await Promise.all([
+        const [userRes, transactionsRes, notificationsRes] = await Promise.all([
             fetch(`${API_URL}/api/auth/me`, { headers: { 'Authorization': `Bearer ${token}` } }),
-            fetch(`${API_URL}/api/transactions`, { headers: { 'Authorization': `Bearer ${token}` } })
+            fetch(`${API_URL}/api/transactions`, { headers: { 'Authorization': `Bearer ${token}` } }),
+            fetch(`${API_URL}/api/notifications`, { headers: { 'Authorization': `Bearer ${token}` } })
         ]);
 
         if (!userRes.ok || !transactionsRes.ok) {
@@ -272,6 +279,13 @@ const App: React.FC = () => {
         setBalance(sanitizedUser.balance || 0);
         setTransactions(parsedTransactions);
         setIsLoggedIn(true);
+
+        if (notificationsRes.ok) {
+            const notificationsData: Notification[] = await notificationsRes.json();
+            setNotifications(notificationsData);
+        } else {
+            console.error('Failed to fetch notifications');
+        }
 
     } catch (error) {
         console.error("Failed to fetch user data:", error);
@@ -355,7 +369,9 @@ const App: React.FC = () => {
   };
 
   const appContextValue = { 
-      isLoggedIn, user, setUser, balance, setBalance, transactions, setTransactions, handleLogin, handleLogout,
+      isLoggedIn, user, setUser, balance, setBalance, transactions, setTransactions,
+      notifications, setNotifications,
+      handleLogin, handleLogout,
       isWalletModalOpen, setIsWalletModalOpen, isSigninModalOpen, 
       setIsSigninModalOpen, isSignupModalOpen, openSignupModal, 
       currentPage: page,

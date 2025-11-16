@@ -114,6 +114,14 @@ export interface FeaturedOffer {
   rating: number;
 }
 
+export interface Notification {
+  id: number;
+  message: string;
+  isRead: boolean;
+  createdAt: string;
+  linkTo?: string;
+}
+
 export interface Transaction {
   id: string;
   type: 'Withdrawal' | 'Deposit' | 'Task Reward';

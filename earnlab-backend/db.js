@@ -82,6 +82,15 @@ const initDb = async () => {
         is_locked BOOLEAN DEFAULT false,
         is_enabled BOOLEAN DEFAULT true
       );
+
+      CREATE TABLE IF NOT EXISTS notifications (
+        id SERIAL PRIMARY KEY,
+        user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        message TEXT NOT NULL,
+        is_read BOOLEAN DEFAULT false,
+        link_to VARCHAR(255),
+        created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+      );
     `);
 
     // Add 'balance' column to 'users' table if it doesn't exist.

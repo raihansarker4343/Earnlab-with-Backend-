@@ -129,6 +129,34 @@ app.post('/api/auth/admin-login', async (req, res) => {
     }
 });
 
+// --- NOTIFICATION ROUTES ---
+app.get('/api/notifications', authMiddleware, async (req, res) => {
+    try {
+        const result = await pool.query(
+            'SELECT * FROM notifications WHERE user_id = $1 ORDER BY created_at DESC LIMIT 20',
+            [req.user.id]
+        );
+        res.json(result.rows.map(snakeToCamel));
+    } catch (error) {
+        console.error('Error fetching notifications:', error);
+        res.status(500).json({ message: 'Server error fetching notifications.' });
+    }
+});
+
+app.post('/api/notifications/read', authMiddleware, async (req, res) => {
+    try {
+        await pool.query(
+            'UPDATE notifications SET is_read = true WHERE user_id = $1 AND is_read = false',
+            [req.user.id]
+        );
+        res.status(200).json({ message: 'Notifications marked as read.' });
+    } catch (error) {
+        console.error('Error marking notifications as read:', error);
+        res.status(500).json({ message: 'Server error updating notifications.' });
+    }
+});
+
+
 // --- TRANSACTION ROUTES ---
 
 // Get transactions for the logged-in user
@@ -381,6 +409,13 @@ app.patch('/api/admin/transactions/:id', authMiddleware, async (req, res) => {
         }
 
         await client.query('COMMIT');
+
+        const notificationMessage = `Your withdrawal request for $${transaction.amount.toFixed(2)} has been ${status}.`;
+        await pool.query(
+            'INSERT INTO notifications (user_id, message, link_to) VALUES ($1, $2, $3)',
+            [transaction.user_id, notificationMessage, '/Profile']
+        );
+
         res.json(snakeToCamel(updatedTransaction));
 
     } catch (error) {
