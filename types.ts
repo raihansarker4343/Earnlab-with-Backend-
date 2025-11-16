@@ -121,4 +121,5 @@ export interface Transaction {
   // FIX: Added `userId` to the Transaction type to resolve an error in `AdminDashboardPage.tsx`.
   // The backend includes this field, so it's necessary for logic involving user identification.
   userId: number;
+  email?: string;
 }

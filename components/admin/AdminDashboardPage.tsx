@@ -70,7 +70,7 @@ const CircleStat: React.FC<{ title: string, value: string, percentage: number, c
     </div>
 );
 
-const AdminDashboardPage: React.FC = () => {
+const AdminDashboardPage: React.FC<{ onNavigate: (page: string) => void }> = ({ onNavigate }) => {
     const { setTransactions: setGlobalTransactions } = useContext(AppContext);
     const [withdrawalRequests, setWithdrawalRequests] = useState<Transaction[]>([]);
     const [isLoading, setIsLoading] = useState(true);
@@ -95,7 +95,7 @@ const AdminDashboardPage: React.FC = () => {
 
         try {
             const [withdrawalsRes, statsRes, tasksRes, signupsRes] = await Promise.all([
-                fetch(`${API_URL}/api/admin/transactions`, { headers: { 'Authorization': `Bearer ${token}` } }),
+                fetch(`${API_URL}/api/admin/transactions?limit=5`, { headers: { 'Authorization': `Bearer ${token}` } }),
                 fetch(`${API_URL}/api/admin/stats`, { headers: { 'Authorization': `Bearer ${token}` } }),
                 fetch(`${API_URL}/api/admin/recent-tasks`, { headers: { 'Authorization': `Bearer ${token}` } }),
                 fetch(`${API_URL}/api/admin/recent-signups`, { headers: { 'Authorization': `Bearer ${token}` } }),
@@ -193,7 +193,10 @@ const AdminDashboardPage: React.FC = () => {
 
             {/* Withdrawal Requests Table */}
             <div className="bg-white p-5 rounded-lg shadow-md">
-                <h3 className="font-bold text-lg mb-4 text-slate-800">Withdrawal Requests</h3>
+                <div className="flex justify-between items-center mb-4">
+                    <h3 className="font-bold text-lg text-slate-800">Withdrawal Requests</h3>
+                    <button onClick={() => onNavigate('Withdrawals')} className="text-sm text-blue-600 hover:underline">View All</button>
+                </div>
                 <div className="overflow-x-auto">
                     {isLoading ? <p>Loading requests...</p> : error ? <p className="text-red-500">{error}</p> :
                     <table className="w-full text-sm">

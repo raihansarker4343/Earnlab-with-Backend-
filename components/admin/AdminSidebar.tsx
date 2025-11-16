@@ -3,6 +3,8 @@ import React, { useState } from 'react';
 interface SidebarProps {
     isOpen: boolean;
     setIsOpen: (isOpen: boolean) => void;
+    activePage: string;
+    setActivePage: (page: string) => void;
 }
 
 interface MenuItemProps {
@@ -11,15 +13,24 @@ interface MenuItemProps {
     hasSubMenu?: boolean;
     active?: boolean;
     children?: React.ReactNode;
+    onClick?: () => void;
 }
 
-const MenuItem: React.FC<MenuItemProps> = ({ icon, text, hasSubMenu, active, children }) => {
+const MenuItem: React.FC<MenuItemProps> = ({ icon, text, hasSubMenu, active, children, onClick }) => {
     const [isSubMenuOpen, setIsSubMenuOpen] = useState(false);
     
+    const handleClick = () => {
+        if (hasSubMenu) {
+            setIsSubMenuOpen(!isSubMenuOpen);
+        } else if (onClick) {
+            onClick();
+        }
+    }
+
     return (
         <li>
             <button
-                onClick={() => setIsSubMenuOpen(!isSubMenuOpen)}
+                onClick={handleClick}
                 className={`w-full flex justify-between items-center px-4 py-3 text-left hover:bg-slate-700 rounded-md transition-colors ${active ? 'bg-slate-700' : ''}`}
             >
                 <div className="flex items-center gap-3">
@@ -45,7 +56,7 @@ const SubMenuItem: React.FC<{ text: string }> = ({ text }) => {
     );
 }
 
-const AdminSidebar: React.FC<SidebarProps> = ({ isOpen, setIsOpen }) => {
+const AdminSidebar: React.FC<SidebarProps> = ({ isOpen, setIsOpen, activePage, setActivePage }) => {
     return (
         <aside className={`bg-[#0f172a] text-white flex flex-col transition-all duration-300 ease-in-out h-full shadow-lg ${isOpen ? 'w-64' : 'w-0'} overflow-hidden`}>
             <div className="flex-shrink-0 p-4 min-w-[16rem]">
@@ -54,12 +65,12 @@ const AdminSidebar: React.FC<SidebarProps> = ({ isOpen, setIsOpen }) => {
                 </div>
                 <nav className="mt-6">
                     <ul className="space-y-2">
-                        <MenuItem icon="fas fa-tachometer-alt" text="Dashboard" active />
+                        <MenuItem icon="fas fa-tachometer-alt" text="Dashboard" active={activePage === 'Dashboard'} onClick={() => setActivePage('Dashboard')} />
                         <MenuItem icon="fas fa-hand-holding-usd" text="Invests" hasSubMenu>
                             <SubMenuItem text="Manage Invests" />
                             <SubMenuItem text="Invest Schemes" />
                         </MenuItem>
-                        <MenuItem icon="fas fa-exchange-alt" text="Transactions" />
+                        <MenuItem icon="fas fa-exchange-alt" text="Transactions" active={activePage === 'Withdrawals'} onClick={() => setActivePage('Withdrawals')} />
                         <MenuItem icon="fas fa-tags" text="Pricing Plans" hasSubMenu>
                             <SubMenuItem text="Manage Plans" />
                         </MenuItem>

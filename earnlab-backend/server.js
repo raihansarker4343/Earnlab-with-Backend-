@@ -232,14 +232,26 @@ app.get('/api/admin/recent-signups', authMiddleware, async (req, res) => {
     }
 });
 
-// Get all withdrawal transactions for admin panel
+// Get all withdrawal transactions for admin panel, with pagination
 app.get('/api/admin/transactions', authMiddleware, async (req, res) => {
+    const page = parseInt(req.query.page, 10) || 1;
+    const limit = parseInt(req.query.limit, 10) || 10;
+    const offset = (page - 1) * limit;
+
     try {
-        const result = await pool.query(`
-            SELECT t.*, u.email 
+        const baseQuery = `
             FROM transactions t
             JOIN users u ON t.user_id = u.id
-            WHERE t.type = 'Withdrawal' 
+            WHERE t.type = 'Withdrawal'
+        `;
+
+        const totalResult = await pool.query(`SELECT COUNT(*) ${baseQuery}`);
+        const totalItems = parseInt(totalResult.rows[0].count, 10);
+        const totalPages = Math.ceil(totalItems / limit);
+
+        const transactionsResult = await pool.query(`
+            SELECT t.*, u.email 
+            ${baseQuery}
             ORDER BY 
                 CASE t.status
                     WHEN 'Pending' THEN 1
@@ -248,8 +260,19 @@ app.get('/api/admin/transactions', authMiddleware, async (req, res) => {
                     ELSE 4
                 END, 
                 t.date DESC
-        `);
-        res.json(result.rows.map(snakeToCamel));
+            LIMIT $1 OFFSET $2
+        `, [limit, offset]);
+
+        if (req.query.limit) { // If a limit is specified, just return the array
+            res.json(transactionsResult.rows.map(snakeToCamel));
+        } else { // Otherwise, return the paginated response
+            res.json({
+                transactions: transactionsResult.rows.map(snakeToCamel),
+                currentPage: page,
+                totalPages,
+                totalItems
+            });
+        }
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: 'Server error fetching admin transactions.' });
