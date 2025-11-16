@@ -12,6 +12,7 @@ export interface User {
   xp?: number;
   xpToNextLevel?: number;
   totalEarned?: number;
+  balance?: number;
   last30DaysEarned?: number;
   completedTasks?: number;
   totalWagered?: number;

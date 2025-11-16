@@ -252,11 +252,9 @@ const WalletModal: React.FC = () => {
         }
 
         const withdrawalAmount = parseFloat(withdrawalDetails.amount);
-        const fee = withdrawalAmount * 0.01; // 1% fee
-        const totalDeducted = withdrawalAmount + fee;
 
-        if (totalDeducted > balance) {
-            alert("Insufficient funds to cover amount and network fee.");
+        if (withdrawalAmount > balance) {
+            alert("Insufficient funds.");
             return;
         }
 
@@ -292,7 +290,7 @@ const WalletModal: React.FC = () => {
             };
 
             setTransactions(prev => [parsedTransaction, ...prev]);
-            setBalance(prev => prev - totalDeducted);
+            setBalance(prev => prev - withdrawalAmount);
 
             alert(`Withdrawal request for $${withdrawalAmount.toFixed(2)} has been submitted and is now pending review.`);
             closeModal();

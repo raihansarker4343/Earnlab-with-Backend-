@@ -41,7 +41,7 @@ app.post('/api/auth/signup', async (req, res) => {
         const newUserQuery = await client.query(
             `INSERT INTO users (username, email, password_hash, avatar_url, total_earned) 
              VALUES ($1, $2, $3, $4, 0.00) 
-             RETURNING id, username, email, avatar_url, created_at, total_earned, last_30_days_earned, completed_tasks, total_wagered, total_profit, total_withdrawn, total_referrals, referral_earnings, xp, rank`,
+             RETURNING id, username, email, avatar_url, created_at, total_earned, balance, last_30_days_earned, completed_tasks, total_wagered, total_profit, total_withdrawn, total_referrals, referral_earnings, xp, rank`,
             [username, email, password_hash, `https://i.pravatar.cc/150?u=${username}`]
         );
 
@@ -118,18 +118,40 @@ app.post('/api/transactions/withdraw', authMiddleware, async (req, res) => {
     if (!id || !method || !amount || !status || !type) {
         return res.status(400).json({ message: 'Missing required transaction fields.' });
     }
+    
+    const withdrawalAmount = parseFloat(amount);
+    if (isNaN(withdrawalAmount) || withdrawalAmount <= 0) {
+        return res.status(400).json({ message: 'Invalid withdrawal amount.' });
+    }
 
+    const client = await pool.connect();
     try {
-        const newTransactionQuery = await pool.query(
+        await client.query('BEGIN');
+
+        const userResult = await client.query('SELECT balance FROM users WHERE id = $1 FOR UPDATE', [req.user.id]);
+        const userBalance = parseFloat(userResult.rows[0].balance);
+
+        if (userBalance < withdrawalAmount) {
+            throw new Error('Insufficient balance.');
+        }
+
+        await client.query('UPDATE users SET balance = balance - $1 WHERE id = $2', [withdrawalAmount, req.user.id]);
+
+        const newTransactionQuery = await client.query(
             `INSERT INTO transactions (id, user_id, type, method, amount, status, date) 
              VALUES ($1, $2, $3, $4, $5, $6, NOW()) 
              RETURNING *`,
-            [id, req.user.id, type, method, amount, status]
+            [id, req.user.id, type, method, withdrawalAmount, status]
         );
+        
+        await client.query('COMMIT');
         res.status(201).json(snakeToCamel(newTransactionQuery.rows[0]));
     } catch (error) {
+        await client.query('ROLLBACK');
         console.error(error);
-        res.status(500).json({ message: 'Server error creating withdrawal.' });
+        res.status(400).json({ message: error.message || 'Server error creating withdrawal.' });
+    } finally {
+        client.release();
     }
 });
 
@@ -172,7 +194,7 @@ app.patch('/api/admin/transactions/:id', authMiddleware, async (req, res) => {
     try {
         await client.query('BEGIN');
 
-        const transactionResult = await client.query('SELECT * FROM transactions WHERE id = $1', [id]);
+        const transactionResult = await client.query('SELECT * FROM transactions WHERE id = $1 FOR UPDATE', [id]);
         if (transactionResult.rows.length === 0) {
             throw new Error('Transaction not found');
         }
@@ -191,6 +213,11 @@ app.patch('/api/admin/transactions/:id', authMiddleware, async (req, res) => {
         if (status === 'Completed') {
             await client.query(
                 'UPDATE users SET total_withdrawn = total_withdrawn + $1 WHERE id = $2',
+                [transaction.amount, transaction.user_id]
+            );
+        } else if (status === 'Rejected') {
+            await client.query(
+                'UPDATE users SET balance = balance + $1 WHERE id = $2',
                 [transaction.amount, transaction.user_id]
             );
         }

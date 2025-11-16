@@ -22,6 +22,7 @@ const initDb = async () => {
         avatar_url VARCHAR(255),
         created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
         total_earned NUMERIC(10, 2) DEFAULT 0,
+        balance NUMERIC(10, 2) DEFAULT 0,
         last_30_days_earned NUMERIC(10, 2) DEFAULT 0,
         completed_tasks INTEGER DEFAULT 0,
         total_wagered NUMERIC(10, 2) DEFAULT 0,

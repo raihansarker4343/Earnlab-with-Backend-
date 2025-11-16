@@ -167,7 +167,7 @@ const pageKeyLookup = Object.keys(pageComponentsMap).reduce((lookup, key) => {
 const sanitizeUser = (rawUser: User): User => {
     const user = { ...rawUser };
     const numericKeys: (keyof User)[] = [
-        'xp', 'xpToNextLevel', 'totalEarned', 'last30DaysEarned',
+        'xp', 'xpToNextLevel', 'totalEarned', 'balance', 'last30DaysEarned',
         'completedTasks', 'totalWagered', 'totalProfit', 'totalWithdrawn',
         'totalReferrals', 'referralEarnings'
     ];
@@ -252,11 +252,7 @@ const App: React.FC = () => {
         
         setTransactions(parsedTransactions);
         
-        const pendingWithdrawals = parsedTransactions
-          .filter(tx => tx.type === 'Withdrawal' && tx.status === 'Pending')
-          .reduce((sum, tx) => sum + tx.amount, 0);
-
-        setBalance((sanitizedUser.totalEarned || 0) - (sanitizedUser.totalWithdrawn || 0) - pendingWithdrawals);
+        setBalance(sanitizedUser.balance || 0);
         setUser(sanitizedUser);
         setIsLoggedIn(true);
 

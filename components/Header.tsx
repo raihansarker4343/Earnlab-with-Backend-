@@ -40,8 +40,7 @@ const Header: React.FC<HeaderProps> = ({ onLogout }) => {
         </div>
         <div className="flex items-center gap-2 sm:gap-4">
             <div className="flex items-center gap-2 text-green-500 dark:text-green-400 font-bold">
-                <i className="fas fa-dollar-sign"></i>
-                <span>{balance.toFixed(2)}</span>
+                <span>${balance.toFixed(2)}</span>
             </div>
             <button onClick={() => setIsWalletModalOpen(true)} className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-3 sm:px-4 rounded-lg flex items-center gap-2 text-sm sm:text-base transition-transform active:scale-95">
                 <WalletIcon />
