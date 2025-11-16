@@ -20,20 +20,11 @@ const OfferWallCard: React.FC<{ wall: OfferWall }> = ({ wall }) => {
     };
     const gradient = gradients[wall.name] || 'from-slate-800/40 to-slate-900/10';
 
-    const handleClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
-        if (wall.isLocked) {
-            e.preventDefault();
-        }
-    };
+    const pageKey = wall.name.replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
+    const href = `/#/${pageKey}`;
 
-    return (
-        <a
-            href={`/#/${encodeURIComponent(wall.name.replace(/\s/g, '').toLowerCase())}`}
-            onClick={handleClick}
-            target="_blank"
-            rel="noopener noreferrer"
-            className={`bg-[#2a3044] rounded-2xl p-4 flex flex-col items-center justify-between text-center h-48 relative overflow-hidden transition-all duration-300 border border-slate-700/50 group hover:-translate-y-1 ${wall.isLocked ? 'cursor-not-allowed' : 'cursor-pointer'}`}
-        >
+    const cardContent = (
+        <>
             <div className={`absolute inset-0 bg-gradient-to-br ${gradient}`}></div>
             {wall.isLocked && <div className="absolute inset-0 bg-black/60 backdrop-blur-sm z-10"></div>}
             {wall.bonus && (
@@ -70,6 +61,27 @@ const OfferWallCard: React.FC<{ wall: OfferWall }> = ({ wall }) => {
                     {wall.unlockRequirement && <p className="mt-2 font-semibold">{wall.unlockRequirement}</p>}
                 </div>
             )}
+        </>
+    );
+
+    const className = `bg-[#2a3044] rounded-2xl p-4 w-full flex flex-col items-center justify-between text-center h-48 relative overflow-hidden transition-all duration-300 border border-slate-700/50 group hover:-translate-y-1`;
+
+    if (wall.isLocked) {
+        return (
+            <div className={`${className} cursor-not-allowed`}>
+                {cardContent}
+            </div>
+        );
+    }
+
+    return (
+        <a
+            href={href}
+            target="_blank"
+            rel="noopener noreferrer"
+            className={`${className} cursor-pointer`}
+        >
+            {cardContent}
         </a>
     );
 };

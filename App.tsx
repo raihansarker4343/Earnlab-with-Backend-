@@ -179,7 +179,7 @@ const getPageFromHash = (hash: string): string => {
     
     const pageKey = hash.startsWith('#/') ? hash.substring(2) : hash.substring(1);
     const cleanPageKeyWithCase = pageKey.split('?')[0];
-    const cleanPageKeyLower = cleanPageKeyWithCase.toLowerCase();
+    const cleanPageKeyLower = cleanPageKeyWithCase.replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
 
     if (cleanPageKeyLower.startsWith('admin')) {
         return cleanPageKeyWithCase;
@@ -187,7 +187,7 @@ const getPageFromHash = (hash: string): string => {
 
     const pageNames = Object.keys(pageComponentsMap);
     const foundPageName = pageNames.find(
-        (name) => name.replace(/\s/g, '').toLowerCase() === cleanPageKeyLower
+        (name) => name.replace(/[^a-zA-Z0-9]/g, '').toLowerCase() === cleanPageKeyLower
     );
 
     return foundPageName || 'Home';
@@ -216,7 +216,7 @@ const App: React.FC = () => {
   const [isLoadingAuth, setIsLoadingAuth] = useState(true);
 
   const navigate = useCallback((pageName: string) => {
-      const pageKey = pageName === 'Home' ? '/' : `/${pageName.replace(/\s/g, '').toLowerCase()}`;
+      const pageKey = pageName === 'Home' ? '/' : `/${pageName.replace(/[^a-zA-Z0-9]/g, '').toLowerCase()}`;
       const newHash = `#${pageKey}`;
       if (window.location.hash !== newHash) {
           window.location.hash = newHash;
@@ -305,8 +305,10 @@ const App: React.FC = () => {
             return;
         }
         
+        const token = localStorage.getItem('token');
         const isProtectedRoute = pageFromHash !== 'Home';
-        if (isProtectedRoute && !isLoggedIn) {
+
+        if (isProtectedRoute && !token) {
             setRedirectAfterLogin(pageFromHash);
             navigate('Home');
             setIsSigninModalOpen(true);

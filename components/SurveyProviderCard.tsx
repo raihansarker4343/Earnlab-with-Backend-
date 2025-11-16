@@ -16,21 +16,12 @@ const SurveyProviderCard: React.FC<{ provider: SurveyProvider }> = ({ provider }
         'TheoremReach': 'from-pink-900/40 to-slate-900/10',
     };
     const gradient = gradients[provider.name] || 'from-slate-800/40 to-slate-900/10';
+    
+    const pageKey = provider.name.replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
+    const href = `/#/${pageKey}`;
 
-    const handleClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
-        if (provider.isLocked) {
-            e.preventDefault();
-        }
-    };
-
-    return (
-        <a
-            href={`/#/${encodeURIComponent(provider.name.replace(/\s/g, '').toLowerCase())}`}
-            onClick={handleClick}
-            target="_blank"
-            rel="noopener noreferrer"
-            className={`bg-[#2a3044] rounded-2xl p-4 flex flex-col items-center justify-between text-center h-48 relative overflow-hidden transition-all duration-300 border border-slate-700/50 group hover:-translate-y-1 ${provider.isLocked ? 'cursor-not-allowed' : 'cursor-pointer'}`}
-        >
+    const cardContent = (
+        <>
             <div className={`absolute inset-0 bg-gradient-to-br ${gradient}`}></div>
             {provider.isLocked && <div className="absolute inset-0 bg-black/60 backdrop-blur-sm z-10"></div>}
 
@@ -68,6 +59,27 @@ const SurveyProviderCard: React.FC<{ provider: SurveyProvider }> = ({ provider }
                     {provider.unlocksAt && <p className="mt-1">{provider.unlocksAt}</p>}
                 </div>
             )}
+        </>
+    );
+
+    const className = `bg-[#2a3044] rounded-2xl p-4 w-full flex flex-col items-center justify-between text-center h-48 relative overflow-hidden transition-all duration-300 border border-slate-700/50 group hover:-translate-y-1`;
+
+    if (provider.isLocked) {
+        return (
+            <div className={`${className} cursor-not-allowed`}>
+                {cardContent}
+            </div>
+        );
+    }
+    
+    return (
+        <a
+            href={href}
+            target="_blank"
+            rel="noopener noreferrer"
+            className={`${className} cursor-pointer`}
+        >
+            {cardContent}
         </a>
     );
 };

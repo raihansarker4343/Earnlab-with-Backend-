@@ -1,8 +1,8 @@
 import React from 'react';
-import { OFFER_WALLS } from '../../../constants';
+import { SURVEY_PROVIDERS } from '../../../constants';
 
 const AdscendMediaSurveysPage: React.FC = () => {
-    const provider = OFFER_WALLS.find(p => p.name === 'Adscend Media');
+    const provider = SURVEY_PROVIDERS.find(p => p.name === 'Adscend Media Surveys');
     return (
         <div className="space-y-6">
             <div className="flex items-center gap-4">
