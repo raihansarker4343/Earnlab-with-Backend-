@@ -83,6 +83,8 @@ const AdminDashboardPage: React.FC<{ onNavigate: (page: string) => void }> = ({ 
     const [recentSignups, setRecentSignups] = useState<RecentSignup[]>([]);
     const [isTablesLoading, setIsTablesLoading] = useState(true);
 
+    const [searchQuery, setSearchQuery] = useState('');
+
     const fetchData = async () => {
         const token = localStorage.getItem('token');
         if (!token) {
@@ -170,9 +172,45 @@ const AdminDashboardPage: React.FC<{ onNavigate: (page: string) => void }> = ({ 
     const handleReject = async (txId: string) => {
         await updateTransactionStatus(txId, 'Rejected');
     };
+    
+    const lowercasedQuery = searchQuery.toLowerCase();
+
+    const filteredWithdrawalRequests = withdrawalRequests.filter(tx => 
+        tx.id.toLowerCase().includes(lowercasedQuery) ||
+        (tx.email && tx.email.toLowerCase().includes(lowercasedQuery)) ||
+        tx.method.toLowerCase().includes(lowercasedQuery) ||
+        String(tx.amount).includes(lowercasedQuery)
+    );
+
+    const filteredRecentTasks = recentTasks.filter(task =>
+        task.transactionId.toLowerCase().includes(lowercasedQuery) ||
+        task.email.toLowerCase().includes(lowercasedQuery) ||
+        String(task.amount).includes(lowercasedQuery)
+    );
+
+    const filteredRecentSignups = recentSignups.filter(signup =>
+        signup.email.toLowerCase().includes(lowercasedQuery)
+    );
 
     return (
         <div className="space-y-6">
+             {/* Search Bar */}
+            <div className="bg-white p-4 rounded-lg shadow-md">
+                <div className="relative">
+                    <span className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                        <i className="fas fa-search text-slate-400"></i>
+                    </span>
+                    <input
+                        type="text"
+                        placeholder="Search tables by ID, email, method, or amount..."
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        className="w-full pl-10 pr-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-500"
+                        aria-label="Search dashboard tables"
+                    />
+                </div>
+            </div>
+
             {/* Stat Cards */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 <StatCard title="Pending Withdrawals!" value={isStatsLoading ? '...' : (stats?.pendingWithdrawals ?? 0).toString()} icon="fas fa-dollar-sign" color="linear-gradient(to right, #ef4444, #dc2626)" />
@@ -204,6 +242,7 @@ const AdminDashboardPage: React.FC<{ onNavigate: (page: string) => void }> = ({ 
                             <tr className="text-left text-slate-500">
                                 <th className="p-2">Transaction ID</th>
                                 <th className="p-2">Date</th>
+                                <th className="p-2">User Email</th>
                                 <th className="p-2">Method</th>
                                 <th className="p-2">Amount</th>
                                 <th className="p-2">Status</th>
@@ -211,33 +250,42 @@ const AdminDashboardPage: React.FC<{ onNavigate: (page: string) => void }> = ({ 
                             </tr>
                         </thead>
                         <tbody className="text-slate-700">
-                            {withdrawalRequests.map(tx => (
-                                <tr key={tx.id} className="border-t border-slate-200">
-                                    <td className="p-2 font-medium">{tx.id}</td>
-                                    <td className="p-2">{new Date(tx.date).toLocaleDateString()}</td>
-                                    <td className="p-2">{tx.method}</td>
-                                    <td className="p-2 font-bold">${(Number(tx.amount) || 0).toFixed(2)}</td>
-                                    <td className="p-2">
-                                        <span className={`px-2 py-1 rounded-full text-xs font-semibold ${
-                                            tx.status === 'Completed' ? 'bg-green-100 text-green-800' :
-                                            tx.status === 'Pending' ? 'bg-yellow-100 text-yellow-800' :
-                                            'bg-red-100 text-red-800'
-                                        }`}>
-                                            {tx.status}
-                                        </span>
-                                    </td>
-                                    <td className="p-2">
-                                        {tx.status === 'Pending' ? (
-                                            <div className="flex gap-2">
-                                                <button onClick={() => handleApprove(tx.id)} className="bg-green-500 text-white px-3 py-1 rounded text-xs hover:bg-green-600">Approve</button>
-                                                <button onClick={() => handleReject(tx.id)} className="bg-red-500 text-white px-3 py-1 rounded text-xs hover:bg-red-600">Reject</button>
-                                            </div>
-                                        ) : (
-                                            <span>-</span>
-                                        )}
+                            {filteredWithdrawalRequests.length > 0 ? (
+                                filteredWithdrawalRequests.map(tx => (
+                                    <tr key={tx.id} className="border-t border-slate-200">
+                                        <td className="p-2 font-medium">{tx.id}</td>
+                                        <td className="p-2">{new Date(tx.date).toLocaleDateString()}</td>
+                                        <td className="p-2">{tx.email}</td>
+                                        <td className="p-2">{tx.method}</td>
+                                        <td className="p-2 font-bold">${(Number(tx.amount) || 0).toFixed(2)}</td>
+                                        <td className="p-2">
+                                            <span className={`px-2 py-1 rounded-full text-xs font-semibold ${
+                                                tx.status === 'Completed' ? 'bg-green-100 text-green-800' :
+                                                tx.status === 'Pending' ? 'bg-yellow-100 text-yellow-800' :
+                                                'bg-red-100 text-red-800'
+                                            }`}>
+                                                {tx.status}
+                                            </span>
+                                        </td>
+                                        <td className="p-2">
+                                            {tx.status === 'Pending' ? (
+                                                <div className="flex gap-2">
+                                                    <button onClick={() => handleApprove(tx.id)} className="bg-green-500 text-white px-3 py-1 rounded text-xs hover:bg-green-600">Approve</button>
+                                                    <button onClick={() => handleReject(tx.id)} className="bg-red-500 text-white px-3 py-1 rounded text-xs hover:bg-red-600">Reject</button>
+                                                </div>
+                                            ) : (
+                                                <span>-</span>
+                                            )}
+                                        </td>
+                                    </tr>
+                                ))
+                            ) : (
+                                <tr>
+                                    <td colSpan={7} className="text-center p-4 text-slate-500">
+                                        {searchQuery ? 'No matching requests found.' : 'No pending withdrawal requests.'}
                                     </td>
                                 </tr>
-                            ))}
+                            )}
                         </tbody>
                     </table>
                     }
@@ -261,17 +309,25 @@ const AdminDashboardPage: React.FC<{ onNavigate: (page: string) => void }> = ({ 
                                 </tr>
                             </thead>
                             <tbody className="text-slate-700">
-                                {recentTasks.map(task => (
-                                    <tr key={task.transactionId} className="border-t border-slate-200">
-                                        <td className="p-2 font-medium">{task.transactionId}</td>
-                                        <td className="p-2">{new Date(task.date).toLocaleDateString()}</td>
-                                        <td className="p-2">{task.email}</td>
-                                        <td className="p-2 font-bold">${(Number(task.amount) || 0).toFixed(2)}</td>
-                                        <td className="p-2">
-                                            <button className="bg-slate-800 text-white px-3 py-1 rounded text-xs hover:bg-slate-700">Details</button>
+                                {filteredRecentTasks.length > 0 ? (
+                                    filteredRecentTasks.map(task => (
+                                        <tr key={task.transactionId} className="border-t border-slate-200">
+                                            <td className="p-2 font-medium">{task.transactionId}</td>
+                                            <td className="p-2">{new Date(task.date).toLocaleDateString()}</td>
+                                            <td className="p-2">{task.email}</td>
+                                            <td className="p-2 font-bold">${(Number(task.amount) || 0).toFixed(2)}</td>
+                                            <td className="p-2">
+                                                <button className="bg-slate-800 text-white px-3 py-1 rounded text-xs hover:bg-slate-700">Details</button>
+                                            </td>
+                                        </tr>
+                                    ))
+                                ) : (
+                                    <tr>
+                                        <td colSpan={5} className="text-center p-4 text-slate-500">
+                                            {searchQuery ? 'No matching tasks found.' : 'No recent tasks.'}
                                         </td>
                                     </tr>
-                                ))}
+                                )}
                             </tbody>
                         </table>
                         }
@@ -290,15 +346,23 @@ const AdminDashboardPage: React.FC<{ onNavigate: (page: string) => void }> = ({ 
                                 </tr>
                             </thead>
                             <tbody className="text-slate-700">
-                                {recentSignups.map(user => (
-                                     <tr key={user.email} className="border-t border-slate-200">
-                                        <td className="p-2 font-medium">{user.email}</td>
-                                        <td className="p-2">{new Date(user.joinedDate).toLocaleString()}</td>
-                                        <td className="p-2">
-                                            <button className="bg-slate-800 text-white px-3 py-1 rounded text-xs hover:bg-slate-700">Details</button>
+                                {filteredRecentSignups.length > 0 ? (
+                                    filteredRecentSignups.map(user => (
+                                         <tr key={user.email} className="border-t border-slate-200">
+                                            <td className="p-2 font-medium">{user.email}</td>
+                                            <td className="p-2">{new Date(user.joinedDate).toLocaleString()}</td>
+                                            <td className="p-2">
+                                                <button className="bg-slate-800 text-white px-3 py-1 rounded text-xs hover:bg-slate-700">Details</button>
+                                            </td>
+                                        </tr>
+                                    ))
+                                ) : (
+                                    <tr>
+                                        <td colSpan={3} className="text-center p-4 text-slate-500">
+                                            {searchQuery ? 'No matching signups found.' : 'No recent signups.'}
                                         </td>
                                     </tr>
-                                ))}
+                                )}
                             </tbody>
                         </table>
                         }
