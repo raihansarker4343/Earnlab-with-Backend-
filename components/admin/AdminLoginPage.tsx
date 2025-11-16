@@ -38,10 +38,15 @@ const AdminLoginPage: React.FC<AdminLoginPageProps> = ({ onLoginSuccess }) => {
     
     return (
         <div className="min-h-screen bg-slate-100 flex flex-col justify-center items-center p-4 font-sans">
-            <div className="max-w-md w-full bg-white rounded-lg shadow-lg p-8 space-y-8">
+            <div className="max-w-md w-full bg-white rounded-lg shadow-lg p-8 space-y-6">
                 <div>
                     <h2 className="text-3xl font-bold text-center text-slate-900">Admin Panel</h2>
                     <p className="text-center text-slate-500 mt-2">Sign in to your account</p>
+                </div>
+                <div className="text-center text-sm bg-blue-50 p-3 rounded-md text-slate-600 border border-blue-200">
+                    <p className="font-semibold text-blue-800">Demo Credentials</p>
+                    <p>Email: <strong className="font-mono text-slate-800">admin@earnlab.com</strong></p>
+                    <p>Password: <strong className="font-mono text-slate-800">password</strong></p>
                 </div>
                 <form onSubmit={handleSubmit} className="space-y-6">
                     <div>

@@ -297,6 +297,12 @@ const App: React.FC = () => {
 
     const handleHashChange = () => {
         const pageFromHash = getPageFromHash(window.location.hash);
+
+        // If it's an admin page, just set the page and let the main component's logic handle it
+        if (pageFromHash.toLowerCase().startsWith('admin')) {
+            setPage(pageFromHash);
+            return;
+        }
         
         const isProtectedRoute = pageFromHash !== 'Home';
         if (isProtectedRoute && !isLoggedIn) {
@@ -350,7 +356,7 @@ const App: React.FC = () => {
   }
 
   // Admin panel routing
-  if (window.location.pathname.startsWith('/admin')) {
+  if (page.toLowerCase().startsWith('admin')) {
       if (!isAdmin) {
           return (
               <Suspense fallback={<PageLoader />}>
