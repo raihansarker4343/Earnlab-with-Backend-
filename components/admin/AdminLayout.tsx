@@ -6,10 +6,13 @@ import WithdrawalsPage from './WithdrawalsPage';
 import PaymentSettingsPage from './PaymentSettingsPage';
 import SurveyControlPage from './SurveyControlPage';
 import OfferControlPage from './OfferControlPage';
+import UserDetailPage from './UserDetailPage';
 
 const AdminLayout: React.FC = () => {
     const [isSidebarOpen, setIsSidebarOpen] = useState(true);
     const [activePage, setActivePage] = useState('Dashboard');
+    const [viewingUser, setViewingUser] = useState<{ id: number; email: string; } | null>(null);
+    const [previousPage, setPreviousPage] = useState('Dashboard');
     
     useEffect(() => {
         // Admin panel has a fixed light theme for the content area
@@ -17,20 +20,33 @@ const AdminLayout: React.FC = () => {
         document.body.className = 'bg-slate-100';
     }, []);
 
+    const handleViewUser = (user: { id: number; email: string }) => {
+        setPreviousPage(activePage);
+        setViewingUser(user);
+        setActivePage('UserDetail');
+    };
+
+    const handleBackFromUserDetail = () => {
+        setViewingUser(null);
+        setActivePage(previousPage);
+    };
+
     const renderPage = () => {
         switch(activePage) {
             case 'Dashboard':
-                return <AdminDashboardPage onNavigate={setActivePage} />;
+                return <AdminDashboardPage onNavigate={setActivePage} onViewUser={handleViewUser} />;
             case 'Withdrawals':
-                return <WithdrawalsPage />;
+                return <WithdrawalsPage onViewUser={handleViewUser} />;
             case 'PaymentSettings':
                 return <PaymentSettingsPage />;
             case 'SurveyControl':
                 return <SurveyControlPage />;
             case 'OfferControl':
                 return <OfferControlPage />;
+            case 'UserDetail':
+                 return viewingUser ? <UserDetailPage user={viewingUser} onBack={handleBackFromUserDetail} /> : <div>No user selected.</div>;
             default:
-                return <AdminDashboardPage onNavigate={setActivePage} />;
+                return <AdminDashboardPage onNavigate={setActivePage} onViewUser={handleViewUser} />;
         }
     };
 

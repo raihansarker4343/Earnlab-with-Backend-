@@ -1,13 +1,84 @@
-import React, { useState, useContext } from 'react';
+import React, { useState, useContext, useEffect } from 'react';
 import { LEADERBOARD_USERS } from '../../constants';
 import { AppContext } from '../../App';
 import type { LeaderboardUser } from '../../types';
 
+const getSimulatedData = (period: 'Daily' | 'Weekly' | 'Monthly'): LeaderboardUser[] => {
+    let multiplier = 1;
+    if (period === 'Daily') multiplier = 0.05 + Math.random() * 0.1; // small random daily variation
+    if (period === 'Weekly') multiplier = 0.5 + Math.random() * 0.2; // larger weekly variation
+
+    return [...LEADERBOARD_USERS]
+        .map(user => ({
+            ...user,
+            // Create pseudo-random but deterministic earnings for each user based on their name and the period
+            earned: parseFloat((user.earned * multiplier * (user.user.length % 5 + 1) / 3).toFixed(2)),
+        }))
+        .sort((a, b) => b.earned - a.earned)
+        .map((user, index) => ({
+            ...user,
+            rank: index + 1,
+        }));
+};
+
+const getNextResetDate = (period: 'Daily' | 'Weekly' | 'Monthly'): Date => {
+    const now = new Date();
+    const target = new Date(now);
+    target.setUTCHours(0, 0, 0, 0);
+
+    if (period === 'Daily') {
+        target.setUTCDate(target.getUTCDate() + 1);
+    } else if (period === 'Weekly') {
+        const day = target.getUTCDay(); // Sunday = 0, Monday = 1
+        const daysUntilMonday = day === 0 ? 1 : 8 - day;
+        target.setUTCDate(target.getUTCDate() + daysUntilMonday);
+    } else if (period === 'Monthly') {
+        target.setUTCMonth(target.getUTCMonth() + 1, 1);
+    }
+    return target;
+};
+
+const PrizeCard: React.FC<{ rank: number; prize: string; color: string; icon: string }> = ({ rank, prize, color, icon }) => (
+    <div className={`p-6 rounded-lg text-white shadow-lg text-center flex flex-col items-center justify-center ${color}`}>
+        <div className="text-4xl mb-2 opacity-80"><i className={icon}></i></div>
+        <p className="font-bold text-lg">#{rank} Place</p>
+        <p className="text-3xl font-extrabold">{prize}</p>
+    </div>
+);
+
 const LeaderboardPage: React.FC = () => {
     const { user } = useContext(AppContext);
-    const [activeTab, setActiveTab] = useState('Weekly');
+    const [activeTab, setActiveTab] = useState<'Daily' | 'Weekly' | 'Monthly'>('Weekly');
+    const [leaderboardData, setLeaderboardData] = useState<LeaderboardUser[]>([]);
+    const [timeLeft, setTimeLeft] = useState('');
+
+    useEffect(() => {
+        setLeaderboardData(getSimulatedData(activeTab));
+    }, [activeTab]);
+
+    useEffect(() => {
+        const targetDate = getNextResetDate(activeTab);
+        const timer = setInterval(() => {
+            const difference = targetDate.getTime() - new Date().getTime();
+            if (difference <= 0) {
+                setTimeLeft('Resetting...');
+                // Optionally, refresh data after reset
+                if (difference <= -1000) {
+                    setLeaderboardData(getSimulatedData(activeTab));
+                }
+                return;
+            }
+            const d = Math.floor(difference / (1000 * 60 * 60 * 24));
+            const h = Math.floor((difference / (1000 * 60 * 60)) % 24);
+            const m = Math.floor((difference / 1000 / 60) % 60);
+            const s = Math.floor((difference / 1000) % 60);
+            setTimeLeft(`${d}d ${h}h ${m}m ${s}s`);
+        }, 1000);
+
+        return () => clearInterval(timer);
+    }, [activeTab]);
     
-    const currentUserData = LEADERBOARD_USERS.find(u => u.user === user?.username);
+    const currentUserData = leaderboardData.find(u => u.user === user?.username);
 
     return (
         <div className="space-y-8">
@@ -15,18 +86,24 @@ const LeaderboardPage: React.FC = () => {
                 <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-2">Leaderboard</h1>
                 <p className="text-slate-500 dark:text-slate-400">See who's at the top and compete for exclusive prizes.</p>
             </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <PrizeCard rank={1} prize="$100" color="bg-gradient-to-br from-yellow-400 to-yellow-600" icon="fas fa-trophy" />
+                <PrizeCard rank={2} prize="$50" color="bg-gradient-to-br from-slate-400 to-slate-600" icon="fas fa-trophy" />
+                <PrizeCard rank={3} prize="$25" color="bg-gradient-to-br from-orange-400 to-orange-600" icon="fas fa-trophy" />
+            </div>
 
             <div className="bg-white dark:bg-[#1e293b] rounded-lg border border-slate-200 dark:border-slate-800">
-                <div className="p-4 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between">
-                    <div className="flex items-center space-x-2">
-                        {['Daily', 'Weekly', 'Monthly'].map(tab => (
-                            <button key={tab} onClick={() => setActiveTab(tab)} className={`px-4 py-2 text-sm font-semibold rounded-md ${activeTab === tab ? 'bg-slate-200 dark:bg-slate-700 text-slate-900 dark:text-white' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'}`}>
+                <div className="p-4 border-b border-slate-200 dark:border-slate-700 flex flex-col sm:flex-row items-center justify-between gap-4">
+                    <div className="flex items-center space-x-2 bg-slate-100 dark:bg-slate-800/50 p-1 rounded-lg">
+                        {(['Daily', 'Weekly', 'Monthly'] as const).map(tab => (
+                            <button key={tab} onClick={() => setActiveTab(tab)} className={`px-4 py-2 text-sm font-semibold rounded-md transition-colors ${activeTab === tab ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm' : 'text-slate-600 dark:text-slate-400 hover:bg-white/50 dark:hover:bg-slate-800'}`}>
                                 {tab}
                             </button>
                         ))}
                     </div>
-                    <div className="text-sm text-slate-500 dark:text-slate-400">
-                        Resets in 3d 14h 22m
+                    <div className="text-sm text-slate-500 dark:text-slate-400 font-medium">
+                        Resets in: <span className="font-mono font-bold text-slate-700 dark:text-slate-200 tracking-wider">{timeLeft}</span>
                     </div>
                 </div>
 
@@ -40,17 +117,17 @@ const LeaderboardPage: React.FC = () => {
                             </tr>
                         </thead>
                         <tbody className="text-slate-800 dark:text-slate-300">
-                            {LEADERBOARD_USERS.map((leader, index) => (
-                                <tr key={index} className={`border-t border-slate-200 dark:border-slate-800 ${leader.user === user?.username ? 'bg-blue-500/10' : ''}`}>
+                            {leaderboardData.map((leader) => (
+                                <tr key={leader.user} className={`border-t border-slate-200 dark:border-slate-800 transition-colors ${leader.user === user?.username ? 'bg-blue-500/10' : ''}`}>
                                     <td className="px-6 py-4 font-bold text-lg w-16 text-center">
-                                        {leader.rank === 1 && <i className="fas fa-trophy text-yellow-400"></i>}
-                                        {leader.rank === 2 && <i className="fas fa-trophy text-gray-400"></i>}
-                                        {leader.rank === 3 && <i className="fas fa-trophy text-orange-400"></i>}
-                                        {leader.rank > 3 && leader.rank}
+                                        {leader.rank === 1 && <i className="fas fa-trophy text-yellow-400 text-2xl"></i>}
+                                        {leader.rank === 2 && <i className="fas fa-trophy text-gray-400 text-xl"></i>}
+                                        {leader.rank === 3 && <i className="fas fa-trophy text-orange-400 text-lg"></i>}
+                                        {leader.rank > 3 && <span className="text-slate-500 dark:text-slate-400">{leader.rank}</span>}
                                     </td>
                                     <td className="px-6 py-4">
                                         <div className="flex items-center gap-3">
-                                            <img src={leader.avatar} alt={leader.user} className="w-8 h-8 rounded-full" />
+                                            <img src={leader.avatar} alt={leader.user} className="w-9 h-9 rounded-full" />
                                             <div>
                                                 <div className="font-bold text-slate-900 dark:text-white">{leader.user}</div>
                                                 <div className="text-xs text-slate-500 dark:text-slate-400">Level {leader.level}</div>
@@ -70,7 +147,7 @@ const LeaderboardPage: React.FC = () => {
                      <div className="p-4 border-t-2 border-blue-500 bg-blue-50 dark:bg-blue-900/20 sticky bottom-0">
                          <div className="flex items-center justify-between text-sm font-bold">
                             <div className="flex items-center gap-4">
-                               <span className="text-slate-900 dark:text-white">#{currentUserData.rank}</span>
+                               <span className="text-slate-900 dark:text-white">Your Rank: #{currentUserData.rank}</span>
                                 <div className="flex items-center gap-2">
                                     <img src={currentUserData.avatar} alt={currentUserData.user} className="w-6 h-6 rounded-full" />
                                     <span className="text-slate-900 dark:text-white">{currentUserData.user}</span>

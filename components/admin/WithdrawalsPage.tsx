@@ -3,7 +3,11 @@ import { AppContext } from '../../App';
 import type { Transaction } from '../../types';
 import { API_URL } from '../../constants';
 
-const WithdrawalsPage: React.FC = () => {
+interface WithdrawalsPageProps {
+    onViewUser: (user: { id: number; email: string }) => void;
+}
+
+const WithdrawalsPage: React.FC<WithdrawalsPageProps> = ({ onViewUser }) => {
     const { setTransactions: setGlobalTransactions } = useContext(AppContext);
     const [withdrawalRequests, setWithdrawalRequests] = useState<Transaction[]>([]);
     const [isLoading, setIsLoading] = useState(true);
@@ -111,7 +115,15 @@ const WithdrawalsPage: React.FC = () => {
                             withdrawalRequests.map(tx => (
                                 <tr key={tx.id} className="border-t border-slate-200">
                                     <td className="p-2 font-medium">{tx.id}</td>
-                                    <td className="p-2">{tx.email}</td>
+                                    <td className="p-2">
+                                        <button 
+                                            onClick={() => tx.email && onViewUser({ id: tx.userId, email: tx.email })} 
+                                            className="text-blue-600 hover:underline"
+                                            disabled={!tx.email}
+                                        >
+                                            {tx.email}
+                                        </button>
+                                    </td>
                                     <td className="p-2">{new Date(tx.date).toLocaleDateString()}</td>
                                     <td className="p-2">{tx.method}</td>
                                     <td className="p-2 font-bold">${(Number(tx.amount) || 0).toFixed(2)}</td>

@@ -22,6 +22,11 @@ interface RecentSignup {
     joinedDate: string;
 }
 
+interface AdminDashboardPageProps {
+    onNavigate: (page: string) => void;
+    onViewUser: (user: { id: number; email: string }) => void;
+}
+
 const StatCard: React.FC<{ title: string, value: string, icon: string, color: string, onClick?: () => void }> = ({ title, value, icon, color, onClick }) => (
     <div
         onClick={onClick}
@@ -82,7 +87,7 @@ const CircleStat: React.FC<{ title: string, value: string, percentage: number, c
     </div>
 );
 
-const AdminDashboardPage: React.FC<{ onNavigate: (page: string) => void }> = ({ onNavigate }) => {
+const AdminDashboardPage: React.FC<AdminDashboardPageProps> = ({ onNavigate, onViewUser }) => {
     const { setTransactions: setGlobalTransactions } = useContext(AppContext);
     const [withdrawalRequests, setWithdrawalRequests] = useState<Transaction[]>([]);
     const [isLoading, setIsLoading] = useState(true);
@@ -267,7 +272,15 @@ const AdminDashboardPage: React.FC<{ onNavigate: (page: string) => void }> = ({ 
                                     <tr key={tx.id} className="border-t border-slate-200">
                                         <td className="p-2 font-medium">{tx.id}</td>
                                         <td className="p-2">{new Date(tx.date).toLocaleDateString()}</td>
-                                        <td className="p-2">{tx.email}</td>
+                                        <td className="p-2">
+                                            <button 
+                                                onClick={() => tx.email && onViewUser({ id: tx.userId, email: tx.email })} 
+                                                className="text-blue-600 hover:underline"
+                                                disabled={!tx.email}
+                                            >
+                                                {tx.email}
+                                            </button>
+                                        </td>
                                         <td className="p-2">{tx.method}</td>
                                         <td className="p-2 font-bold">${(Number(tx.amount) || 0).toFixed(2)}</td>
                                         <td className="p-2">

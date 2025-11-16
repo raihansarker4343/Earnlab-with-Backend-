@@ -26,6 +26,21 @@ const authMiddleware = (req, res, next) => {
     });
 };
 
+// Middleware to verify admin JWT
+const adminAuthMiddleware = (req, res, next) => {
+    const authHeader = req.headers['authorization'];
+    const token = authHeader && authHeader.split(' ')[1];
+    if (token == null) return res.sendStatus(401);
+
+    jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
+        if (err || user.role !== 'admin') {
+            return res.sendStatus(403);
+        }
+        req.user = user;
+        next();
+    });
+};
+
 // --- AUTH ROUTES ---
 app.post('/api/auth/signup', async (req, res) => {
     const { email, password, username } = req.body;
@@ -250,7 +265,7 @@ app.get('/api/offer-walls', async (req, res) => {
 
 // --- ADMIN ROUTES ---
 
-app.get('/api/admin/stats', authMiddleware, async (req, res) => {
+app.get('/api/admin/stats', adminAuthMiddleware, async (req, res) => {
     try {
         const stats = {};
         const totalUsersRes = await pool.query('SELECT COUNT(*) FROM users');
@@ -278,7 +293,7 @@ app.get('/api/admin/stats', authMiddleware, async (req, res) => {
     }
 });
 
-app.get('/api/admin/recent-tasks', authMiddleware, async (req, res) => {
+app.get('/api/admin/recent-tasks', adminAuthMiddleware, async (req, res) => {
     try {
         const result = await pool.query(`
             SELECT t.id AS transaction_id, t.date, u.email, t.amount
@@ -295,7 +310,7 @@ app.get('/api/admin/recent-tasks', authMiddleware, async (req, res) => {
     }
 });
 
-app.get('/api/admin/recent-signups', authMiddleware, async (req, res) => {
+app.get('/api/admin/recent-signups', adminAuthMiddleware, async (req, res) => {
     try {
         const result = await pool.query(`
             SELECT email, created_at AS joined_date
@@ -311,7 +326,7 @@ app.get('/api/admin/recent-signups', authMiddleware, async (req, res) => {
 });
 
 // Get all withdrawal transactions for admin panel, with pagination
-app.get('/api/admin/transactions', authMiddleware, async (req, res) => {
+app.get('/api/admin/transactions', adminAuthMiddleware, async (req, res) => {
     const page = parseInt(req.query.page, 10) || 1;
     const limitQuery = req.query.limit;
     
@@ -337,7 +352,7 @@ app.get('/api/admin/transactions', authMiddleware, async (req, res) => {
         const totalPages = Math.ceil(totalItems / limit);
 
         const transactionsResult = await pool.query(`
-            SELECT t.*, u.email 
+            SELECT t.*, u.email, u.id as user_id
             ${baseQuery}
             ORDER BY 
                 CASE t.status
@@ -368,7 +383,7 @@ app.get('/api/admin/transactions', authMiddleware, async (req, res) => {
 
 
 // Update a transaction's status (approve/reject)
-app.patch('/api/admin/transactions/:id', authMiddleware, async (req, res) => {
+app.patch('/api/admin/transactions/:id', adminAuthMiddleware, async (req, res) => {
     const { id } = req.params;
     const { status } = req.body; 
 
@@ -432,7 +447,40 @@ app.patch('/api/admin/transactions/:id', authMiddleware, async (req, res) => {
     }
 });
 
-app.get('/api/admin/payment-methods', authMiddleware, async (req, res) => {
+app.get('/api/admin/users/:userId', adminAuthMiddleware, async (req, res) => {
+    try {
+        const { userId } = req.params;
+        const result = await pool.query(
+            `SELECT id, username, email, avatar_url, created_at AS joined_date, total_earned, balance, last_30_days_earned, completed_tasks, total_wagered, total_profit, total_withdrawn, total_referrals, referral_earnings, xp, rank, earn_id
+             FROM users WHERE id = $1`,
+            [userId]
+        );
+        if (result.rows.length === 0) {
+            return res.status(404).json({ message: 'User not found.' });
+        }
+        res.json(snakeToCamel(result.rows[0]));
+    } catch (error) {
+        console.error('Error fetching user details:', error);
+        res.status(500).json({ message: 'Server error fetching user details.' });
+    }
+});
+
+app.get('/api/admin/users/:userId/transactions', adminAuthMiddleware, async (req, res) => {
+    try {
+        const { userId } = req.params;
+        const result = await pool.query(
+            'SELECT * FROM transactions WHERE user_id = $1 ORDER BY date DESC',
+            [userId]
+        );
+        res.json(result.rows.map(snakeToCamel));
+    } catch (error) {
+        console.error('Error fetching user transactions:', error);
+        res.status(500).json({ message: 'Server error fetching user transactions.' });
+    }
+});
+
+
+app.get('/api/admin/payment-methods', adminAuthMiddleware, async (req, res) => {
     try {
         const result = await pool.query('SELECT * FROM payment_methods ORDER BY type, name');
         res.json(result.rows.map(snakeToCamel));
@@ -442,7 +490,7 @@ app.get('/api/admin/payment-methods', authMiddleware, async (req, res) => {
     }
 });
 
-app.patch('/api/admin/payment-methods/:id', authMiddleware, async (req, res) => {
+app.patch('/api/admin/payment-methods/:id', adminAuthMiddleware, async (req, res) => {
     const { id } = req.params;
     const { isEnabled } = req.body;
 
@@ -466,7 +514,7 @@ app.patch('/api/admin/payment-methods/:id', authMiddleware, async (req, res) => 
 });
 
 // Admin Survey Provider Management
-app.get('/api/admin/survey-providers', authMiddleware, async (req, res) => {
+app.get('/api/admin/survey-providers', adminAuthMiddleware, async (req, res) => {
     try {
         const result = await pool.query('SELECT * FROM survey_providers ORDER BY name');
         res.json(result.rows.map(snakeToCamel));
@@ -476,7 +524,7 @@ app.get('/api/admin/survey-providers', authMiddleware, async (req, res) => {
     }
 });
 
-app.patch('/api/admin/survey-providers/:id', authMiddleware, async (req, res) => {
+app.patch('/api/admin/survey-providers/:id', adminAuthMiddleware, async (req, res) => {
     const { id } = req.params;
     const { isEnabled } = req.body;
     if (typeof isEnabled !== 'boolean') return res.status(400).json({ message: 'Invalid "isEnabled" value.' });
@@ -491,7 +539,7 @@ app.patch('/api/admin/survey-providers/:id', authMiddleware, async (req, res) =>
 });
 
 // Admin Offer Wall Management
-app.get('/api/admin/offer-walls', authMiddleware, async (req, res) => {
+app.get('/api/admin/offer-walls', adminAuthMiddleware, async (req, res) => {
     try {
         const result = await pool.query('SELECT * FROM offer_walls ORDER BY name');
         res.json(result.rows.map(snakeToCamel));
@@ -501,7 +549,7 @@ app.get('/api/admin/offer-walls', authMiddleware, async (req, res) => {
     }
 });
 
-app.patch('/api/admin/offer-walls/:id', authMiddleware, async (req, res) => {
+app.patch('/api/admin/offer-walls/:id', adminAuthMiddleware, async (req, res) => {
     const { id } = req.params;
     const { isEnabled } = req.body;
     if (typeof isEnabled !== 'boolean') return res.status(400).json({ message: 'Invalid "isEnabled" value.' });
