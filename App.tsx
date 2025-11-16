@@ -156,13 +156,6 @@ const pageComponentsMap: { [key: string]: React.ReactNode } = {
     'Battles': <div className="text-slate-900 dark:text-white text-3xl font-bold">Battles Page</div>,
 };
 
-// Create a lookup map to find the original page name (with spaces) from a URL-friendly version (without spaces)
-const pageKeyLookup = Object.keys(pageComponentsMap).reduce((lookup, key) => {
-    const keyWithoutSpaces = key.replace(/\s/g, '').toLowerCase();
-    lookup[keyWithoutSpaces] = key;
-    return lookup;
-}, {} as Record<string, string>);
-
 // Helper function to ensure numeric fields from the API/localStorage are numbers
 const sanitizeUser = (rawUser: User): User => {
     const user = { ...rawUser };
@@ -183,14 +176,21 @@ const sanitizeUser = (rawUser: User): User => {
 
 const getPageFromHash = (hash: string): string => {
     if (!hash || hash === '#' || hash === '#/') return 'Home';
-    // Remove # or #/ from the beginning of the string
+    
     const pageKey = hash.startsWith('#/') ? hash.substring(2) : hash.substring(1);
-    const cleanPageKey = pageKey.split('?')[0];
+    const cleanPageKeyWithCase = pageKey.split('?')[0];
+    const cleanPageKeyLower = cleanPageKeyWithCase.toLowerCase();
 
-    if (cleanPageKey.toLowerCase().startsWith('admin')) return cleanPageKey;
+    if (cleanPageKeyLower.startsWith('admin')) {
+        return cleanPageKeyWithCase;
+    }
 
-    const lookupKey = cleanPageKey.toLowerCase();
-    return pageKeyLookup[lookupKey] || 'Home';
+    const pageNames = Object.keys(pageComponentsMap);
+    const foundPageName = pageNames.find(
+        (name) => name.replace(/\s/g, '').toLowerCase() === cleanPageKeyLower
+    );
+
+    return foundPageName || 'Home';
 };
 
 
