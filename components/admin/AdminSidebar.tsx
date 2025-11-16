@@ -76,7 +76,7 @@ const AdminSidebar: React.FC<SidebarProps> = ({ isOpen, setIsOpen, activePage, s
                         <MenuItem icon="fas fa-desktop" text="Home Page Settings" hasSubMenu />
                         <MenuItem icon="fas fa-bars" text="Menu Page Settings" hasSubMenu />
                         <MenuItem icon="fas fa-envelope-open-text" text="Email Settings" hasSubMenu />
-                        <MenuItem icon="fas fa-credit-card" text="Payment Settings" />
+                        <MenuItem icon="fas fa-credit-card" text="Payment Settings" active={activePage === 'PaymentSettings'} onClick={() => setActivePage('PaymentSettings')} />
                         <MenuItem icon="fas fa-share-alt" text="Social Settings" />
                         <MenuItem icon="fas fa-language" text="Language Settings" />
                         <MenuItem icon="fas fa-wrench" text="SEO Tools" hasSubMenu />

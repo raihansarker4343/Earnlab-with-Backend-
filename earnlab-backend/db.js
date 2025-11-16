@@ -52,6 +52,15 @@ const initDb = async () => {
         date TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
         source VARCHAR(50)
       );
+
+      CREATE TABLE IF NOT EXISTS payment_methods (
+        id SERIAL PRIMARY KEY,
+        name VARCHAR(100) NOT NULL,
+        icon_class VARCHAR(100),
+        type VARCHAR(50) NOT NULL,
+        is_enabled BOOLEAN DEFAULT true,
+        special_bonus VARCHAR(50)
+      );
     `);
 
     // Add 'balance' column to 'users' table if it doesn't exist.

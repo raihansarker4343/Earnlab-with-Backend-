@@ -1,7 +1,8 @@
-import React, { useContext, useState } from 'react';
+import React, { useContext, useState, useEffect } from 'react';
 import { AppContext } from '../App';
 import { API_URL } from '../constants';
-import type { Transaction } from '../types';
+import type { Transaction, PaymentMethod } from '../types';
+import SkeletonLoader from './SkeletonLoader';
 
 const WithdrawalConfirmation: React.FC<{
     details: { cryptoName: string; address: string; amount: string };
@@ -226,6 +227,33 @@ const WalletModal: React.FC = () => {
         amount: '0',
     });
 
+    const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>([]);
+    const [isLoadingMethods, setIsLoadingMethods] = useState(true);
+    const [errorMethods, setErrorMethods] = useState<string | null>(null);
+
+    useEffect(() => {
+        if (isWalletModalOpen) {
+            const fetchMethods = async () => {
+                setIsLoadingMethods(true);
+                setErrorMethods(null);
+                try {
+                    const response = await fetch(`${API_URL}/api/payment-methods`);
+                    if (!response.ok) {
+                        throw new Error('Failed to load withdrawal options.');
+                    }
+                    const data: PaymentMethod[] = await response.json();
+                    setPaymentMethods(data);
+                } catch (error: any) {
+                    setErrorMethods(error.message);
+                } finally {
+                    setIsLoadingMethods(false);
+                }
+            };
+            fetchMethods();
+        }
+    }, [isWalletModalOpen]);
+
+
     const closeModal = () => {
         setIsWalletModalOpen(false);
         setTimeout(() => {
@@ -318,43 +346,74 @@ const WalletModal: React.FC = () => {
                         />;
             case 'select':
             default:
+                if (isLoadingMethods) {
+                    return (
+                        <div className="space-y-4 p-4">
+                            <SkeletonLoader className="h-10 w-1/3" />
+                            <SkeletonLoader className="h-16 w-full" />
+                            <SkeletonLoader className="h-10 w-1/3 mt-4" />
+                            <div className="grid grid-cols-4 gap-4">
+                                {[...Array(4)].map((_, i) => <SkeletonLoader key={i} className="h-24 w-full" />)}
+                            </div>
+                        </div>
+                    );
+                }
+                if (errorMethods) {
+                    return <p className="text-center text-red-500 p-8">{errorMethods}</p>;
+                }
+                
+                const groupedMethods = paymentMethods.reduce((acc, method) => {
+                    acc[method.type] = [...(acc[method.type] || []), method];
+                    return acc;
+                }, {} as { [key: string]: PaymentMethod[] });
+
                 return (
                     <div className="space-y-6">
-                        <div>
-                            <h3 className="text-sm font-semibold text-slate-500 dark:text-slate-400 mb-2">Special</h3>
-                            <button className="w-full bg-slate-100 dark:bg-[#1e293b] hover:bg-slate-200 dark:hover:bg-slate-700 p-4 rounded-lg flex justify-between items-center">
-                                <div className="flex items-center gap-3">
-                                    <i className="fas fa-dice text-green-400 text-xl"></i>
-                                    <span className="font-semibold">Gamdom</span>
-                                </div>
-                                <span className="bg-green-500/20 text-green-400 text-xs font-bold px-2 py-1 rounded">+25%</span>
-                            </button>
-                        </div>
-                        <div>
-                            <h3 className="text-sm font-semibold text-slate-500 dark:text-slate-400 mb-2">Cash</h3>
-                            <button className="w-full bg-slate-100 dark:bg-[#1e293b] hover:bg-slate-200 dark:hover:bg-slate-700 p-4 rounded-lg flex items-center gap-3">
-                                <i className="fab fa-cc-visa text-blue-400 text-xl"></i>
-                                <span className="font-semibold">Virtual Visa Interna...</span>
-                            </button>
-                        </div>
-                        <div>
-                            <h3 className="text-sm font-semibold text-slate-500 dark:text-slate-400 mb-2">Crypto</h3>
-                            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                                {['Bitcoin (BTC)', 'Ethereum (ETH)', 'Litecoin (LTC)', 'Solana (SOL)', 'Tether (USDT)', 'USD Coin (USDC)', 'Tron (TRX)', 'Ripple (XRP)'].map(crypto => (
-                                    <button 
-                                      key={crypto} 
-                                      onClick={() => handleSelectCrypto(crypto)}
-                                      className="bg-slate-100 dark:bg-[#1e293b] hover:bg-slate-200 dark:hover:bg-slate-700 p-4 rounded-lg text-center flex flex-col items-center justify-center gap-2"
-                                    >
-                                        <i className={`fab fa-${crypto.split(' ')[0].toLowerCase()}`}></i>
-                                        <span className="block text-xs font-semibold">{crypto}</span>
+                        {groupedMethods.special && (
+                            <div>
+                                <h3 className="text-sm font-semibold text-slate-500 dark:text-slate-400 mb-2">Special</h3>
+                                {groupedMethods.special.map(method => (
+                                     <button key={method.id} className="w-full bg-slate-100 dark:bg-[#1e293b] hover:bg-slate-200 dark:hover:bg-slate-700 p-4 rounded-lg flex justify-between items-center">
+                                        <div className="flex items-center gap-3">
+                                            <i className={`${method.iconClass} text-green-400 text-xl`}></i>
+                                            <span className="font-semibold">{method.name}</span>
+                                        </div>
+                                        {method.specialBonus && <span className="bg-green-500/20 text-green-400 text-xs font-bold px-2 py-1 rounded">{method.specialBonus}</span>}
                                     </button>
                                 ))}
                             </div>
-                            <div className="text-center mt-4">
-                                <button className="text-blue-500 dark:text-blue-400 hover:text-blue-600 dark:hover:text-blue-300 font-semibold">Show All</button>
+                        )}
+                        {groupedMethods.cash && (
+                            <div>
+                                <h3 className="text-sm font-semibold text-slate-500 dark:text-slate-400 mb-2">Cash</h3>
+                                 {groupedMethods.cash.map(method => (
+                                    <button key={method.id} className="w-full bg-slate-100 dark:bg-[#1e293b] hover:bg-slate-200 dark:hover:bg-slate-700 p-4 rounded-lg flex items-center gap-3">
+                                        <i className={`${method.iconClass} text-blue-400 text-xl`}></i>
+                                        <span className="font-semibold">{method.name}</span>
+                                    </button>
+                                ))}
                             </div>
-                        </div>
+                        )}
+                        {groupedMethods.crypto && (
+                             <div>
+                                <h3 className="text-sm font-semibold text-slate-500 dark:text-slate-400 mb-2">Crypto</h3>
+                                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                                    {groupedMethods.crypto.map(crypto => (
+                                        <button 
+                                          key={crypto.id} 
+                                          onClick={() => handleSelectCrypto(crypto.name)}
+                                          className="bg-slate-100 dark:bg-[#1e293b] hover:bg-slate-200 dark:hover:bg-slate-700 p-4 rounded-lg text-center flex flex-col items-center justify-center gap-2"
+                                        >
+                                            <i className={`${crypto.iconClass}`}></i>
+                                            <span className="block text-xs font-semibold">{crypto.name}</span>
+                                        </button>
+                                    ))}
+                                </div>
+                                <div className="text-center mt-4">
+                                    <button className="text-blue-500 dark:text-blue-400 hover:text-blue-600 dark:hover:text-blue-300 font-semibold">Show All</button>
+                                </div>
+                            </div>
+                        )}
                     </div>
                 );
         }

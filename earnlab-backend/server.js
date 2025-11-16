@@ -170,6 +170,18 @@ app.post('/api/transactions/withdraw', authMiddleware, async (req, res) => {
     }
 });
 
+// --- PAYMENT METHODS ---
+app.get('/api/payment-methods', async (req, res) => {
+    try {
+        const result = await pool.query('SELECT * FROM payment_methods WHERE is_enabled = true ORDER BY type, name');
+        res.json(result.rows.map(snakeToCamel));
+    } catch (error) {
+        console.error('Error fetching payment methods:', error);
+        res.status(500).json({ message: 'Server error fetching payment methods.' });
+    }
+});
+
+
 // --- ADMIN ROUTES ---
 
 app.get('/api/admin/stats', authMiddleware, async (req, res) => {
@@ -235,7 +247,16 @@ app.get('/api/admin/recent-signups', authMiddleware, async (req, res) => {
 // Get all withdrawal transactions for admin panel, with pagination
 app.get('/api/admin/transactions', authMiddleware, async (req, res) => {
     const page = parseInt(req.query.page, 10) || 1;
-    const limit = parseInt(req.query.limit, 10) || 10;
+    const limitQuery = req.query.limit;
+    
+    let limit;
+    if (limitQuery) {
+        limit = parseInt(limitQuery, 10);
+    } else {
+        // A large number to fetch all if limit is not provided
+        limit = 10;
+    }
+
     const offset = (page - 1) * limit;
 
     try {
@@ -263,9 +284,9 @@ app.get('/api/admin/transactions', authMiddleware, async (req, res) => {
             LIMIT $1 OFFSET $2
         `, [limit, offset]);
 
-        if (req.query.limit) { // If a limit is specified, just return the array
+        if (limitQuery) {
             res.json(transactionsResult.rows.map(snakeToCamel));
-        } else { // Otherwise, return the paginated response
+        } else {
             res.json({
                 transactions: transactionsResult.rows.map(snakeToCamel),
                 currentPage: page,
@@ -278,6 +299,7 @@ app.get('/api/admin/transactions', authMiddleware, async (req, res) => {
         res.status(500).json({ message: 'Server error fetching admin transactions.' });
     }
 });
+
 
 // Update a transaction's status (approve/reject)
 app.patch('/api/admin/transactions/:id', authMiddleware, async (req, res) => {
@@ -332,6 +354,39 @@ app.patch('/api/admin/transactions/:id', authMiddleware, async (req, res) => {
     }
 });
 
+app.get('/api/admin/payment-methods', authMiddleware, async (req, res) => {
+    try {
+        const result = await pool.query('SELECT * FROM payment_methods ORDER BY type, name');
+        res.json(result.rows.map(snakeToCamel));
+    } catch (error) {
+        console.error('Error fetching all payment methods for admin:', error);
+        res.status(500).json({ message: 'Server error fetching payment methods.' });
+    }
+});
+
+app.patch('/api/admin/payment-methods/:id', authMiddleware, async (req, res) => {
+    const { id } = req.params;
+    const { isEnabled } = req.body;
+
+    if (typeof isEnabled !== 'boolean') {
+        return res.status(400).json({ message: 'Invalid "isEnabled" value.' });
+    }
+
+    try {
+        const result = await pool.query(
+            'UPDATE payment_methods SET is_enabled = $1 WHERE id = $2 RETURNING *',
+            [isEnabled, id]
+        );
+        if (result.rows.length === 0) {
+            return res.status(404).json({ message: 'Payment method not found.' });
+        }
+        res.json(snakeToCamel(result.rows[0]));
+    } catch (error) {
+        console.error('Error updating payment method:', error);
+        res.status(500).json({ message: 'Server error updating payment method.' });
+    }
+});
+
 
 // Helper to convert snake_case from DB to camelCase for frontend
 const snakeToCamel = (obj) => {
@@ -364,9 +419,45 @@ const seedAdmin = async () => {
     }
 };
 
+const seedPaymentMethods = async () => {
+    const client = await pool.connect();
+    try {
+        const check = await client.query('SELECT * FROM payment_methods LIMIT 1');
+        if (check.rows.length > 0) return; // Already seeded
+
+        console.log('Seeding payment methods...');
+        const methods = [
+            { name: 'Gamdom', icon_class: 'fas fa-dice', type: 'special', special_bonus: '+25%' },
+            { name: 'Virtual Visa Interna...', icon_class: 'fab fa-cc-visa', type: 'cash' },
+            { name: 'Bitcoin (BTC)', icon_class: 'fab fa-bitcoin', type: 'crypto' },
+            { name: 'Ethereum (ETH)', icon_class: 'fab fa-ethereum', type: 'crypto' },
+            { name: 'Litecoin (LTC)', icon_class: 'fas fa-litecoin-sign', type: 'crypto' },
+            { name: 'Solana (SOL)', icon_class: 'fas fa-project-diagram', type: 'crypto' },
+            { name: 'Tether (USDT)', icon_class: 'fas fa-dollar-sign', type: 'crypto' },
+            { name: 'USD Coin (USDC)', icon_class: 'fas fa-coins', type: 'crypto' },
+            { name: 'Tron (TRX)', icon_class: 'fas fa-atom', type: 'crypto' },
+            { name: 'Ripple (XRP)', icon_class: 'fab fa-ripple', type: 'crypto' },
+        ];
+        
+        for (const method of methods) {
+            await client.query(
+                'INSERT INTO payment_methods (name, icon_class, type, special_bonus) VALUES ($1, $2, $3, $4)',
+                [method.name, method.icon_class, method.type, method.special_bonus || null]
+            );
+        }
+        console.log('Payment methods seeded successfully.');
+
+    } catch (err) {
+        console.error('Error seeding payment methods:', err.stack);
+    } finally {
+        client.release();
+    }
+};
+
 // Start Server
 app.listen(port, () => {
   initDb();
   seedAdmin();
+  seedPaymentMethods();
   console.log(`Server running on http://localhost:${port}`);
 });

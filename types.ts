@@ -123,3 +123,12 @@ export interface Transaction {
   userId: number;
   email?: string;
 }
+
+export interface PaymentMethod {
+    id: number;
+    name: string;
+    iconClass: string;
+    type: 'special' | 'cash' | 'crypto';
+    isEnabled: boolean;
+    specialBonus?: string | null;
+}
