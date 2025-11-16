@@ -111,7 +111,7 @@ const UserDetailPage: React.FC<UserDetailPageProps> = ({ user, onBack }) => {
                         <div className="flex justify-between"><span>Earn ID:</span> <span className="font-medium text-slate-800">{userData.earnId}</span></div>
                         <div className="flex justify-between"><span>Rank:</span> <span className="font-medium text-slate-800">{userData.rank}</span></div>
                         <div className="flex justify-between"><span>XP:</span> <span className="font-medium text-slate-800">{(userData.xp || 0).toLocaleString()}</span></div>
-                        <div className="flex justify-between"><span>Joined:</span> <span className="font-medium text-slate-800">{new Date(userData.joinedDate!).toLocaleDateString()}</span></div>
+                        <div className="flex justify-between"><span>Joined:</span> <span className="font-medium text-slate-800">{userData.joinedDate ? new Date(userData.joinedDate).toLocaleDateString() : 'N/A'}</span></div>
                         <div className="flex justify-between"><span>Status:</span> <span className="font-medium text-green-600">Active</span></div>
                     </div>
                 </div>
