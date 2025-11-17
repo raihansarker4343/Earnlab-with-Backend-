@@ -873,6 +873,63 @@ const seedOfferWalls = async () => {
     }
 };
 
+const seedMockUsersAndTransactions = async () => {
+    const client = await pool.connect();
+    try {
+        const userCheck = await client.query("SELECT id FROM users WHERE email NOT LIKE 'raihansarker270@gmail.com' LIMIT 1");
+        if (userCheck.rows.length > 0) {
+            console.log('Mock users already exist, skipping seeding.');
+            return;
+        }
+
+        console.log('Seeding mock users and transactions...');
+
+        const users = [];
+        const usernames = ['CryptoKing', 'Sparkb6', 'GamerX', 'SoFi Plus', 'raihansarker', 'Fastslots', 'JohnDoe', 'JaneSmith', 'SurveyFan', 'Newbie'];
+        for (let i = 0; i < usernames.length; i++) {
+            const username = usernames[i];
+            const email = `${username.toLowerCase()}@example.com`;
+            const salt = await bcrypt.genSalt(10);
+            const password_hash = await bcrypt.hash('password123', salt);
+            const earn_id = crypto.randomBytes(8).toString('hex');
+            const avatar_url = `https://i.pravatar.cc/150?u=${username}`;
+            
+            const res = await client.query(
+                `INSERT INTO users (username, email, password_hash, avatar_url, earn_id, xp) VALUES ($1, $2, $3, $4, $5, $6) RETURNING id, username, avatar_url, xp`,
+                [username, email, password_hash, avatar_url, Math.floor(Math.random() * 90000) + 1000, earn_id]
+            );
+            users.push(res.rows[0]);
+        }
+        
+        const sources = ['Task', 'Survey', 'Offer'];
+        const methods = ['Torox', 'BitLabs', 'CPX Research', 'AdGate Media'];
+
+        for (let i = 0; i < 150; i++) {
+            const user = users[Math.floor(Math.random() * users.length)];
+            const amount = (Math.random() * 25 + 0.5).toFixed(2);
+            // Random date in the last 30 days
+            const date = new Date(Date.now() - Math.floor(Math.random() * 30 * 24 * 60 * 60 * 1000));
+            
+            await client.query(
+                `INSERT INTO transactions (id, user_id, type, method, amount, status, date, source) VALUES ($1, $2, 'Task Reward', $3, $4, 'Completed', $5, $6)`,
+                [`MOCK${Date.now()}${i}`, user.id, methods[Math.floor(Math.random() * methods.length)], amount, date, sources[Math.floor(Math.random() * sources.length)]]
+            );
+
+            await client.query(
+                'UPDATE users SET total_earned = total_earned + $1, balance = balance + $1, completed_tasks = completed_tasks + 1 WHERE id = $2',
+                [amount, user.id]
+            );
+        }
+        console.log('Mock data seeded successfully.');
+
+    } catch (err) {
+        console.error('Error seeding mock data:', err);
+    } finally {
+        client.release();
+    }
+};
+
+
 // Start Server
 app.listen(port, () => {
   initDb().then(() => {
@@ -880,6 +937,7 @@ app.listen(port, () => {
       seedPaymentMethods();
       seedSurveyProviders();
       seedOfferWalls();
+      seedMockUsersAndTransactions();
   });
   console.log(`Server running on http://localhost:${port}`);
 });

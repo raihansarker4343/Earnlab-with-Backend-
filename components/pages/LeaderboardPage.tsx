@@ -1,25 +1,8 @@
 import React, { useState, useContext, useEffect } from 'react';
-import { LEADERBOARD_USERS } from '../../constants';
 import { AppContext } from '../../App';
 import type { LeaderboardUser } from '../../types';
-
-const getSimulatedData = (period: 'Daily' | 'Weekly' | 'Monthly'): LeaderboardUser[] => {
-    let multiplier = 1;
-    if (period === 'Daily') multiplier = 0.05 + Math.random() * 0.1; // small random daily variation
-    if (period === 'Weekly') multiplier = 0.5 + Math.random() * 0.2; // larger weekly variation
-
-    return [...LEADERBOARD_USERS]
-        .map(user => ({
-            ...user,
-            // Create pseudo-random but deterministic earnings for each user based on their name and the period
-            earned: parseFloat((user.earned * multiplier * (user.user.length % 5 + 1) / 3).toFixed(2)),
-        }))
-        .sort((a, b) => b.earned - a.earned)
-        .map((user, index) => ({
-            ...user,
-            rank: index + 1,
-        }));
-};
+import { API_URL } from '../../constants';
+import SkeletonLoader from '../SkeletonLoader';
 
 const getNextResetDate = (period: 'Daily' | 'Weekly' | 'Monthly'): Date => {
     const now = new Date();
@@ -51,9 +34,30 @@ const LeaderboardPage: React.FC = () => {
     const [activeTab, setActiveTab] = useState<'Daily' | 'Weekly' | 'Monthly'>('Weekly');
     const [leaderboardData, setLeaderboardData] = useState<LeaderboardUser[]>([]);
     const [timeLeft, setTimeLeft] = useState('');
+    const [isLoading, setIsLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
-        setLeaderboardData(getSimulatedData(activeTab));
+        const fetchLeaderboardData = async () => {
+            setIsLoading(true);
+            setError(null);
+            try {
+                const period = activeTab.toLowerCase();
+                const response = await fetch(`${API_URL}/api/leaderboard?period=${period}`);
+                if (!response.ok) {
+                    throw new Error('Failed to fetch leaderboard data.');
+                }
+                const data: LeaderboardUser[] = await response.json();
+                setLeaderboardData(data);
+            } catch (err: any) {
+                setError(err.message);
+                setLeaderboardData([]);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        fetchLeaderboardData();
     }, [activeTab]);
 
     useEffect(() => {
@@ -62,9 +66,9 @@ const LeaderboardPage: React.FC = () => {
             const difference = targetDate.getTime() - new Date().getTime();
             if (difference <= 0) {
                 setTimeLeft('Resetting...');
-                // Optionally, refresh data after reset
                 if (difference <= -1000) {
-                    setLeaderboardData(getSimulatedData(activeTab));
+                    // Refetch data after reset
+                    setActiveTab(prev => prev);
                 }
                 return;
             }
@@ -117,33 +121,70 @@ const LeaderboardPage: React.FC = () => {
                             </tr>
                         </thead>
                         <tbody className="text-slate-800 dark:text-slate-300">
-                            {leaderboardData.map((leader) => (
-                                <tr key={leader.user} className={`border-t border-slate-200 dark:border-slate-800 transition-colors ${leader.user === user?.username ? 'bg-blue-500/10' : ''}`}>
-                                    <td className="px-6 py-4 font-bold text-lg w-16 text-center">
-                                        {leader.rank === 1 && <i className="fas fa-trophy text-yellow-400 text-2xl"></i>}
-                                        {leader.rank === 2 && <i className="fas fa-trophy text-gray-400 text-xl"></i>}
-                                        {leader.rank === 3 && <i className="fas fa-trophy text-orange-400 text-lg"></i>}
-                                        {leader.rank > 3 && <span className="text-slate-500 dark:text-slate-400">{leader.rank}</span>}
-                                    </td>
-                                    <td className="px-6 py-4">
-                                        <div className="flex items-center gap-3">
-                                            <img src={leader.avatar} alt={leader.user} className="w-9 h-9 rounded-full" />
-                                            <div>
-                                                <div className="font-bold text-slate-900 dark:text-white">{leader.user}</div>
-                                                <div className="text-xs text-slate-500 dark:text-slate-400">Level {leader.level}</div>
+                            {isLoading ? (
+                                [...Array(10)].map((_, i) => (
+                                    <tr key={i} className="border-t border-slate-200 dark:border-slate-800">
+                                        <td className="px-6 py-4 w-16 text-center">
+                                            <SkeletonLoader className="h-6 w-6 rounded-md mx-auto" />
+                                        </td>
+                                        <td className="px-6 py-4">
+                                            <div className="flex items-center gap-3">
+                                                <SkeletonLoader className="w-9 h-9 rounded-full" />
+                                                <div>
+                                                    <SkeletonLoader className="h-5 w-24 mb-1" />
+                                                    <SkeletonLoader className="h-3 w-16" />
+                                                </div>
                                             </div>
-                                        </div>
-                                    </td>
-                                    <td className="px-6 py-4 text-right font-bold text-green-500 dark:text-green-400">
-                                        ${leader.earned.toFixed(2)}
+                                        </td>
+                                        <td className="px-6 py-4 text-right">
+                                            <SkeletonLoader className="h-6 w-20 ml-auto" />
+                                        </td>
+                                    </tr>
+                                ))
+                            ) : error ? (
+                                <tr>
+                                    <td colSpan={3} className="text-center py-16 text-red-500">{error}</td>
+                                </tr>
+                            ) : leaderboardData.length === 0 ? (
+                                <tr>
+                                    <td colSpan={3} className="text-center py-16 text-slate-500 dark:text-slate-400">
+                                        No data available for this period yet.
                                     </td>
                                 </tr>
-                            ))}
+                            ) : (
+                                leaderboardData.map((leader) => (
+                                    <tr key={leader.user} className={`border-t border-slate-200 dark:border-slate-800 transition-colors ${leader.user === user?.username ? 'bg-blue-100 dark:bg-blue-900/40' : ''}`}>
+                                        <td className="px-6 py-4 font-bold text-lg w-16 text-center">
+                                            {leader.rank === 1 && <i className="fas fa-trophy text-yellow-400 text-2xl"></i>}
+                                            {leader.rank === 2 && <i className="fas fa-trophy text-gray-400 text-xl"></i>}
+                                            {leader.rank === 3 && <i className="fas fa-trophy text-orange-400 text-lg"></i>}
+                                            {leader.rank > 3 && <span className="text-slate-500 dark:text-slate-400">{leader.rank}</span>}
+                                        </td>
+                                        <td className="px-6 py-4">
+                                            <div className="flex items-center gap-3">
+                                                <img src={leader.avatar} alt={leader.user} className="w-9 h-9 rounded-full" />
+                                                <div>
+                                                    <div className="font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                                                        <span>{leader.user}</span>
+                                                        {leader.user === user?.username && (
+                                                            <span className="text-xs bg-blue-500 text-white font-semibold px-2 py-0.5 rounded-full">You</span>
+                                                        )}
+                                                    </div>
+                                                    <div className="text-xs text-slate-500 dark:text-slate-400">Level {leader.level}</div>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td className="px-6 py-4 text-right font-bold text-green-500 dark:text-green-400">
+                                            ${leader.earned.toFixed(2)}
+                                        </td>
+                                    </tr>
+                                ))
+                            )}
                         </tbody>
                     </table>
                 </div>
 
-                {currentUserData && (
+                {currentUserData && !isLoading && (
                      <div className="p-4 border-t-2 border-blue-500 bg-blue-50 dark:bg-blue-900/20 sticky bottom-0">
                          <div className="flex items-center justify-between text-sm font-bold">
                             <div className="flex items-center gap-4">
