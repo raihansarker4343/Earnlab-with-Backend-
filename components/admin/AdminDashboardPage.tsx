@@ -2,6 +2,7 @@ import React, { useContext, useState, useEffect } from 'react';
 import { AppContext } from '../../App';
 import type { Transaction } from '../../types';
 import { API_URL } from '../../constants';
+import StatusBadge from '../StatusBadge';
 
 interface AdminStats {
     totalUsers: number;
@@ -286,13 +287,7 @@ const AdminDashboardPage: React.FC<AdminDashboardPageProps> = ({ onNavigate, onV
                                         <td className="p-2">{tx.method}</td>
                                         <td className="p-2 font-bold">${(Number(tx.amount) || 0).toFixed(2)}</td>
                                         <td className="p-2">
-                                            <span className={`px-2 py-1 rounded-full text-xs font-semibold ${
-                                                tx.status === 'Completed' ? 'bg-green-100 text-green-800' :
-                                                tx.status === 'Pending' ? 'bg-yellow-100 text-yellow-800' :
-                                                'bg-red-100 text-red-800'
-                                            }`}>
-                                                {tx.status}
-                                            </span>
+                                            <StatusBadge status={tx.status} />
                                         </td>
                                         <td className="p-2">
                                             {tx.status === 'Pending' ? (

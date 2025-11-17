@@ -144,6 +144,64 @@ app.post('/api/auth/admin-login', async (req, res) => {
     }
 });
 
+// --- USER PROFILE ROUTES ---
+app.patch('/api/user/profile', authMiddleware, async (req, res) => {
+    const { username, avatarUrl } = req.body;
+    const { id } = req.user;
+
+    if (!username && !avatarUrl) {
+        return res.status(400).json({ message: 'No fields to update were provided.' });
+    }
+    
+    const client = await pool.connect();
+    try {
+        await client.query('BEGIN');
+
+        if (username) {
+            const existingUser = await client.query('SELECT id FROM users WHERE username = $1 AND id != $2', [username, id]);
+            if (existingUser.rows.length > 0) {
+                throw new Error('Username already exists.');
+            }
+        }
+        
+        const fields = [];
+        const values = [];
+        let queryIndex = 1;
+
+        if (username) {
+            fields.push(`username = $${queryIndex++}`);
+            values.push(username);
+        }
+        if (avatarUrl) {
+            fields.push(`avatar_url = $${queryIndex++}`);
+            values.push(avatarUrl);
+        }
+
+        values.push(id);
+
+        const updateUserQuery = `UPDATE users SET ${fields.join(', ')} WHERE id = $${queryIndex} RETURNING id, username, email, avatar_url, created_at AS joined_date, total_earned, balance, last_30_days_earned, completed_tasks, total_wagered, total_profit, total_withdrawn, total_referrals, referral_earnings, xp, rank, earn_id`;
+        
+        const result = await client.query(updateUserQuery, values);
+
+        if (result.rows.length === 0) {
+            throw new Error('User not found or update failed.');
+        }
+
+        await client.query('COMMIT');
+
+        const updatedUser = result.rows[0];
+        res.json(snakeToCamel(updatedUser));
+
+    } catch (error) {
+        await client.query('ROLLBACK');
+        console.error('Error updating user profile:', error);
+        res.status(400).json({ message: error.message || 'Server error updating profile.' });
+    } finally {
+        client.release();
+    }
+});
+
+
 // --- NOTIFICATION ROUTES ---
 app.get('/api/notifications', authMiddleware, async (req, res) => {
     try {

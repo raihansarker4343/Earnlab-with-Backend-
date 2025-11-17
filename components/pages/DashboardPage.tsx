@@ -1,19 +1,10 @@
 import React, { useContext, useState, useEffect } from 'react';
 import { AppContext } from '../../App';
 import SkeletonLoader from '../SkeletonLoader';
-
-const getStatusBadge = (status: string) => {
-    switch (status) {
-        case 'Completed': return 'bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300';
-        case 'Pending': return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/50 dark:text-yellow-300';
-        case 'Failed': return 'bg-red-100 text-red-800 dark:bg-red-900/50 dark:text-red-300';
-        case 'Rejected': return 'bg-red-100 text-red-800 dark:bg-red-900/50 dark:text-red-300';
-        default: return 'bg-slate-100 text-slate-800 dark:bg-slate-700 dark:text-slate-300';
-    }
-};
+import StatusBadge from '../StatusBadge';
 
 const DashboardPage: React.FC = () => {
-    const { user, setCurrentPage, transactions } = useContext(AppContext);
+    const { user, setCurrentPage, transactions, setIsProfileEditModalOpen } = useContext(AppContext);
     const [activeTab, setActiveTab] = useState('Tasks');
     const [isLoading, setIsLoading] = useState(true);
 
@@ -66,9 +57,7 @@ const DashboardPage: React.FC = () => {
                                     <td className="px-6 py-4">{item.source || item.type}</td>
                                     <td className="px-6 py-4">N/A</td>
                                     <td className="px-6 py-4">
-                                        <span className={`text-xs font-semibold px-2 py-1 rounded-full ${getStatusBadge(item.status)}`}>
-                                            {item.status}
-                                        </span>
+                                        <StatusBadge status={item.status} />
                                     </td>
                                     <td className="px-6 py-4 font-semibold text-green-500 dark:text-green-400">${(Number(item.amount) || 0).toFixed(2)}</td>
                                     <td className="px-6 py-4">{item.date}</td>
@@ -110,7 +99,17 @@ const DashboardPage: React.FC = () => {
                     <div className="flex-1">
                         <div className="flex items-center justify-between">
                             <h2 className="text-2xl font-bold text-slate-900 dark:text-white">{user.username}</h2>
-                            <span className="bg-slate-100 dark:bg-slate-700 text-yellow-500 dark:text-yellow-400 px-3 py-1 rounded-full text-sm font-semibold">{user.rank}</span>
+                            <div className="flex items-center gap-2">
+                                <span className="bg-slate-100 dark:bg-slate-700 text-yellow-500 dark:text-yellow-400 px-3 py-1 rounded-full text-sm font-semibold">{user.rank}</span>
+                                <button 
+                                    onClick={() => setIsProfileEditModalOpen(true)}
+                                    className="bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600 px-3 py-1 rounded-full text-sm font-semibold transition-colors flex items-center gap-2"
+                                    aria-label="Edit profile"
+                                >
+                                    <i className="fas fa-pencil-alt text-xs"></i>
+                                    <span>Edit</span>
+                                </button>
+                            </div>
                         </div>
                         <p className="text-slate-500 dark:text-slate-400 text-sm">Joined {user.joinedDate ? new Date(user.joinedDate).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) : ''}</p>
                         <div className="flex flex-wrap gap-4 text-xs text-slate-500 dark:text-slate-400 mt-2">

@@ -3,6 +3,7 @@ import { AppContext } from '../App';
 import { API_URL } from '../constants';
 import type { Transaction, PaymentMethod } from '../types';
 import SkeletonLoader from './SkeletonLoader';
+import StatusBadge from './StatusBadge';
 
 const WithdrawalConfirmation: React.FC<{
     details: { cryptoName: string; address: string; amount: string };
@@ -158,15 +159,6 @@ const WithdrawalForm: React.FC<{
 
 const TransactionHistory: React.FC = () => {
     const { transactions } = useContext(AppContext);
-    const getStatusBadge = (status: Transaction['status']) => {
-        switch (status) {
-            case 'Completed': return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300';
-            case 'Pending': return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300';
-            case 'Failed': return 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300';
-            case 'Rejected': return 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300';
-            default: return 'bg-slate-100 text-slate-800 dark:bg-slate-700 dark:text-slate-300';
-        }
-    };
     
     return (
         <div className="overflow-x-auto">
@@ -199,7 +191,7 @@ const TransactionHistory: React.FC = () => {
                                     ${(Number(tx.amount) || 0).toFixed(2)}
                                 </td>
                                 <td className="px-4 py-3">
-                                    <span className={`text-xs font-semibold px-2 py-1 rounded-full ${getStatusBadge(tx.status)}`}>{tx.status}</span>
+                                    <StatusBadge status={tx.status} />
                                 </td>
                                 <td className="px-4 py-3 text-xs whitespace-nowrap">{new Date(tx.date).toLocaleDateString()}</td>
                             </tr>

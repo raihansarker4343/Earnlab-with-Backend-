@@ -12,6 +12,7 @@ import SignupModal from './components/SignupModal';
 import SupportChatModal from './components/SupportChatModal';
 import { API_URL } from './constants';
 import WithdrawalSuccessModal from './components/WithdrawalSuccessModal';
+import ProfileEditModal from './components/ProfileEditModal';
 
 
 // Lazy load page components
@@ -87,6 +88,8 @@ export const AppContext = React.createContext<{
   setIsSupportChatModalOpen: React.Dispatch<React.SetStateAction<boolean>>;
   isWithdrawSuccessModalOpen: boolean;
   setIsWithdrawSuccessModalOpen: React.Dispatch<React.SetStateAction<boolean>>;
+  isProfileEditModalOpen: boolean;
+  setIsProfileEditModalOpen: React.Dispatch<React.SetStateAction<boolean>>;
   isAdmin: boolean;
   setIsAdmin: React.Dispatch<React.SetStateAction<boolean>>;
 }>({
@@ -119,6 +122,8 @@ export const AppContext = React.createContext<{
   setIsSupportChatModalOpen: () => {},
   isWithdrawSuccessModalOpen: false,
   setIsWithdrawSuccessModalOpen: () => {},
+  isProfileEditModalOpen: false,
+  setIsProfileEditModalOpen: () => {},
   isAdmin: false,
   setIsAdmin: () => {},
 });
@@ -219,6 +224,7 @@ const App: React.FC = () => {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
   const [isWithdrawSuccessModalOpen, setIsWithdrawSuccessModalOpen] = useState(false);
+  const [isProfileEditModalOpen, setIsProfileEditModalOpen] = useState(false);
   const [theme, setTheme] = useState<'light' | 'dark'>(() => {
     const storedTheme = localStorage.getItem('theme');
     return (storedTheme === 'light' || storedTheme === 'dark') ? storedTheme : 'dark';
@@ -396,6 +402,7 @@ const App: React.FC = () => {
       isSidebarCollapsed, setIsSidebarCollapsed, isMobileSidebarOpen, 
       setIsMobileSidebarOpen, theme, setTheme, isSupportChatModalOpen, 
       setIsSupportChatModalOpen, isWithdrawSuccessModalOpen, setIsWithdrawSuccessModalOpen,
+      isProfileEditModalOpen, setIsProfileEditModalOpen,
       isAdmin, setIsAdmin
   };
 
@@ -516,6 +523,7 @@ const App: React.FC = () => {
         </div>
         {isLoggedIn && <WalletModal />}
         {isLoggedIn && <SupportChatModal isOpen={isSupportChatModalOpen} onClose={() => setIsSupportChatModalOpen(false)} />}
+        {isLoggedIn && <ProfileEditModal />}
         <WithdrawalSuccessModal 
             isOpen={isWithdrawSuccessModalOpen} 
             onClose={() => setIsWithdrawSuccessModalOpen(false)} 

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import type { User, Transaction } from '../../types';
 import { API_URL } from '../../constants';
+import StatusBadge from '../StatusBadge';
 
 interface UserDetailPageProps {
     user: { id: number; email: string; };
@@ -18,16 +19,6 @@ const StatCard: React.FC<{ title: string; value: string; icon: string }> = ({ ti
         </div>
     </div>
 );
-
-const getStatusBadge = (status: string) => {
-    switch (status) {
-        case 'Completed': return 'bg-green-100 text-green-800';
-        case 'Pending': return 'bg-yellow-100 text-yellow-800';
-        case 'Failed': return 'bg-red-100 text-red-800';
-        case 'Rejected': return 'bg-red-100 text-red-800';
-        default: return 'bg-slate-100 text-slate-800';
-    }
-};
 
 const UserDetailPage: React.FC<UserDetailPageProps> = ({ user, onBack }) => {
     const [userData, setUserData] = useState<User | null>(null);
@@ -138,9 +129,7 @@ const UserDetailPage: React.FC<UserDetailPageProps> = ({ user, onBack }) => {
                                             <td className="p-2">{tx.type}</td>
                                             <td className={`p-2 font-bold ${tx.type === 'Withdrawal' ? 'text-red-500' : 'text-green-500'}`}>${(tx.amount || 0).toFixed(2)}</td>
                                             <td className="p-2">
-                                                <span className={`px-2 py-1 rounded-full text-xs font-semibold ${getStatusBadge(tx.status)}`}>
-                                                    {tx.status}
-                                                </span>
+                                                <StatusBadge status={tx.status} />
                                             </td>
                                             <td className="p-2">{new Date(tx.date).toLocaleDateString()}</td>
                                         </tr>
