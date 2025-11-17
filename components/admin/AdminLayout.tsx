@@ -7,6 +7,7 @@ import PaymentSettingsPage from './PaymentSettingsPage';
 import SurveyControlPage from './SurveyControlPage';
 import OfferControlPage from './OfferControlPage';
 import UserDetailPage from './UserDetailPage';
+import UsersPage from './UsersPage';
 
 const AdminLayout: React.FC = () => {
     const [isSidebarOpen, setIsSidebarOpen] = useState(true);
@@ -35,6 +36,8 @@ const AdminLayout: React.FC = () => {
         switch(activePage) {
             case 'Dashboard':
                 return <AdminDashboardPage onNavigate={setActivePage} onViewUser={handleViewUser} />;
+            case 'UserInfo':
+                return <UsersPage onViewUser={handleViewUser} />;
             case 'Withdrawals':
                 return <WithdrawalsPage onViewUser={handleViewUser} />;
             case 'PaymentSettings':

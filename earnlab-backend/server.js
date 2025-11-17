@@ -630,6 +630,46 @@ app.patch('/api/admin/transactions/:id', adminAuthMiddleware, async (req, res) =
     }
 });
 
+app.get('/api/admin/users', adminAuthMiddleware, async (req, res) => {
+    const page = parseInt(req.query.page, 10) || 1;
+    const limit = parseInt(req.query.limit, 10) || 10;
+    const search = req.query.search || '';
+    const offset = (page - 1) * limit;
+
+    try {
+        let whereClause = '';
+        const queryParams = [limit, offset];
+        if (search) {
+            whereClause = `WHERE username ILIKE $3 OR email ILIKE $3`;
+            queryParams.push(`%${search}%`);
+        }
+        
+        const countQueryParams = search ? [`%${search}%`] : [];
+        const totalResult = await pool.query(`SELECT COUNT(*) FROM users ${whereClause}`, countQueryParams);
+        const totalItems = parseInt(totalResult.rows[0].count, 10);
+        const totalPages = Math.ceil(totalItems / limit);
+
+        const usersResult = await pool.query(`
+            SELECT id, username, email, avatar_url, created_at AS joined_date, balance
+            FROM users
+            ${whereClause}
+            ORDER BY created_at DESC
+            LIMIT $1 OFFSET $2
+        `, queryParams);
+
+        res.json({
+            users: usersResult.rows.map(snakeToCamel),
+            currentPage: page,
+            totalPages,
+            totalItems
+        });
+    } catch (error) {
+        console.error('Error fetching users for admin:', error);
+        res.status(500).json({ message: 'Server error fetching users.' });
+    }
+});
+
+
 app.get('/api/admin/users/:userId', adminAuthMiddleware, async (req, res) => {
     try {
         const { userId } = req.params;
