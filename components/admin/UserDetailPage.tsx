@@ -26,6 +26,15 @@ const UserDetailPage: React.FC<UserDetailPageProps> = ({ user, onBack }) => {
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
+    // Mock data for recent activity as it's not available from the backend
+    const mockActivity = [
+        { icon: 'fas fa-sign-in-alt', text: 'Logged in from New York, USA', time: '2 hours ago' },
+        { icon: 'fas fa-check-circle', text: 'Completed task #T58291 for $2.50', time: '5 hours ago' },
+        { icon: 'fas fa-university', text: 'Requested withdrawal of $25.00', time: '1 day ago' },
+        { icon: 'fas fa-user-edit', text: 'Updated profile username', time: '2 days ago' },
+        { icon: 'fas fa-sign-in-alt', text: 'Logged in from London, UK', time: '2 days ago' },
+    ];
+
     useEffect(() => {
         const fetchData = async () => {
             setIsLoading(true);
@@ -97,20 +106,36 @@ const UserDetailPage: React.FC<UserDetailPageProps> = ({ user, onBack }) => {
 
             {/* User Info & Transactions */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <div className="lg:col-span-1 bg-white p-5 rounded-lg shadow-md space-y-4">
-                    <h3 className="font-bold text-lg text-slate-800 border-b pb-2">User Information</h3>
-                    <div className="text-sm space-y-2 text-slate-600">
-                        <div className="flex justify-between"><span>User ID:</span> <span className="font-medium text-slate-800">{userData.id}</span></div>
-                        <div className="flex justify-between"><span>Earn ID:</span> <span className="font-medium text-slate-800">{userData.earnId}</span></div>
-                        <div className="flex justify-between"><span>Rank:</span> <span className="font-medium text-slate-800">{userData.rank}</span></div>
-                        <div className="flex justify-between"><span>XP:</span> <span className="font-medium text-slate-800">{(userData.xp || 0).toLocaleString()}</span></div>
-                        <div className="flex justify-between"><span>Joined:</span> <span className="font-medium text-slate-800">{userData.joinedDate ? new Date(userData.joinedDate).toLocaleDateString() : 'N/A'}</span></div>
-                        <div className="flex justify-between"><span>Status:</span> <span className="font-medium text-green-600">Active</span></div>
+                <div className="lg:col-span-1 space-y-6">
+                    <div className="bg-white p-5 rounded-lg shadow-md space-y-4">
+                        <h3 className="font-bold text-lg text-slate-800 border-b pb-2">User Information</h3>
+                        <div className="text-sm space-y-2 text-slate-600">
+                            <div className="flex justify-between"><span>User ID:</span> <span className="font-medium text-slate-800">{userData.id}</span></div>
+                            <div className="flex justify-between"><span>Earn ID:</span> <span className="font-medium text-slate-800">{userData.earnId}</span></div>
+                            <div className="flex justify-between"><span>Rank:</span> <span className="font-medium text-slate-800">{userData.rank}</span></div>
+                            <div className="flex justify-between"><span>XP:</span> <span className="font-medium text-slate-800">{(userData.xp || 0).toLocaleString()}</span></div>
+                            <div className="flex justify-between"><span>Joined:</span> <span className="font-medium text-slate-800">{userData.joinedDate ? new Date(userData.joinedDate).toLocaleDateString() : 'N/A'}</span></div>
+                            <div className="flex justify-between"><span>Status:</span> <span className="font-medium text-green-600">Active</span></div>
+                        </div>
+                    </div>
+                    <div className="bg-white p-5 rounded-lg shadow-md">
+                        <h3 className="font-bold text-lg text-slate-800 mb-4">Recent Activity</h3>
+                        <ul className="relative border-l border-slate-200 ml-3">
+                            {mockActivity.map((activity, index) => (
+                                <li key={index} className="mb-6 ml-6 last:mb-0">
+                                    <span className="absolute flex items-center justify-center w-6 h-6 bg-blue-100 rounded-full -left-3 ring-8 ring-white">
+                                        <i className={`${activity.icon} text-blue-600 text-xs`}></i>
+                                    </span>
+                                    <p className="text-sm font-normal text-slate-700">{activity.text}</p>
+                                    <time className="block text-xs font-normal leading-none text-slate-400 mt-0.5">{activity.time}</time>
+                                </li>
+                            ))}
+                        </ul>
                     </div>
                 </div>
                 <div className="lg:col-span-2 bg-white p-5 rounded-lg shadow-md">
                     <h3 className="font-bold text-lg text-slate-800 mb-4">Transaction History</h3>
-                    <div className="overflow-auto max-h-96">
+                    <div className="overflow-auto max-h-[calc(24rem+4rem)]">
                         <table className="w-full text-sm">
                             <thead className="sticky top-0 bg-slate-50">
                                 <tr className="text-left text-slate-500">

@@ -370,7 +370,7 @@ const HomePageContent: React.FC = () => {
         </section>
         
         {/* Stats Section */}
-        <section ref={statsRef} className="py-20 bg-white dark:bg-[#0f172a] text-center">
+        {/* <section ref={statsRef} className="py-20 bg-white dark:bg-[#0f172a] text-center">
              <h2 className="text-4xl font-bold text-slate-900 dark:text-white mb-4">Join The EarnLab Success Story</h2>
              <p className="max-w-3xl mx-auto mb-12 text-slate-600 dark:text-slate-400">Be part of our growing community and start earning effortlessly. See how thousands are turning simple tasks into real money.</p>
              <div className="container mx-auto grid grid-cols-1 md:grid-cols-3 gap-8 px-8">
@@ -388,7 +388,7 @@ const HomePageContent: React.FC = () => {
                 </div>
              </div>
              <button onClick={() => openSignupModal()} className="mt-12 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-lg">Join Us</button>
-        </section>
+        </section> */}
 
         {/* FAQ Section */}
         <section ref={faqRef} className={`py-20 bg-slate-50 dark:bg-[#141c2f] transition-opacity duration-1000 ${isFaqInView ? 'opacity-100' : 'opacity-0'}`}>
