@@ -3,6 +3,7 @@ import { AppContext } from '../../App';
 import type { Transaction } from '../../types';
 import { API_URL } from '../../constants';
 import StatusBadge from '../StatusBadge';
+import SkeletonLoader from '../SkeletonLoader';
 
 interface AdminStats {
     totalUsers: number;
@@ -88,6 +89,31 @@ const CircleStat: React.FC<{ title: string, value: string, percentage: number, c
         </div>
         <p className="mt-3 font-semibold text-slate-600">{title}</p>
     </div>
+);
+
+const TableSkeleton: React.FC<{ rowCount?: number; colCount: number; }> = ({ rowCount = 5, colCount }) => (
+    <table className="w-full text-sm">
+        <thead>
+            <tr className="text-left text-slate-500">
+                {[...Array(colCount)].map((_, i) => (
+                    <th key={i} className="p-2">
+                        <SkeletonLoader className="h-4 w-3/4 rounded" />
+                    </th>
+                ))}
+            </tr>
+        </thead>
+        <tbody>
+            {[...Array(rowCount)].map((_, i) => (
+                <tr key={i} className="border-t border-slate-200">
+                    {[...Array(colCount)].map((_, j) => (
+                        <td key={j} className="p-2">
+                            <SkeletonLoader className="h-5 w-full rounded" />
+                        </td>
+                    ))}
+                </tr>
+            ))}
+        </tbody>
+    </table>
 );
 
 const AdminDashboardPage: React.FC<AdminDashboardPageProps> = ({ onNavigate, onViewUser }) => {
@@ -256,7 +282,7 @@ const AdminDashboardPage: React.FC<AdminDashboardPageProps> = ({ onNavigate, onV
                     <button onClick={() => onNavigate('Withdrawals')} className="text-sm text-blue-600 hover:underline">View All</button>
                 </div>
                 <div className="overflow-x-auto">
-                    {isLoading ? <p>Loading requests...</p> : error ? <p className="text-red-500">{error}</p> :
+                    {isLoading ? <TableSkeleton colCount={7} /> : error ? <p className="text-red-500">{error}</p> :
                     <table className="w-full text-sm">
                         <thead>
                             <tr className="text-left text-slate-500">
@@ -319,7 +345,7 @@ const AdminDashboardPage: React.FC<AdminDashboardPageProps> = ({ onNavigate, onV
                 <div className="bg-white p-5 rounded-lg shadow-md">
                     <h3 className="font-bold text-lg mb-4 text-slate-800">Recent Task Completions</h3>
                     <div className="overflow-x-auto">
-                        {isTablesLoading ? <p>Loading...</p> : 
+                        {isTablesLoading ? <TableSkeleton colCount={5} /> : 
                         <table className="w-full text-sm">
                             <thead>
                                 <tr className="text-left text-slate-500">
@@ -358,7 +384,7 @@ const AdminDashboardPage: React.FC<AdminDashboardPageProps> = ({ onNavigate, onV
                 <div className="bg-white p-5 rounded-lg shadow-md">
                     <h3 className="font-bold text-lg mb-4 text-slate-800">Recent Signups</h3>
                      <div className="overflow-x-auto">
-                        {isTablesLoading ? <p>Loading...</p> :
+                        {isTablesLoading ? <TableSkeleton colCount={3} /> :
                         <table className="w-full text-sm">
                             <thead>
                                 <tr className="text-left text-slate-500">
