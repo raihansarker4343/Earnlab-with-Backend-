@@ -188,11 +188,13 @@ const sanitizeUser = (rawUser: User): User => {
     return user;
 };
 
-const getPageFromHash = (hash: string): string => {
-    if (!hash || hash === '#' || hash === '#/') return 'Home';
+const getPageFromHash = (hashPath: string): string => {
+    if (!hashPath || hashPath === '#' || hashPath === '#/') return 'Home';
     
-    const pageKey = hash.startsWith('#/') ? hash.substring(2) : hash.substring(1);
-    const cleanPageKeyWithCase = pageKey.split('?')[0];
+    const pageKey = hashPath.startsWith('#/') ? hashPath.substring(2) : hashPath.substring(1);
+    
+    const cleanPageKeyWithCase = pageKey;
+
     const cleanPageKeyLower = cleanPageKeyWithCase.replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
 
     if (cleanPageKeyLower.startsWith('admin')) {
@@ -346,7 +348,19 @@ const App: React.FC = () => {
     if (isLoadingAuth) return;
 
     const handleHashChange = () => {
-        const pageFromHash = getPageFromHash(window.location.hash);
+        const hash = window.location.hash;
+        
+        // Check for referral code in the hash's query string
+        const [path, queryString] = hash.split('?');
+        if (queryString) {
+            const params = new URLSearchParams(queryString);
+            const ref = params.get('ref');
+            if (ref) {
+                localStorage.setItem('referralCode', ref);
+            }
+        }
+
+        const pageFromHash = getPageFromHash(path); // Use only the path part for navigation
 
         if (pageFromHash.toLowerCase().startsWith('admin')) {
             setPage(pageFromHash);

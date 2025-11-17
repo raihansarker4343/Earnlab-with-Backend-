@@ -21,7 +21,7 @@ const ReferralsPage: React.FC = () => {
         return <div>Loading...</div>;
     }
     
-    const referralLink = `https://earnlab.com/ref/${user.username}`;
+    const referralLink = `${window.location.origin}${window.location.pathname}#/?ref=${user.username}`;
 
     const handleCopyLink = () => {
         navigator.clipboard.writeText(referralLink).then(() => {

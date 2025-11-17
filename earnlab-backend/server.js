@@ -43,13 +43,39 @@ const adminAuthMiddleware = (req, res, next) => {
 
 // --- AUTH ROUTES ---
 app.post('/api/auth/signup', async (req, res) => {
-    const { email, password, username } = req.body;
+    const { email, password, username, referralCode } = req.body;
     if (!email || !password || !username) {
         return res.status(400).json({ message: 'All fields are required' });
     }
     const client = await pool.connect();
     try {
         await client.query('BEGIN');
+
+        if (referralCode && referralCode.toLowerCase() === username.toLowerCase()) {
+            throw new Error('You cannot refer yourself.');
+        }
+
+        if (referralCode) {
+            const referrerResult = await client.query(
+                'SELECT id FROM users WHERE username = $1',
+                [referralCode]
+            );
+
+            if (referrerResult.rows.length > 0) {
+                const referrerId = referrerResult.rows[0].id;
+                await client.query(
+                    'UPDATE users SET total_referrals = total_referrals + 1 WHERE id = $1',
+                    [referrerId]
+                );
+
+                const notificationMessage = `You have a new referral: ${username}!`;
+                await client.query(
+                    'INSERT INTO notifications (user_id, message, link_to) VALUES ($1, $2, $3)',
+                    [referrerId, notificationMessage, '/Referrals']
+                );
+            }
+        }
+        
         const salt = await bcrypt.genSalt(10);
         const password_hash = await bcrypt.hash(password, salt);
         const earn_id = crypto.randomBytes(8).toString('hex');

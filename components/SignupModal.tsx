@@ -48,15 +48,18 @@ const SignupModal: React.FC<SignupModalProps> = ({ isOpen, onClose, initialEmail
         setError('');
         setIsLoading(true);
 
+        const referralCode = localStorage.getItem('referralCode');
+
         try {
             const response = await fetch(`${API_URL}/api/auth/signup`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email, username, password }),
+                body: JSON.stringify({ email, username, password, referralCode }),
             });
             const data = await response.json();
             if (response.ok) {
                 handleLogin(data.token);
+                localStorage.removeItem('referralCode'); // Clear after successful use
             } else {
                 setError(data.message || 'Failed to sign up.');
             }
