@@ -153,7 +153,7 @@ const LeaderboardPage: React.FC = () => {
                                 </tr>
                             ) : (
                                 leaderboardData.map((leader) => (
-                                    <tr key={leader.user} className={`border-t border-slate-200 dark:border-slate-800 transition-colors ${leader.user === user?.username ? 'bg-blue-500/10' : ''}`}>
+                                    <tr key={leader.user} className={`border-t border-slate-200 dark:border-slate-800 transition-colors ${leader.user === user?.username ? 'bg-blue-100 dark:bg-blue-900/40' : ''}`}>
                                         <td className="px-6 py-4 font-bold text-lg w-16 text-center">
                                             {leader.rank === 1 && <i className="fas fa-trophy text-yellow-400 text-2xl"></i>}
                                             {leader.rank === 2 && <i className="fas fa-trophy text-gray-400 text-xl"></i>}
@@ -164,7 +164,12 @@ const LeaderboardPage: React.FC = () => {
                                             <div className="flex items-center gap-3">
                                                 <img src={leader.avatar} alt={leader.user} className="w-9 h-9 rounded-full" />
                                                 <div>
-                                                    <div className="font-bold text-slate-900 dark:text-white">{leader.user}</div>
+                                                    <div className="font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                                                        <span>{leader.user}</span>
+                                                        {leader.user === user?.username && (
+                                                            <span className="text-xs bg-blue-500 text-white font-semibold px-2 py-0.5 rounded-full">You</span>
+                                                        )}
+                                                    </div>
                                                     <div className="text-xs text-slate-500 dark:text-slate-400">Level {leader.level}</div>
                                                 </div>
                                             </div>
