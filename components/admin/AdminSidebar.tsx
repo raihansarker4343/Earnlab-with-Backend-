@@ -67,7 +67,7 @@ const AdminSidebar: React.FC<SidebarProps> = ({ isOpen, setIsOpen, activePage, s
                     <ul className="space-y-2">
                         <MenuItem icon="fas fa-tachometer-alt" text="Dashboard" active={activePage === 'Dashboard'} onClick={() => setActivePage('Dashboard')} />
                         <MenuItem icon="fas fa-exchange-alt" text="Transactions" active={activePage === 'Withdrawals'} onClick={() => setActivePage('Withdrawals')} />
-                        <MenuItem icon="fas fa-users" text="User Info" active={activePage === 'UserInfo'} onClick={() => setActivePage('UserInfo')} />
+                        <MenuItem icon="fas fa-users" text="User Info" active={activePage === 'Users'} onClick={() => setActivePage('Users')} />
                         <MenuItem icon="fas fa-life-ring" text="Support Tickets" />
                         <MenuItem icon="fas fa-cog" text="General Settings" />
                         <MenuItem icon="fas fa-poll" text="Survey Control" active={activePage === 'SurveyControl'} onClick={() => setActivePage('SurveyControl')} />

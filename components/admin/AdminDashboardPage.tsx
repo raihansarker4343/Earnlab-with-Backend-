@@ -395,12 +395,12 @@ const AdminDashboardPage: React.FC<AdminDashboardPageProps> = ({ onNavigate, onV
                             </thead>
                             <tbody className="text-slate-700">
                                 {filteredRecentSignups.length > 0 ? (
-                                    filteredRecentSignups.map(user => (
-                                         <tr key={user.email} className="border-t border-slate-200">
-                                            <td className="p-2 font-medium">{user.email}</td>
-                                            <td className="p-2">{new Date(user.joinedDate).toLocaleString()}</td>
+                                    filteredRecentSignups.map(signupUser => (
+                                         <tr key={signupUser.email} className="border-t border-slate-200">
+                                            <td className="p-2 font-medium">{signupUser.email}</td>
+                                            <td className="p-2">{new Date(signupUser.joinedDate).toLocaleString()}</td>
                                             <td className="p-2">
-                                                <button onClick={() => onViewUser({ id: user.id, email: user.email })} className="bg-slate-800 text-white px-3 py-1 rounded text-xs hover:bg-slate-700">Details</button>
+                                                <button onClick={() => onViewUser({ id: signupUser.id, email: signupUser.email })} className="bg-slate-800 text-white px-3 py-1 rounded text-xs hover:bg-slate-700">Details</button>
                                             </td>
                                         </tr>
                                     ))

@@ -36,7 +36,7 @@ const AdminLayout: React.FC = () => {
         switch(activePage) {
             case 'Dashboard':
                 return <AdminDashboardPage onNavigate={setActivePage} onViewUser={handleViewUser} />;
-            case 'UserInfo':
+            case 'Users':
                 return <UsersPage onViewUser={handleViewUser} />;
             case 'Withdrawals':
                 return <WithdrawalsPage onViewUser={handleViewUser} />;
