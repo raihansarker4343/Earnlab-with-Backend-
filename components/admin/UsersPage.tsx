@@ -139,13 +139,17 @@ const UsersPage: React.FC<UsersPageProps> = ({ onViewUser }) => {
                                 users.map(user => (
                                     <tr key={user.id} className="border-b border-slate-200 last:border-0">
                                         <td className="p-3">
-                                            <div className="flex items-center gap-3">
+                                            <button
+                                                onClick={() => onViewUser({ id: Number(user.id), email: user.email || '' })}
+                                                className="flex items-center gap-3 text-left group focus:outline-none focus:ring-2 focus:ring-slate-500 rounded"
+                                                aria-label={`View details for ${user.username}`}
+                                            >
                                                 <img src={user.avatarUrl || `https://i.pravatar.cc/150?u=${user.id}`} alt={user.username} className="w-9 h-9 rounded-full" />
                                                 <div>
-                                                    <p className="font-bold text-slate-800">{user.username}</p>
+                                                    <p className="font-bold text-slate-800 group-hover:text-blue-600 group-hover:underline">{user.username}</p>
                                                     <p className="text-xs text-slate-500">{user.email}</p>
                                                 </div>
-                                            </div>
+                                            </button>
                                         </td>
                                         <td className="p-3 font-mono text-xs">{user.id}</td>
                                         <td className="p-3">{new Date(user.joinedDate || '').toLocaleDateString()}</td>
