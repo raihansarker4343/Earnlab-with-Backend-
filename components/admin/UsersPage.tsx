@@ -77,23 +77,16 @@ const UsersPage: React.FC<UsersPageProps> = ({ onViewUser }) => {
 
     useEffect(() => {
         const debounceTimer = setTimeout(() => {
-            fetchData(1, searchQuery);
+            fetchData(currentPage, searchQuery);
         }, 300); // Debounce search input
 
         return () => clearTimeout(debounceTimer);
-    }, [searchQuery]);
-    
-    useEffect(() => {
-        if (!searchQuery) { // Avoid refetching when search is active and page changes
-            fetchData(currentPage, searchQuery);
-        }
-    }, [currentPage]);
+    }, [searchQuery, currentPage]);
 
 
     const handlePageChange = (newPage: number) => {
         if (newPage > 0 && newPage <= totalPages) {
             setCurrentPage(newPage);
-            fetchData(newPage, searchQuery);
         }
     };
 
