@@ -1,12 +1,11 @@
 import React, { useState, useEffect, useContext } from 'react';
 import SurveyProviderCard from '../SurveyProviderCard';
-import type { SurveyProvider, Transaction } from '../../types';
+import type { SurveyProvider } from '../../types';
 import { API_URL } from '../../constants';
 import SkeletonLoader from '../SkeletonLoader';
 import { AppContext } from '../../App';
 
 const SurveysPage: React.FC = () => {
-    const { user, setUser, setBalance, setTransactions } = useContext(AppContext);
     const [providers, setProviders] = useState<SurveyProvider[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -28,36 +27,6 @@ const SurveysPage: React.FC = () => {
         };
         fetchProviders();
     }, []);
-
-    const handleCompleteSurveyProvider = (provider: SurveyProvider) => {
-        if (!user) return;
-
-        const reward = parseFloat((Math.random() * (2.50 - 0.25) + 0.25).toFixed(2));
-        setBalance(prevBalance => prevBalance + reward);
-
-        const updatedUser = {
-            ...user,
-            balance: (user.balance || 0) + reward,
-            totalEarned: (user.totalEarned || 0) + reward,
-            completedTasks: (user.completedTasks || 0) + 1,
-        };
-        setUser(updatedUser);
-        localStorage.setItem('user', JSON.stringify(updatedUser));
-
-        const newTransaction: Transaction = {
-            id: `survey-prov-${Date.now()}`,
-            type: 'Task Reward',
-            method: provider.name,
-            amount: reward,
-            status: 'Completed',
-            date: new Date().toISOString(),
-            source: 'Survey',
-            userId: Number(user.id),
-            email: user.email,
-        };
-        setTransactions(prev => [newTransaction, ...prev]);
-        alert(`You earned $${reward.toFixed(2)} from ${provider.name}! This is a simulation as the survey wall is not integrated yet.`);
-    };
 
     return (
         <div className="space-y-8">
@@ -83,7 +52,7 @@ const SurveysPage: React.FC = () => {
             ) : (
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">
                     {providers.map((provider) => (
-                        <SurveyProviderCard key={provider.id} provider={provider} onClick={handleCompleteSurveyProvider} />
+                        <SurveyProviderCard key={provider.id} provider={provider} />
                     ))}
                 </div>
             )}

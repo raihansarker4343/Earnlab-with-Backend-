@@ -3,7 +3,7 @@ import { GoogleGenAI, Type } from '@google/genai';
 import SkeletonLoader from '../SkeletonLoader';
 import SurveyProviderCard from '../SurveyProviderCard';
 import OfferWallCard from '../OfferWallCard';
-import type { SurveyProvider, OfferWall, Transaction } from '../../types';
+import type { SurveyProvider, OfferWall } from '../../types';
 import { API_URL } from '../../constants';
 import { AppContext } from '../../App';
 
@@ -43,7 +43,7 @@ const SectionHeader: React.FC<{ title: string, description: string }> = ({ title
 );
 
 const LoggedInHomePage: React.FC = () => {
-    const { user, setUser, setBalance, setTransactions } = useContext(AppContext);
+    const { user } = useContext(AppContext);
     const [recommendations, setRecommendations] = useState<AIRecommendation[]>([]);
     const [isLoadingRecs, setIsLoadingRecs] = useState(true);
     const [errorRecs, setErrorRecs] = useState<string | null>(null);
@@ -53,128 +53,6 @@ const LoggedInHomePage: React.FC = () => {
     const [surveyProviders, setSurveyProviders] = useState<SurveyProvider[]>([]);
     const [isLoadingContent, setIsLoadingContent] = useState(true);
     const [errorContent, setErrorContent] = useState<string | null>(null);
-
-    const handleCompleteTask = (taskTitle: string, taskPayout: number) => {
-        if (!user) return;
-        
-        const reward = taskPayout;
-        setBalance(prevBalance => prevBalance + reward);
-
-        const updatedUser = {
-            ...user,
-            balance: (user.balance || 0) + reward,
-            totalEarned: (user.totalEarned || 0) + reward,
-            completedTasks: (user.completedTasks || 0) + 1,
-        };
-        setUser(updatedUser);
-        localStorage.setItem('user', JSON.stringify(updatedUser));
-
-        const newTransaction: Transaction = {
-            id: `task-${Date.now()}`,
-            type: 'Task Reward',
-            method: 'System',
-            amount: reward,
-            status: 'Completed',
-            date: new Date().toISOString(),
-            source: 'Task',
-            userId: Number(user.id),
-            email: user.email,
-        };
-        setTransactions(prev => [newTransaction, ...prev]);
-        alert(`You earned $${reward.toFixed(2)} for completing "${taskTitle}"!`);
-    };
-
-    const handleCompleteSurvey = (surveyTitle: string, surveyPayout: number) => {
-        if (!user) return;
-
-        const reward = surveyPayout;
-        setBalance(prevBalance => prevBalance + reward);
-
-        const updatedUser = {
-            ...user,
-            balance: (user.balance || 0) + reward,
-            totalEarned: (user.totalEarned || 0) + reward,
-            completedTasks: (user.completedTasks || 0) + 1, // Counting surveys as tasks for stats
-        };
-        setUser(updatedUser);
-        localStorage.setItem('user', JSON.stringify(updatedUser));
-
-        const newTransaction: Transaction = {
-            id: `survey-${Date.now()}`,
-            type: 'Task Reward',
-            method: 'System',
-            amount: reward,
-            status: 'Completed',
-            date: new Date().toISOString(),
-            source: 'Survey',
-            userId: Number(user.id),
-            email: user.email,
-        };
-        setTransactions(prev => [newTransaction, ...prev]);
-        alert(`You earned $${reward.toFixed(2)} for completing "${surveyTitle}"!`);
-    };
-
-    const handleCompleteOfferWall = (wall: OfferWall) => {
-        if (!user) return;
-
-        // Simulate a random payout for the offer wall
-        const reward = parseFloat((Math.random() * (5.00 - 0.50) + 0.50).toFixed(2));
-        setBalance(prevBalance => prevBalance + reward);
-
-        const updatedUser = {
-            ...user,
-            balance: (user.balance || 0) + reward,
-            totalEarned: (user.totalEarned || 0) + reward,
-            completedTasks: (user.completedTasks || 0) + 1, // Count as a task
-        };
-        setUser(updatedUser);
-        localStorage.setItem('user', JSON.stringify(updatedUser));
-
-        const newTransaction: Transaction = {
-            id: `offer-${Date.now()}`,
-            type: 'Task Reward',
-            method: wall.name,
-            amount: reward,
-            status: 'Completed',
-            date: new Date().toISOString(),
-            source: 'Offer',
-            userId: Number(user.id),
-            email: user.email,
-        };
-        setTransactions(prev => [newTransaction, ...prev]);
-        alert(`You earned $${reward.toFixed(2)} from ${wall.name}! This is a simulation as the offer wall is not integrated yet.`);
-    };
-
-    const handleCompleteSurveyProvider = (provider: SurveyProvider) => {
-        if (!user) return;
-
-        // Simulate a random payout for the survey provider
-        const reward = parseFloat((Math.random() * (2.50 - 0.25) + 0.25).toFixed(2));
-        setBalance(prevBalance => prevBalance + reward);
-
-        const updatedUser = {
-            ...user,
-            balance: (user.balance || 0) + reward,
-            totalEarned: (user.totalEarned || 0) + reward,
-            completedTasks: (user.completedTasks || 0) + 1, // Count as a task
-        };
-        setUser(updatedUser);
-        localStorage.setItem('user', JSON.stringify(updatedUser));
-
-        const newTransaction: Transaction = {
-            id: `survey-prov-${Date.now()}`,
-            type: 'Task Reward',
-            method: provider.name,
-            amount: reward,
-            status: 'Completed',
-            date: new Date().toISOString(),
-            source: 'Survey',
-            userId: Number(user.id),
-            email: user.email,
-        };
-        setTransactions(prev => [newTransaction, ...prev]);
-        alert(`You earned $${reward.toFixed(2)} from ${provider.name}! This is a simulation as the survey wall is not integrated yet.`);
-    };
 
     useEffect(() => {
         const fetchPageContent = async () => {
@@ -323,7 +201,6 @@ const LoggedInHomePage: React.FC = () => {
                                 <div className="flex justify-between items-center mt-2 pt-2 border-t border-slate-200 dark:border-slate-800">
                                     <p className="font-bold text-green-500 dark:text-green-400">${task.payout.toFixed(2)}</p>
                                     <button 
-                                        onClick={(e) => { e.stopPropagation(); handleCompleteTask(task.title, task.payout); }}
                                         className="bg-blue-600 text-white text-xs font-bold py-1 px-2 rounded hover:bg-blue-700 transition-colors"
                                     >
                                         Complete
@@ -351,7 +228,6 @@ const LoggedInHomePage: React.FC = () => {
                              <div className="flex justify-between items-center mt-2 pt-2 w-full border-t border-slate-200 dark:border-slate-800">
                                 <p className="font-bold text-green-500 dark:text-green-400">${survey.payout.toFixed(2)}</p>
                                 <button 
-                                    onClick={(e) => { e.stopPropagation(); handleCompleteSurvey(survey.title, survey.payout); }}
                                     className="bg-blue-600 text-white text-xs font-bold py-1 px-2 rounded hover:bg-blue-700 transition-colors"
                                 >
                                     Complete
@@ -374,7 +250,7 @@ const LoggedInHomePage: React.FC = () => {
                 ) : (
                     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-6">
                          {offerWalls.map((wall) => (
-                            <OfferWallCard key={wall.id} wall={wall} onClick={handleCompleteOfferWall} />
+                            <OfferWallCard key={wall.id} wall={wall} />
                         ))}
                     </div>
                 )}
@@ -392,7 +268,7 @@ const LoggedInHomePage: React.FC = () => {
                 ) : (
                     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">
                          {surveyProviders.map((wall) => (
-                             <SurveyProviderCard key={wall.id} provider={wall} onClick={handleCompleteSurveyProvider} />
+                             <SurveyProviderCard key={wall.id} provider={wall} />
                          ))}
                     </div>
                 )}
