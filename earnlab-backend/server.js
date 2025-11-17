@@ -391,6 +391,60 @@ app.get('/api/public/earning-feed', async (req, res) => {
     }
 });
 
+app.get('/api/leaderboard', async (req, res) => {
+    const { period } = req.query; // 'daily', 'weekly', 'monthly'
+    if (!['daily', 'weekly', 'monthly'].includes(period)) {
+        return res.status(400).json({ message: 'Invalid period specified.' });
+    }
+
+    let intervalCondition;
+    switch (period) {
+        case 'daily':
+            intervalCondition = "t.date >= date_trunc('day', NOW())";
+            break;
+        case 'weekly':
+            intervalCondition = "t.date >= date_trunc('week', NOW())";
+            break;
+        case 'monthly':
+            intervalCondition = "t.date >= date_trunc('month', NOW())";
+            break;
+    }
+
+    try {
+        const query = `
+            SELECT
+                u.id,
+                u.username,
+                u.avatar_url,
+                u.xp,
+                SUM(t.amount) AS earned
+            FROM transactions t
+            JOIN users u ON t.user_id = u.id
+            WHERE
+                t.type = 'Task Reward' AND t.status = 'Completed' AND ${intervalCondition}
+            GROUP BY u.id
+            ORDER BY earned DESC
+            LIMIT 20;
+        `;
+
+        const result = await pool.query(query);
+
+        const leaderboardData = result.rows.map((row, index) => ({
+            rank: index + 1,
+            user: row.username,
+            avatar: row.avatar_url,
+            earned: parseFloat(row.earned),
+            level: Math.floor(row.xp / 1000) + 1,
+        }));
+
+        res.json(leaderboardData);
+
+    } catch (error) {
+        console.error('Error fetching leaderboard data:', error);
+        res.status(500).json({ message: 'Server error fetching leaderboard.' });
+    }
+});
+
 
 // --- ADMIN ROUTES ---
 
