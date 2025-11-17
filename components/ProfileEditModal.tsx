@@ -3,6 +3,24 @@ import { AppContext } from '../App';
 import type { User } from '../types';
 import { API_URL } from '../constants';
 
+// Helper function to ensure numeric fields from the API/localStorage are numbers
+const sanitizeUser = (rawUser: User): User => {
+    const user = { ...rawUser };
+    const numericKeys: (keyof User)[] = [
+        'xp', 'xpToNextLevel', 'totalEarned', 'balance', 'last30DaysEarned',
+        'completedTasks', 'totalWagered', 'totalProfit', 'totalWithdrawn',
+        'totalReferrals', 'referralEarnings'
+    ];
+
+    for (const key of numericKeys) {
+        if (user[key] !== undefined && user[key] !== null) {
+            // @ts-ignore - TS has trouble with dynamic keys on interfaces
+            user[key] = Number(user[key]);
+        }
+    }
+    return user;
+};
+
 const ProfileEditModal: React.FC = () => {
     const { user, setUser, isProfileEditModalOpen, setIsProfileEditModalOpen } = useContext(AppContext);
     
@@ -49,8 +67,9 @@ const ProfileEditModal: React.FC = () => {
                 throw new Error(data.message || 'Failed to update profile.');
             }
             
-            setUser(data); 
-            localStorage.setItem('user', JSON.stringify(data));
+            const sanitizedData = sanitizeUser(data);
+            setUser(sanitizedData); 
+            localStorage.setItem('user', JSON.stringify(sanitizedData));
             closeModal();
 
         } catch (err: any) {
