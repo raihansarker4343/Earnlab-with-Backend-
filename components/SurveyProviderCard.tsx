@@ -3,7 +3,7 @@ import type { SurveyProvider } from '../types';
 import { LockIcon } from './icons/SurveyIcons';
 import StarRating from './StarRating';
 
-const SurveyProviderCard: React.FC<{ provider: SurveyProvider }> = ({ provider }) => {
+const SurveyProviderCard: React.FC<{ provider: SurveyProvider; onClick: (provider: SurveyProvider) => void; }> = ({ provider, onClick }) => {
     const gradients: { [key: string]: string } = {
         'BitLabs': 'from-blue-900/40 to-slate-900/10',
         'CPX Research': 'from-cyan-900/40 to-slate-900/10',
@@ -16,9 +16,6 @@ const SurveyProviderCard: React.FC<{ provider: SurveyProvider }> = ({ provider }
         'TheoremReach': 'from-pink-900/40 to-slate-900/10',
     };
     const gradient = gradients[provider.name] || 'from-slate-800/40 to-slate-900/10';
-    
-    const pageKey = provider.name.replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
-    const href = `/#/${pageKey}`;
 
     const cardContent = (
         <>
@@ -73,14 +70,12 @@ const SurveyProviderCard: React.FC<{ provider: SurveyProvider }> = ({ provider }
     }
     
     return (
-        <a
-            href={href}
-            target="_blank"
-            rel="noopener noreferrer"
-            className={`${className} cursor-pointer`}
+        <button
+            onClick={() => onClick(provider)}
+            className={`${className} cursor-pointer text-left`}
         >
             {cardContent}
-        </a>
+        </button>
     );
 };
 

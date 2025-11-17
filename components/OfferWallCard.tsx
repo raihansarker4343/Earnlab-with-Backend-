@@ -2,7 +2,7 @@ import React from 'react';
 import type { OfferWall } from '../types';
 import { LockIcon } from './icons/SurveyIcons';
 
-const OfferWallCard: React.FC<{ wall: OfferWall }> = ({ wall }) => {
+const OfferWallCard: React.FC<{ wall: OfferWall; onClick: (wall: OfferWall) => void; }> = ({ wall, onClick }) => {
     const gradients: { [key: string]: string } = {
         'Torox': 'from-orange-900/40 to-slate-900/10',
         'Adscend Media': 'from-sky-900/40 to-slate-900/10',
@@ -19,9 +19,6 @@ const OfferWallCard: React.FC<{ wall: OfferWall }> = ({ wall }) => {
         'AdGem': 'from-violet-900/40 to-slate-900/10',
     };
     const gradient = gradients[wall.name] || 'from-slate-800/40 to-slate-900/10';
-
-    const pageKey = wall.name.replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
-    const href = `/#/${pageKey}`;
 
     const cardContent = (
         <>
@@ -75,14 +72,12 @@ const OfferWallCard: React.FC<{ wall: OfferWall }> = ({ wall }) => {
     }
 
     return (
-        <a
-            href={href}
-            target="_blank"
-            rel="noopener noreferrer"
-            className={`${className} cursor-pointer`}
+        <button
+            onClick={() => onClick(wall)}
+            className={`${className} cursor-pointer text-left`}
         >
             {cardContent}
-        </a>
+        </button>
     );
 };
 

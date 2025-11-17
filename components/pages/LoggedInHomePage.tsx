@@ -114,6 +114,68 @@ const LoggedInHomePage: React.FC = () => {
         alert(`You earned $${reward.toFixed(2)} for completing "${surveyTitle}"!`);
     };
 
+    const handleCompleteOfferWall = (wall: OfferWall) => {
+        if (!user) return;
+
+        // Simulate a random payout for the offer wall
+        const reward = parseFloat((Math.random() * (5.00 - 0.50) + 0.50).toFixed(2));
+        setBalance(prevBalance => prevBalance + reward);
+
+        const updatedUser = {
+            ...user,
+            balance: (user.balance || 0) + reward,
+            totalEarned: (user.totalEarned || 0) + reward,
+            completedTasks: (user.completedTasks || 0) + 1, // Count as a task
+        };
+        setUser(updatedUser);
+        localStorage.setItem('user', JSON.stringify(updatedUser));
+
+        const newTransaction: Transaction = {
+            id: `offer-${Date.now()}`,
+            type: 'Task Reward',
+            method: wall.name,
+            amount: reward,
+            status: 'Completed',
+            date: new Date().toISOString(),
+            source: 'Offer',
+            userId: Number(user.id),
+            email: user.email,
+        };
+        setTransactions(prev => [newTransaction, ...prev]);
+        alert(`You earned $${reward.toFixed(2)} from ${wall.name}! This is a simulation as the offer wall is not integrated yet.`);
+    };
+
+    const handleCompleteSurveyProvider = (provider: SurveyProvider) => {
+        if (!user) return;
+
+        // Simulate a random payout for the survey provider
+        const reward = parseFloat((Math.random() * (2.50 - 0.25) + 0.25).toFixed(2));
+        setBalance(prevBalance => prevBalance + reward);
+
+        const updatedUser = {
+            ...user,
+            balance: (user.balance || 0) + reward,
+            totalEarned: (user.totalEarned || 0) + reward,
+            completedTasks: (user.completedTasks || 0) + 1, // Count as a task
+        };
+        setUser(updatedUser);
+        localStorage.setItem('user', JSON.stringify(updatedUser));
+
+        const newTransaction: Transaction = {
+            id: `survey-prov-${Date.now()}`,
+            type: 'Task Reward',
+            method: provider.name,
+            amount: reward,
+            status: 'Completed',
+            date: new Date().toISOString(),
+            source: 'Survey',
+            userId: Number(user.id),
+            email: user.email,
+        };
+        setTransactions(prev => [newTransaction, ...prev]);
+        alert(`You earned $${reward.toFixed(2)} from ${provider.name}! This is a simulation as the survey wall is not integrated yet.`);
+    };
+
     useEffect(() => {
         const fetchPageContent = async () => {
             try {
@@ -312,7 +374,7 @@ const LoggedInHomePage: React.FC = () => {
                 ) : (
                     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-6">
                          {offerWalls.map((wall) => (
-                            <OfferWallCard key={wall.id} wall={wall} />
+                            <OfferWallCard key={wall.id} wall={wall} onClick={handleCompleteOfferWall} />
                         ))}
                     </div>
                 )}
@@ -330,7 +392,7 @@ const LoggedInHomePage: React.FC = () => {
                 ) : (
                     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">
                          {surveyProviders.map((wall) => (
-                             <SurveyProviderCard key={wall.id} provider={wall} />
+                             <SurveyProviderCard key={wall.id} provider={wall} onClick={handleCompleteSurveyProvider} />
                          ))}
                     </div>
                 )}
