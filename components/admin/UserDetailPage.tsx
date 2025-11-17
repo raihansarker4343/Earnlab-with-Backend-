@@ -58,7 +58,7 @@ const UserDetailPage: React.FC<UserDetailPageProps> = ({ user, onBack }) => {
 
                 if (!transactionsRes.ok) throw new Error('Failed to fetch user transactions.');
                 const fetchedTransactions: Transaction[] = await transactionsRes.json();
-                setTransactions(fetchedTransactions);
+                setTransactions(fetchedTransactions.map(tx => ({ ...tx, amount: Number(tx.amount) })));
 
             } catch (err: any) {
                 setError(err.message);
@@ -67,7 +67,9 @@ const UserDetailPage: React.FC<UserDetailPageProps> = ({ user, onBack }) => {
             }
         };
 
-        fetchData();
+        if (user?.id) {
+            fetchData();
+        }
     }, [user.id]);
 
     if (isLoading) return <div>Loading user details...</div>;
@@ -80,10 +82,10 @@ const UserDetailPage: React.FC<UserDetailPageProps> = ({ user, onBack }) => {
                 <div>
                     <button onClick={onBack} className="text-sm text-blue-600 hover:underline mb-2">&larr; Back to List</button>
                     <div className="flex items-center gap-4">
-                        <img src={userData.avatarUrl} alt={userData.username} className="w-16 h-16 rounded-full" />
+                        <img src={userData.avatarUrl || `https://i.pravatar.cc/150?u=${userData.id}`} alt={userData.username} className="w-16 h-16 rounded-full" />
                         <div>
                             <h1 className="text-3xl font-bold text-slate-900">{userData.username}</h1>
-                            <p className="text-slate-500">{userData.email}</p>
+                            <p className="text-slate-500">{userData.email || 'No email provided'}</p>
                         </div>
                     </div>
                 </div>
@@ -134,7 +136,7 @@ const UserDetailPage: React.FC<UserDetailPageProps> = ({ user, onBack }) => {
                                         <tr key={tx.id} className="border-t border-slate-200">
                                             <td className="p-2 font-mono text-xs">{tx.id}</td>
                                             <td className="p-2">{tx.type}</td>
-                                            <td className={`p-2 font-bold ${tx.type === 'Withdrawal' ? 'text-red-500' : 'text-green-500'}`}>${(Number(tx.amount) || 0).toFixed(2)}</td>
+                                            <td className={`p-2 font-bold ${tx.type === 'Withdrawal' ? 'text-red-500' : 'text-green-500'}`}>${(tx.amount || 0).toFixed(2)}</td>
                                             <td className="p-2">
                                                 <span className={`px-2 py-1 rounded-full text-xs font-semibold ${getStatusBadge(tx.status)}`}>
                                                     {tx.status}
