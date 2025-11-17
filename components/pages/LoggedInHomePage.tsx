@@ -1,24 +1,28 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useContext } from 'react';
 import { GoogleGenAI, Type } from '@google/genai';
 import SkeletonLoader from '../SkeletonLoader';
 import SurveyProviderCard from '../SurveyProviderCard';
 import OfferWallCard from '../OfferWallCard';
-import { StarIcon } from '../icons/SurveyIcons';
-import type { SurveyProvider, OfferWall } from '../../types';
+import type { SurveyProvider, OfferWall, Transaction } from '../../types';
 import { API_URL } from '../../constants';
+import { AppContext } from '../../App';
 
-// Mock data for the new sections
 const featuredTasks = [
-  { image: 'https://i.imgur.com/r6355M8.png', title: 'Hero Castle War: T...', description: 'Open the app, registe...' },
-  { image: 'https://i.imgur.com/2Y44g63.png', title: 'Wild Fish - Android...', description: 'Be the best fisherman...' },
-  { image: 'https://i.imgur.com/wI4aB9a.png', title: 'CortalyCash', description: 'Complete all steps list...' },
-  { image: 'https://i.imgur.com/Y8H4yT6.png', title: 'WW Click Box - Mu...', description: 'Answer the survey qu...' },
-  { image: 'https://i.imgur.com/lO7qD52.png', title: 'Treehouse Fishing ...', description: 'Climb into your treeho...' },
-  { image: 'https://i.imgur.com/wZ68tB3.png', title: 'Money Quiz', description: 'Register using full vali...' },
+  { image: 'https://i.imgur.com/r6355M8.png', title: 'Hero Castle War: T...', description: 'Open the app, registe...', payout: 2.50 },
+  { image: 'https://i.imgur.com/2Y44g63.png', title: 'Wild Fish - Android...', description: 'Be the best fisherman...', payout: 1.75 },
+  { image: 'https://i.imgur.com/wI4aB9a.png', title: 'CortalyCash', description: 'Complete all steps list...', payout: 5.00 },
+  { image: 'https://i.imgur.com/Y8H4yT6.png', title: 'WW Click Box - Mu...', description: 'Answer the survey qu...', payout: 0.80 },
+  { image: 'https://i.imgur.com/lO7qD52.png', title: 'Treehouse Fishing ...', description: 'Climb into your treeho...', payout: 3.20 },
+  { image: 'https://i.imgur.com/wZ68tB3.png', title: 'Money Quiz', description: 'Register using full vali...', payout: 1.10 },
 ];
 
 const featuredSurveys = [
-  { title: 'Qualification', duration: '1 minute' },
+  { title: 'Qualification', duration: '1 minute', payout: 0.25 },
+  { title: 'Daily Poll', duration: '30 seconds', payout: 0.10 },
+  { title: 'Shopping Habits', duration: '5 minutes', payout: 1.50 },
+  { title: 'Tech Gadgets Opinion', duration: '10 minutes', payout: 2.00 },
+  { title: 'Travel Preferences', duration: '8 minutes', payout: 1.75 },
+  { title: 'YourNext TV Show', duration: '3 minutes', payout: 0.75 },
 ];
 
 interface AIRecommendation {
@@ -39,6 +43,7 @@ const SectionHeader: React.FC<{ title: string, description: string }> = ({ title
 );
 
 const LoggedInHomePage: React.FC = () => {
+    const { user, setUser, setBalance, setTransactions } = useContext(AppContext);
     const [recommendations, setRecommendations] = useState<AIRecommendation[]>([]);
     const [isLoadingRecs, setIsLoadingRecs] = useState(true);
     const [errorRecs, setErrorRecs] = useState<string | null>(null);
@@ -48,6 +53,66 @@ const LoggedInHomePage: React.FC = () => {
     const [surveyProviders, setSurveyProviders] = useState<SurveyProvider[]>([]);
     const [isLoadingContent, setIsLoadingContent] = useState(true);
     const [errorContent, setErrorContent] = useState<string | null>(null);
+
+    const handleCompleteTask = (taskTitle: string, taskPayout: number) => {
+        if (!user) return;
+        
+        const reward = taskPayout;
+        setBalance(prevBalance => prevBalance + reward);
+
+        const updatedUser = {
+            ...user,
+            balance: (user.balance || 0) + reward,
+            totalEarned: (user.totalEarned || 0) + reward,
+            completedTasks: (user.completedTasks || 0) + 1,
+        };
+        setUser(updatedUser);
+        localStorage.setItem('user', JSON.stringify(updatedUser));
+
+        const newTransaction: Transaction = {
+            id: `task-${Date.now()}`,
+            type: 'Task Reward',
+            method: 'System',
+            amount: reward,
+            status: 'Completed',
+            date: new Date().toISOString(),
+            source: 'Task',
+            userId: Number(user.id),
+            email: user.email,
+        };
+        setTransactions(prev => [newTransaction, ...prev]);
+        alert(`You earned $${reward.toFixed(2)} for completing "${taskTitle}"!`);
+    };
+
+    const handleCompleteSurvey = (surveyTitle: string, surveyPayout: number) => {
+        if (!user) return;
+
+        const reward = surveyPayout;
+        setBalance(prevBalance => prevBalance + reward);
+
+        const updatedUser = {
+            ...user,
+            balance: (user.balance || 0) + reward,
+            totalEarned: (user.totalEarned || 0) + reward,
+            completedTasks: (user.completedTasks || 0) + 1, // Counting surveys as tasks for stats
+        };
+        setUser(updatedUser);
+        localStorage.setItem('user', JSON.stringify(updatedUser));
+
+        const newTransaction: Transaction = {
+            id: `survey-${Date.now()}`,
+            type: 'Task Reward',
+            method: 'System',
+            amount: reward,
+            status: 'Completed',
+            date: new Date().toISOString(),
+            source: 'Survey',
+            userId: Number(user.id),
+            email: user.email,
+        };
+        setTransactions(prev => [newTransaction, ...prev]);
+        alert(`You earned $${reward.toFixed(2)} for completing "${surveyTitle}"!`);
+    };
 
     useEffect(() => {
         const fetchPageContent = async () => {
@@ -186,11 +251,22 @@ const LoggedInHomePage: React.FC = () => {
                 <SectionHeader title="Featured Tasks" description="Featured tasks are the best tasks to complete, with the highest rewards" />
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
                     {featuredTasks.map((task, index) => (
-                        <div key={index} className="bg-white dark:bg-[#1e293b] rounded-lg overflow-hidden group cursor-pointer hover:-translate-y-1 transition-transform border border-slate-200 dark:border-slate-800">
-                            <img src={task.image} alt={task.title} className="w-full aspect-[4/3] object-cover" />
-                            <div className="p-3">
+                        <div key={index} className="bg-white dark:bg-[#1e293b] rounded-lg overflow-hidden group hover:-translate-y-1 transition-transform border border-slate-200 dark:border-slate-800 flex flex-col">
+                            <div className="relative">
+                                <img src={task.image} alt={task.title} className="w-full aspect-[4/3] object-cover" />
+                            </div>
+                            <div className="p-3 flex-grow flex flex-col">
                                 <h3 className="font-semibold text-slate-900 dark:text-white truncate group-hover:text-blue-500 dark:group-hover:text-blue-400">{task.title}</h3>
-                                <p className="text-sm text-slate-500 dark:text-slate-400 truncate">{task.description}</p>
+                                <p className="text-sm text-slate-500 dark:text-slate-400 truncate flex-grow">{task.description}</p>
+                                <div className="flex justify-between items-center mt-2 pt-2 border-t border-slate-200 dark:border-slate-800">
+                                    <p className="font-bold text-green-500 dark:text-green-400">${task.payout.toFixed(2)}</p>
+                                    <button 
+                                        onClick={(e) => { e.stopPropagation(); handleCompleteTask(task.title, task.payout); }}
+                                        className="bg-blue-600 text-white text-xs font-bold py-1 px-2 rounded hover:bg-blue-700 transition-colors"
+                                    >
+                                        Complete
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     ))}
@@ -200,15 +276,25 @@ const LoggedInHomePage: React.FC = () => {
             {/* Featured Surveys */}
             <section>
                 <SectionHeader title="Featured Surveys" description="Explore our handpicked selection of surveys just for you" />
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-7 gap-4">
+                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-6 gap-4">
                     {featuredSurveys.map((survey, index) => (
-                         <div key={index} className="bg-white dark:bg-[#1e293b] rounded-lg p-4 flex flex-col items-start group cursor-pointer hover:-translate-y-1 transition-transform border border-slate-200 dark:border-slate-800">
+                         <div key={index} className="bg-white dark:bg-[#1e293b] rounded-lg p-4 flex flex-col group cursor-pointer hover:-translate-y-1 transition-transform border border-slate-200 dark:border-slate-800">
                              <div className="w-full aspect-square bg-slate-100 dark:bg-[#132841] rounded-lg flex items-center justify-center mb-3">
                                  <i className="fas fa-clipboard-list text-4xl text-blue-500 dark:text-blue-400"></i>
                              </div>
-                             <h3 className="font-semibold text-slate-900 dark:text-white group-hover:text-blue-500 dark:group-hover:text-blue-400">{survey.title}</h3>
-                             <p className="text-sm text-slate-500 dark:text-slate-400">{survey.duration}</p>
-                             <div className="self-end mt-auto pt-2"><StarIcon /></div>
+                            <div className="flex-grow">
+                                 <h3 className="font-semibold text-slate-900 dark:text-white group-hover:text-blue-500 dark:group-hover:text-blue-400">{survey.title}</h3>
+                                 <p className="text-sm text-slate-500 dark:text-slate-400">{survey.duration}</p>
+                            </div>
+                             <div className="flex justify-between items-center mt-2 pt-2 w-full border-t border-slate-200 dark:border-slate-800">
+                                <p className="font-bold text-green-500 dark:text-green-400">${survey.payout.toFixed(2)}</p>
+                                <button 
+                                    onClick={(e) => { e.stopPropagation(); handleCompleteSurvey(survey.title, survey.payout); }}
+                                    className="bg-blue-600 text-white text-xs font-bold py-1 px-2 rounded hover:bg-blue-700 transition-colors"
+                                >
+                                    Complete
+                                </button>
+                            </div>
                          </div>
                     ))}
                 </div>
