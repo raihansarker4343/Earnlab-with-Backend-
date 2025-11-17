@@ -351,18 +351,40 @@ app.get('/api/public/earning-feed', async (req, res) => {
         const result = await pool.query(`
             SELECT
                 t.id,
-                u.username AS user,
-                u.avatar_url AS avatar,
-                t.source AS task,
-                t.method AS provider,
+                u.username,
+                u.avatar_url,
+                t.type,
+                t.source,
+                t.method,
                 t.amount
             FROM transactions t
             JOIN users u ON t.user_id = u.id
-            WHERE t.status = 'Completed' AND t.type = 'Task Reward'
+            WHERE t.status = 'Completed' AND (t.type = 'Task Reward' OR t.type = 'Withdrawal')
             ORDER BY t.date DESC
             LIMIT 15
         `);
-        res.json(result.rows.map(snakeToCamel));
+        
+        const feedItems = result.rows.map(item => {
+            let task, provider;
+            if (item.type === 'Task Reward') {
+                task = item.source || 'Task';
+                provider = item.method;
+            } else { // Withdrawal
+                task = 'Withdrawal';
+                provider = item.method;
+            }
+            
+            return {
+                id: item.id,
+                user: item.username,
+                avatar: item.avatar_url,
+                task: task,
+                provider: provider,
+                amount: Number(item.amount)
+            };
+        });
+
+        res.json(feedItems);
     } catch (error) {
         console.error('Error fetching public earning feed:', error);
         res.status(500).json({ message: 'Server error fetching earning feed.' });
