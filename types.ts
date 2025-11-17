@@ -23,7 +23,7 @@ export interface User {
 }
 
 export interface EarningFeedItem {
-  id: number;
+  id: string;
   user: string;
   avatar: string;
   task: string;

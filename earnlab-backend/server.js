@@ -346,6 +346,29 @@ app.get('/api/offer-walls', async (req, res) => {
     }
 });
 
+app.get('/api/public/earning-feed', async (req, res) => {
+    try {
+        const result = await pool.query(`
+            SELECT
+                t.id,
+                u.username AS user,
+                u.avatar_url AS avatar,
+                t.source AS task,
+                t.method AS provider,
+                t.amount
+            FROM transactions t
+            JOIN users u ON t.user_id = u.id
+            WHERE t.status = 'Completed' AND t.type = 'Task Reward'
+            ORDER BY t.date DESC
+            LIMIT 15
+        `);
+        res.json(result.rows.map(snakeToCamel));
+    } catch (error) {
+        console.error('Error fetching public earning feed:', error);
+        res.status(500).json({ message: 'Server error fetching earning feed.' });
+    }
+});
+
 
 // --- ADMIN ROUTES ---
 

@@ -38,14 +38,22 @@ export const SURVEY_PROVIDERS: SurveyProvider[] = [
 ];
 
 export const EARNING_FEED_ITEMS: EarningFeedItem[] = [
-  { id: 1, user: 'Sparkb6', avatar: 'https://i.pravatar.cc/32?u=sparkb6', task: 'Bitcoin (BTC)', provider: '', amount: 141.96 },
-  { id: 2, user: 'SoFi Plus', avatar: 'https://i.pravatar.cc/32?u=sofi', task: '$10 Mont...', provider: 'RevU', amount: 28.13 },
-  { id: 3, user: 'Fastslots', avatar: 'https://i.pravatar.cc/32?u=fastslots', task: '[DE/AT/C...', provider: 'AdToWall', amount: 47.85 },
-  { id: 4, user: 'JohnDoe', avatar: 'https://i.pravatar.cc/32?u=johndoe', task: 'Sea of Conquest: P...', provider: 'Torox', amount: 24.01 },
-  { id: 5, user: 'JaneSmith', avatar: 'https://i.pravatar.cc/32?u=janesmith', task: 'BitLabs - Survey', provider: 'BitLabs', amount: 1.11 },
-  { id: 6, user: 'GamerX', avatar: 'https://i.pravatar.cc/32?u=gamerx', task: 'Project Entropy - Ge...', provider: 'Torox', amount: 5.27 },
-  { id: 7, user: 'CryptoKing', avatar: 'https://i.pravatar.cc/32?u=cryptoking', task: 'Browinner [DE/BE/...', provider: 'AdToWall', amount: 60.38 },
-  { id: 8, user: 'SurveyFan', avatar: 'https://i.pravatar.cc/32?u=surveyfan', task: 'BitLabs - Survey', provider: 'BitLabs', amount: 0.75 },
+  // FIX: Changed id from number to string to match EarningFeedItem type.
+  { id: '1', user: 'Sparkb6', avatar: 'https://i.pravatar.cc/32?u=sparkb6', task: 'Bitcoin (BTC)', provider: '', amount: 141.96 },
+  // FIX: Changed id from number to string to match EarningFeedItem type.
+  { id: '2', user: 'SoFi Plus', avatar: 'https://i.pravatar.cc/32?u=sofi', task: '$10 Mont...', provider: 'RevU', amount: 28.13 },
+  // FIX: Changed id from number to string to match EarningFeedItem type.
+  { id: '3', user: 'Fastslots', avatar: 'https://i.pravatar.cc/32?u=fastslots', task: '[DE/AT/C...', provider: 'AdToWall', amount: 47.85 },
+  // FIX: Changed id from number to string to match EarningFeedItem type.
+  { id: '4', user: 'JohnDoe', avatar: 'https://i.pravatar.cc/32?u=johndoe', task: 'Sea of Conquest: P...', provider: 'Torox', amount: 24.01 },
+  // FIX: Changed id from number to string to match EarningFeedItem type.
+  { id: '5', user: 'JaneSmith', avatar: 'https://i.pravatar.cc/32?u=janesmith', task: 'BitLabs - Survey', provider: 'BitLabs', amount: 1.11 },
+  // FIX: Changed id from number to string to match EarningFeedItem type.
+  { id: '6', user: 'GamerX', avatar: 'https://i.pravatar.cc/32?u=gamerx', task: 'Project Entropy - Ge...', provider: 'Torox', amount: 5.27 },
+  // FIX: Changed id from number to string to match EarningFeedItem type.
+  { id: '7', user: 'CryptoKing', avatar: 'https://i.pravatar.cc/32?u=cryptoking', task: 'Browinner [DE/BE/...', provider: 'AdToWall', amount: 60.38 },
+  // FIX: Changed id from number to string to match EarningFeedItem type.
+  { id: '8', user: 'SurveyFan', avatar: 'https://i.pravatar.cc/32?u=surveyfan', task: 'BitLabs - Survey', provider: 'BitLabs', amount: 0.75 },
 ];
 
 export const FAQ_ITEMS: FaqItem[] = [
