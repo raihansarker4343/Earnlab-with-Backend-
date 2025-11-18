@@ -90,12 +90,17 @@ app.post('/api/auth/signup', checkIpWithIPHub({ blockImmediately: true, blockOnF
         const ipAddress = req.ipInfo?.ip || req.ip;
         const country = req.ipInfo?.countryName || 'Unknown';
         const isp = req.ipInfo?.isp || req.ipInfo?.org || 'Unknown';
+        const blockStatus = req.ipInfo?.block;
+        const isBlocked = blockStatus === 1 || blockStatus === 2;
+        const blockType = blockStatus === 1 ? 'VPN/Proxy' : (blockStatus === 2 ? 'Hosting' : 'Residential');
 
         const ipHistory = JSON.stringify([{ 
             ip: ipAddress, 
             last_seen: new Date().toISOString(),
             isp: isp,
-            country: country
+            country: country,
+            isBlocked,
+            blockType
         }]);
         
         const newUserQuery = await client.query(
@@ -146,6 +151,9 @@ app.post('/api/auth/signin', checkIpWithIPHub({ blockImmediately: true, blockOnF
         const currentIp = req.ipInfo?.ip || req.ip;
         const currentCountry = req.ipInfo?.countryName || 'Unknown';
         const currentIsp = req.ipInfo?.isp || req.ipInfo?.org || 'Unknown';
+        const blockStatus = req.ipInfo?.block;
+        const isBlocked = blockStatus === 1 || blockStatus === 2;
+        const blockType = blockStatus === 1 ? 'VPN/Proxy' : (blockStatus === 2 ? 'Hosting' : 'Residential');
 
         let history = user.ip_history || [];
         // Remove existing entry for this IP to update it (move to top)
@@ -156,7 +164,9 @@ app.post('/api/auth/signin', checkIpWithIPHub({ blockImmediately: true, blockOnF
             ip: currentIp,
             last_seen: new Date().toISOString(),
             isp: currentIsp,
-            country: currentCountry
+            country: currentCountry,
+            isBlocked,
+            blockType
         });
 
         // Limit history size to 20 entries

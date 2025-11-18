@@ -25,6 +25,8 @@ export interface User {
       lastSeen: string;
       isp?: string;
       country?: string;
+      isBlocked?: boolean;
+      blockType?: string;
   }[];
 }
 

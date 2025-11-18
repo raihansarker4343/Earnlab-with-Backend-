@@ -129,7 +129,14 @@ const UserDetailPage: React.FC<UserDetailPageProps> = ({ user, onBack }) => {
                                     {userData.ipHistory.map((log, index) => (
                                         <li key={index} className="text-sm border-b border-slate-100 last:border-0 pb-2 last:pb-0">
                                             <div className="flex justify-between items-center mb-1">
-                                                <span className="font-mono font-semibold text-slate-700">{log.ip}</span>
+                                                <div className="flex items-center gap-2">
+                                                    <span className="font-mono font-semibold text-slate-700">{log.ip}</span>
+                                                    {log.isBlocked && (
+                                                         <span className="text-[10px] font-bold bg-red-100 text-red-600 px-1.5 py-0.5 rounded border border-red-200">
+                                                            {log.blockType || 'Blocked'}
+                                                        </span>
+                                                    )}
+                                                </div>
                                                 <span className="text-xs text-slate-500">{new Date(log.lastSeen).toLocaleDateString()}</span>
                                             </div>
                                             <div className="text-xs text-slate-500 flex justify-between">
