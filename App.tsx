@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect, Suspense } from 'react';
+import React, { useState, useCallback, useEffect, Suspense, useRef } from 'react';
 import Sidebar from './components/Sidebar';
 import Header from './components/Header';
 import LoggedOutHeader from './components/LoggedOutHeader';
@@ -143,6 +143,11 @@ const getPageFromHash = (hashPath: string): string => {
 const App: React.FC = () => {
   const [isAdmin, setIsAdmin] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const isLoggedInRef = useRef(isLoggedIn);
+  useEffect(() => {
+    isLoggedInRef.current = isLoggedIn;
+  }, [isLoggedIn]);
+
   const [user, setUser] = useState<User | null>(null);
   const [balance, setBalance] = useState(0);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
@@ -188,7 +193,9 @@ const App: React.FC = () => {
   const fetchAndSetUserData = useCallback(async () => {
     const token = localStorage.getItem('token');
     if (!token) {
-        if (isLoggedIn) handleLogout();
+        if (isLoggedInRef.current) {
+          handleLogout();
+        }
         return;
     }
 
@@ -230,7 +237,7 @@ const App: React.FC = () => {
         console.error("Failed to fetch user data:", error);
         handleLogout();
     }
-  }, [isLoggedIn, handleLogout]);
+  }, [handleLogout, setBalance, setIsLoggedIn, setNotifications, setTransactions, setUser]);
 
   const handleLogin = useCallback(async (token: string) => {
     localStorage.setItem('token', token);
@@ -322,18 +329,23 @@ const App: React.FC = () => {
     const handleFocus = () => {
       if (localStorage.getItem('token')) {
         fetchAndSetUserData();
+      } else {
+        // If the token is gone (e.g., logged out in another tab), log out here too.
+        if (isLoggedInRef.current) {
+          handleLogout();
+        }
       }
     };
     window.addEventListener('focus', handleFocus);
     return () => {
       window.removeEventListener('focus', handleFocus);
     };
-  }, [fetchAndSetUserData]);
+  }, [fetchAndSetUserData, handleLogout]);
 
-  const openSignupModal = (email = '') => {
+  const openSignupModal = useCallback((email = '') => {
       setSignupInitialEmail(email);
       setIsSignupModalOpen(true);
-  };
+  }, []);
 
   const appContextValue = { 
       isLoggedIn, user, setUser, balance, setBalance, transactions, setTransactions,
