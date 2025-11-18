@@ -1,3 +1,4 @@
+
 // middleware/ipHubMiddleware.js
 const { getIpInfo } = require('../services/ipHubClient');
 const logger = require('../utils/logger');
@@ -25,6 +26,9 @@ const checkIpWithIPHub = (options = {}) => {
       req.ipInfo = cachedEntry.data;
       req.isBlocked = req.ipInfo.block > 0;
       logger.info(`IP ${clientIp} served from cache. Block status: ${req.isBlocked}`);
+
+      // Log to DB even on cache hit to ensure persistence and update last_seen
+      logIpData(clientIp, req.ipInfo).catch(err => logger.error('DB logging failed (cache hit):', err));
 
       if (blockImmediately && req.isBlocked) {
         return res.status(403).json({ message: 'Access via VPN/Proxy is not allowed.' });

@@ -1,3 +1,4 @@
+
 // server.js
 const express = require('express');
 const cors = require('cors');
@@ -85,17 +86,18 @@ app.post('/api/auth/signup', checkIpWithIPHub({ blockImmediately: true, blockOnF
         const salt = await bcrypt.genSalt(10);
         const password_hash = await bcrypt.hash(password, salt);
         const earn_id = crypto.randomBytes(8).toString('hex');
+        const ipAddress = req.ipInfo?.ip || req.ip;
+        const country = req.ipInfo?.countryName || 'Unknown';
         
         const newUserQuery = await client.query(
-            `INSERT INTO users (username, email, password_hash, avatar_url, earn_id) 
-             VALUES ($1, $2, $3, $4, $5) 
-             RETURNING id, username, email, avatar_url, created_at AS joined_date, total_earned, balance, last_30_days_earned, completed_tasks, total_wagered, total_profit, total_withdrawn, total_referrals, referral_earnings, xp, rank, earn_id`,
-            [username, email, password_hash, `https://i.pravatar.cc/150?u=${username}`, earn_id]
+            `INSERT INTO users (username, email, password_hash, avatar_url, earn_id, ip_address, country) 
+             VALUES ($1, $2, $3, $4, $5, $6, $7) 
+             RETURNING id, username, email, avatar_url, created_at AS joined_date, total_earned, balance, last_30_days_earned, completed_tasks, total_wagered, total_profit, total_withdrawn, total_referrals, referral_earnings, xp, rank, earn_id, ip_address, country`,
+            [username, email, password_hash, `https://i.pravatar.cc/150?u=${username}`, earn_id, ipAddress, country]
         );
 
         const user = newUserQuery.rows[0];
-        const countryName = req.ipInfo?.countryName || 'Unknown';
-        logger.info(`New signup from ${user.username} (IP: ${req.ip}, Country: ${countryName})`);
+        logger.info(`New signup from ${user.username} (IP: ${ipAddress}, Country: ${country})`);
 
         await client.query('COMMIT');
         
