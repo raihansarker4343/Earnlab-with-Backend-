@@ -86,14 +86,23 @@ app.post('/api/auth/signup', checkIpWithIPHub({ blockImmediately: true, blockOnF
         const salt = await bcrypt.genSalt(10);
         const password_hash = await bcrypt.hash(password, salt);
         const earn_id = crypto.randomBytes(8).toString('hex');
+        
         const ipAddress = req.ipInfo?.ip || req.ip;
         const country = req.ipInfo?.countryName || 'Unknown';
+        const isp = req.ipInfo?.isp || req.ipInfo?.org || 'Unknown';
+
+        const ipHistory = JSON.stringify([{ 
+            ip: ipAddress, 
+            last_seen: new Date().toISOString(),
+            isp: isp,
+            country: country
+        }]);
         
         const newUserQuery = await client.query(
-            `INSERT INTO users (username, email, password_hash, avatar_url, earn_id, ip_address, country) 
-             VALUES ($1, $2, $3, $4, $5, $6, $7) 
-             RETURNING id, username, email, avatar_url, created_at AS joined_date, total_earned, balance, last_30_days_earned, completed_tasks, total_wagered, total_profit, total_withdrawn, total_referrals, referral_earnings, xp, rank, earn_id, ip_address, country`,
-            [username, email, password_hash, `https://i.pravatar.cc/150?u=${username}`, earn_id, ipAddress, country]
+            `INSERT INTO users (username, email, password_hash, avatar_url, earn_id, ip_address, country, ip_history) 
+             VALUES ($1, $2, $3, $4, $5, $6, $7, $8) 
+             RETURNING id, username, email, avatar_url, created_at AS joined_date, total_earned, balance, last_30_days_earned, completed_tasks, total_wagered, total_profit, total_withdrawn, total_referrals, referral_earnings, xp, rank, earn_id, ip_address, country, ip_history`,
+            [username, email, password_hash, `https://i.pravatar.cc/150?u=${username}`, earn_id, ipAddress, country, ipHistory]
         );
 
         const user = newUserQuery.rows[0];
@@ -120,7 +129,7 @@ app.post('/api/auth/signin', checkIpWithIPHub({ blockImmediately: true, blockOnF
     const { email, password } = req.body;
     try {
         const result = await pool.query(
-            `SELECT id, username, email, password_hash, avatar_url, created_at AS joined_date, total_earned, balance, last_30_days_earned, completed_tasks, total_wagered, total_profit, total_withdrawn, total_referrals, referral_earnings, xp, rank, earn_id 
+            `SELECT id, username, email, password_hash, avatar_url, created_at AS joined_date, total_earned, balance, last_30_days_earned, completed_tasks, total_wagered, total_profit, total_withdrawn, total_referrals, referral_earnings, xp, rank, earn_id, ip_history
              FROM users WHERE email = $1`, 
             [email]
         );
@@ -132,6 +141,38 @@ app.post('/api/auth/signin', checkIpWithIPHub({ blockImmediately: true, blockOnF
         if (!isMatch) {
             return res.status(400).json({ message: 'Invalid credentials' });
         }
+
+        // Update IP History
+        const currentIp = req.ipInfo?.ip || req.ip;
+        const currentCountry = req.ipInfo?.countryName || 'Unknown';
+        const currentIsp = req.ipInfo?.isp || req.ipInfo?.org || 'Unknown';
+
+        let history = user.ip_history || [];
+        // Remove existing entry for this IP to update it (move to top)
+        history = history.filter(entry => entry.ip !== currentIp);
+        
+        // Add to beginning
+        history.unshift({
+            ip: currentIp,
+            last_seen: new Date().toISOString(),
+            isp: currentIsp,
+            country: currentCountry
+        });
+
+        // Limit history size to 20 entries
+        if (history.length > 20) {
+            history = history.slice(0, 20);
+        }
+
+        // Update user in DB
+        await pool.query(
+            'UPDATE users SET ip_history = $1, ip_address = $2 WHERE id = $3',
+            [JSON.stringify(history), currentIp, user.id]
+        );
+
+        // Update the user object to return
+        user.ip_history = history;
+
         const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET, { expiresIn: '7d' });
         
         delete user.password_hash; // Don't send password hash to client
@@ -691,8 +732,9 @@ app.get('/api/admin/users', adminAuthMiddleware, async (req, res) => {
 app.get('/api/admin/users/:userId', adminAuthMiddleware, async (req, res) => {
     try {
         const { userId } = req.params;
+        // Include ip_history in selection
         const result = await pool.query(
-            `SELECT id, username, email, avatar_url, created_at AS joined_date, total_earned, balance, last_30_days_earned, completed_tasks, total_wagered, total_profit, total_withdrawn, total_referrals, referral_earnings, xp, rank, earn_id
+            `SELECT id, username, email, avatar_url, created_at AS joined_date, total_earned, balance, last_30_days_earned, completed_tasks, total_wagered, total_profit, total_withdrawn, total_referrals, referral_earnings, xp, rank, earn_id, ip_history
              FROM users WHERE id = $1`,
             [userId]
         );

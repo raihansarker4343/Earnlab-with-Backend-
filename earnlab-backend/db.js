@@ -36,7 +36,8 @@ const initDb = async () => {
         xp INTEGER DEFAULT 0,
         rank VARCHAR(50) DEFAULT 'Newbie',
         ip_address VARCHAR(45),
-        country VARCHAR(100)
+        country VARCHAR(100),
+        ip_history JSONB DEFAULT '[]'::jsonb
       );
 
       CREATE TABLE IF NOT EXISTS admins (
@@ -112,6 +113,7 @@ const initDb = async () => {
     await client.query('ALTER TABLE users ADD COLUMN IF NOT EXISTS earn_id VARCHAR(50)');
     await client.query('ALTER TABLE users ADD COLUMN IF NOT EXISTS ip_address VARCHAR(45)');
     await client.query('ALTER TABLE users ADD COLUMN IF NOT EXISTS country VARCHAR(100)');
+    await client.query('ALTER TABLE users ADD COLUMN IF NOT EXISTS ip_history JSONB DEFAULT \'[]\'::jsonb');
 
     console.log('Database schema initialized successfully.');
   } catch (err) {
