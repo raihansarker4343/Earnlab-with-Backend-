@@ -1,4 +1,3 @@
-
 // middleware/ipHubMiddleware.js
 const { getIpInfo } = require('../services/ipHubClient');
 const logger = require('../utils/logger');
@@ -13,17 +12,7 @@ const checkIpWithIPHub = (options = {}) => {
 
   return async (req, res, next) => {
     // req.ip will be the real client IP if 'trust proxy' is set in Express
-    // Sanitize IPv6 mapped IPv4 addresses
-    let clientIp = req.ip || '127.0.0.1';
-    clientIp = clientIp.replace('::ffff:', '');
-
-    // Handle local development addresses to allow traffic
-    if (clientIp === '127.0.0.1' || clientIp === '::1') {
-        logger.info(`Localhost IP ${clientIp} detected. Skipping strict IP check.`);
-        req.ipInfo = { ip: clientIp, block: 0, countryName: 'Localhost', isp: 'Local' };
-        req.isBlocked = false;
-        return next();
-    }
+    const clientIp = req.ip;
 
     if (!clientIp) {
         logger.warn('Could not determine client IP address.');
@@ -36,9 +25,6 @@ const checkIpWithIPHub = (options = {}) => {
       req.ipInfo = cachedEntry.data;
       req.isBlocked = req.ipInfo.block > 0;
       logger.info(`IP ${clientIp} served from cache. Block status: ${req.isBlocked}`);
-
-      // Log to DB even on cache hit to ensure persistence and update last_seen
-      logIpData(clientIp, req.ipInfo).catch(err => logger.error('DB logging failed (cache hit):', err));
 
       if (blockImmediately && req.isBlocked) {
         return res.status(403).json({ message: 'Access via VPN/Proxy is not allowed.' });

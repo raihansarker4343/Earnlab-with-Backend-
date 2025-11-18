@@ -20,14 +20,6 @@ export interface User {
   totalWithdrawn?: number;
   totalReferrals?: number;
   referralEarnings?: number;
-  ipHistory?: {
-      ip: string;
-      lastSeen: string;
-      isp?: string;
-      country?: string;
-      isBlocked?: boolean;
-      blockType?: string;
-  }[];
 }
 
 export interface EarningFeedItem {

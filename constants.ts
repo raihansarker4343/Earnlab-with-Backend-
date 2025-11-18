@@ -32,8 +32,8 @@ export const SURVEY_PROVIDERS: SurveyProvider[] = [
   { id: 3, name: 'Your-Surveys', logo: 'https://i.imgur.com/pLRnBU2.png', rating: 4, type: 'Your-Surveys', isEnabled: true },
   { id: 4, name: 'Pollfish', logo: 'https://i.imgur.com/OofFwSR.png', rating: 4, type: 'Pollfish', isEnabled: true },
   { id: 5, name: 'Prime Surveys', logo: 'https://i.imgur.com/0EGYRXz.png', rating: 3, type: 'Prime Surveys', isEnabled: true },
-  { id: 6, name: 'inBrain', logo: 'https://i.imgur.com/p2jQpqv.png', rating: 2, type: 'inBrain', isEnabled: true },
-  { id: 7, name: 'Adscend Media Surveys', logo: 'https://i.imgur.com/CM6xxOM.png', rating: 4, type: 'Adscend Media', isEnabled: true },
+  { id: 6, name: 'inBrain', logo: 'https://i.imgur.com/AaQPnwe.png', rating: 2, type: 'inBrain', isEnabled: true },
+  { id: 7, name: 'Adscend Media Surveys', logo: 'https://i.imgur.com/iY9g04E.png', rating: 4, type: 'Adscend Media', isEnabled: true },
   { id: 8, name: 'TheoremReach', logo: 'https://i.imgur.com/yvC5YyW.png', rating: 4, type: 'TheoremReach', isLocked: true, unlockRequirement: "Level 5+", isEnabled: true },
 ];
 

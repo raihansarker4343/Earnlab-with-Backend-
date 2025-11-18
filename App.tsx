@@ -255,7 +255,7 @@ const App: React.FC = () => {
     navigate('Home');
   }, [navigate]);
 
-  const fetchAndSetUserData = useCallback(async (retryCount = 0) => {
+  const fetchAndSetUserData = useCallback(async () => {
     const token = localStorage.getItem('token');
     if (!token) {
         if (isLoggedIn) handleLogout();
@@ -263,27 +263,18 @@ const App: React.FC = () => {
     }
 
     try {
-        const headers = { 'Authorization': `Bearer ${token}` };
         const [userRes, transactionsRes, notificationsRes] = await Promise.all([
-            fetch(`${API_URL}/api/auth/me`, { headers }),
-            fetch(`${API_URL}/api/transactions`, { headers }),
-            fetch(`${API_URL}/api/notifications`, { headers })
+            fetch(`${API_URL}/api/auth/me`, { headers: { 'Authorization': `Bearer ${token}` } }),
+            fetch(`${API_URL}/api/transactions`, { headers: { 'Authorization': `Bearer ${token}` } }),
+            fetch(`${API_URL}/api/notifications`, { headers: { 'Authorization': `Bearer ${token}` } })
         ]);
 
-        if (userRes.status === 401) {
-             throw new Error('UNAUTHORIZED');
-        }
-
-        if (!userRes.ok) {
-            throw new Error(`Server returned status ${userRes.status}`);
+        if (!userRes.ok || !transactionsRes.ok) {
+            throw new Error('Authentication failed or server error.');
         }
 
         const userData: User = await userRes.json();
-        
-        let userTransactions: Transaction[] = [];
-        if (transactionsRes.ok) {
-             userTransactions = await transactionsRes.json();
-        }
+        const userTransactions: Transaction[] = await transactionsRes.json();
         
         const sanitizedUser = sanitizeUser(userData);
         localStorage.setItem('user', JSON.stringify(sanitizedUser));
@@ -301,25 +292,13 @@ const App: React.FC = () => {
         if (notificationsRes.ok) {
             const notificationsData: Notification[] = await notificationsRes.json();
             setNotifications(notificationsData);
-        }
-
-    } catch (error: any) {
-        if (error.message === 'UNAUTHORIZED') {
-             console.warn("Authentication failed (Unauthorized), logging out.");
-             handleLogout();
-             return;
-        }
-
-        console.warn(`Failed to fetch user data (Attempt ${retryCount + 1}/3):`, error);
-        
-        if (retryCount < 3) {
-            // Exponential backoff: 1s, 2s, 4s
-            const timeout = Math.pow(2, retryCount) * 1000;
-            setTimeout(() => fetchAndSetUserData(retryCount + 1), timeout);
         } else {
-            console.error("Max retries reached for user data fetch. Logging out.");
-            handleLogout();
+            console.error('Failed to fetch notifications');
         }
+
+    } catch (error) {
+        console.error("Failed to fetch user data:", error);
+        handleLogout();
     }
   }, [isLoggedIn, handleLogout]);
 

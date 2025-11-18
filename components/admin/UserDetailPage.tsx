@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import type { User, Transaction } from '../../types';
 import { API_URL } from '../../constants';
@@ -105,7 +104,7 @@ const UserDetailPage: React.FC<UserDetailPageProps> = ({ user, onBack }) => {
                 <StatCard title="Completed Tasks" value={(userData.completedTasks || 0).toString()} icon="fas fa-check-circle" />
             </div>
 
-            {/* User Info, IP History & Transactions */}
+            {/* User Info & Transactions */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <div className="lg:col-span-1 space-y-6">
                     <div className="bg-white p-5 rounded-lg shadow-md space-y-4">
@@ -119,40 +118,6 @@ const UserDetailPage: React.FC<UserDetailPageProps> = ({ user, onBack }) => {
                             <div className="flex justify-between"><span>Status:</span> <span className="font-medium text-green-600">Active</span></div>
                         </div>
                     </div>
-
-                     {/* IP Logs (History) Section */}
-                    <div className="bg-white p-5 rounded-lg shadow-md">
-                        <h3 className="font-bold text-lg text-slate-800 mb-4 border-b pb-2">IP History</h3>
-                        <div className="overflow-y-auto max-h-64">
-                             {userData.ipHistory && userData.ipHistory.length > 0 ? (
-                                <ul className="space-y-3">
-                                    {userData.ipHistory.map((log, index) => (
-                                        <li key={index} className="text-sm border-b border-slate-100 last:border-0 pb-2 last:pb-0">
-                                            <div className="flex justify-between items-center mb-1">
-                                                <div className="flex items-center gap-2">
-                                                    <span className="font-mono font-semibold text-slate-700">{log.ip}</span>
-                                                    {log.isBlocked && (
-                                                         <span className="text-[10px] font-bold bg-red-100 text-red-600 px-1.5 py-0.5 rounded border border-red-200">
-                                                            {log.blockType || 'Blocked'}
-                                                        </span>
-                                                    )}
-                                                </div>
-                                                <span className="text-xs text-slate-500">{new Date(log.lastSeen).toLocaleDateString()}</span>
-                                            </div>
-                                            <div className="text-xs text-slate-500 flex justify-between">
-                                                <span>{log.country || 'Unknown'}</span>
-                                                <span>{log.isp || 'Unknown'}</span>
-                                            </div>
-                                        </li>
-                                    ))}
-                                </ul>
-                            ) : (
-                                <p className="text-sm text-slate-500">No IP history recorded.</p>
-                            )}
-                        </div>
-                    </div>
-                    
-                    {/* Recent Activity (Mock) */}
                     <div className="bg-white p-5 rounded-lg shadow-md">
                         <h3 className="font-bold text-lg text-slate-800 mb-4">Recent Activity</h3>
                         <ul className="relative border-l border-slate-200 ml-3">
@@ -168,10 +133,9 @@ const UserDetailPage: React.FC<UserDetailPageProps> = ({ user, onBack }) => {
                         </ul>
                     </div>
                 </div>
-
                 <div className="lg:col-span-2 bg-white p-5 rounded-lg shadow-md">
                     <h3 className="font-bold text-lg text-slate-800 mb-4">Transaction History</h3>
-                    <div className="overflow-auto max-h-[calc(32rem)]">
+                    <div className="overflow-auto max-h-[calc(24rem+4rem)]">
                         <table className="w-full text-sm">
                             <thead className="sticky top-0 bg-slate-50">
                                 <tr className="text-left text-slate-500">

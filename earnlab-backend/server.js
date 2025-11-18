@@ -1,115 +1,907 @@
-
-require('dotenv').config(); // Load env vars first!
+// server.js
 const express = require('express');
 const cors = require('cors');
-const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
-const { pool, initDb, logIpData } = require('./db');
+const jwt = require('jsonwebtoken');
+const crypto = require('crypto');
+const { pool, initDb } = require('./db');
+require('dotenv').config();
+
+const logger = require('./utils/logger');
 const checkIpWithIPHub = require('./middleware/ipHubMiddleware');
 
 const app = express();
-const PORT = process.env.PORT || 5000;
-const JWT_SECRET = process.env.JWT_SECRET || 'your_jwt_secret_key';
+const port = process.env.PORT || 3001;
 
-// Enable trust proxy to get real IP addresses behind load balancers (Render, Heroku, etc.)
-app.set('trust proxy', 1);
-
-// Middleware
 app.use(cors());
 app.use(express.json());
 
-// Helper to convert snake_case to camelCase for frontend consistency
-const snakeToCamel = (obj) => {
-    if (typeof obj !== 'object' || obj === null) return obj;
-    if (Array.isArray(obj)) return obj.map(snakeToCamel);
-    
-    const newObj = {};
-    for (const key in obj) {
-        const newKey = key.replace(/_([a-z])/g, (g) => g[1].toUpperCase());
-        newObj[newKey] = snakeToCamel(obj[key]);
-    }
-    return newObj;
-};
+// Trust the first proxy in front of the app (e.g., Nginx, Cloudflare) to get the correct client IP
+app.set('trust proxy', true);
 
-// Authentication Middleware
-const authenticateToken = (req, res, next) => {
-  const authHeader = req.headers['authorization'];
-  const token = authHeader && authHeader.split(' ')[1];
-
-  if (token == null) return res.sendStatus(401);
-
-  jwt.verify(token, JWT_SECRET, (err, user) => {
-    if (err) return res.sendStatus(403);
-    req.user = user;
-    next();
-  });
-};
-
-const adminAuthMiddleware = (req, res, next) => {
+// Middleware to verify JWT and attach user to request
+const authMiddleware = (req, res, next) => {
     const authHeader = req.headers['authorization'];
     const token = authHeader && authHeader.split(' ')[1];
-    if (!token) return res.status(401).json({ message: 'Unauthorized' });
+    if (token == null) return res.sendStatus(401);
 
-    jwt.verify(token, JWT_SECRET, (err, user) => {
-        if (err) return res.status(403).json({ message: 'Forbidden' });
-        if (user.role !== 'admin') return res.status(403).json({ message: 'Admin access required' });
+    jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
+        if (err) return res.sendStatus(403);
         req.user = user;
         next();
     });
 };
 
-// --- Seed Data Functions ---
-// These populate the DB if empty. You can update image links here for fresh installs.
+// Middleware to verify admin JWT
+const adminAuthMiddleware = (req, res, next) => {
+    const authHeader = req.headers['authorization'];
+    const token = authHeader && authHeader.split(' ')[1];
+    if (token == null) return res.sendStatus(401);
 
-const seedPaymentMethods = async () => {
-    const count = await pool.query('SELECT COUNT(*) FROM payment_methods');
-    if (parseInt(count.rows[0].count) === 0) {
-        console.log('Seeding payment methods...');
-        const methods = [
-            { name: 'PayPal', icon_class: 'fab fa-paypal', type: 'cash' },
-            { name: 'Bitcoin', icon_class: 'fab fa-bitcoin', type: 'crypto' },
-            { name: 'Ethereum', icon_class: 'fab fa-ethereum', type: 'crypto' },
-            { name: 'Litecoin', icon_class: 'fas fa-litecoin-sign', type: 'crypto' },
-            { name: 'Dogecoin', icon_class: 'fas fa-dog', type: 'crypto' },
-            { name: 'Visa', icon_class: 'fab fa-cc-visa', type: 'cash' },
-            { name: 'Amazon', icon_class: 'fab fa-amazon', type: 'special', special_bonus: '+5%' },
-            { name: 'Steam', icon_class: 'fab fa-steam', type: 'special' },
-        ];
-        for (const m of methods) {
-            await pool.query(
-                'INSERT INTO payment_methods (name, icon_class, type, special_bonus) VALUES ($1, $2, $3, $4)',
-                [m.name, m.icon_class, m.type, m.special_bonus]
+    jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
+        if (err || user.role !== 'admin') {
+            return res.sendStatus(403);
+        }
+        req.user = user;
+        next();
+    });
+};
+
+// --- AUTH ROUTES ---
+app.post('/api/auth/signup', checkIpWithIPHub({ blockImmediately: true, blockOnFailure: false }), async (req, res) => {
+    const { email, password, username, referralCode } = req.body;
+    if (!email || !password || !username) {
+        return res.status(400).json({ message: 'All fields are required' });
+    }
+    const client = await pool.connect();
+    try {
+        await client.query('BEGIN');
+
+        if (referralCode && referralCode.toLowerCase() === username.toLowerCase()) {
+            throw new Error('You cannot refer yourself.');
+        }
+
+        if (referralCode) {
+            const referrerResult = await client.query(
+                'SELECT id FROM users WHERE username = $1',
+                [referralCode]
+            );
+
+            if (referrerResult.rows.length > 0) {
+                const referrerId = referrerResult.rows[0].id;
+                await client.query(
+                    'UPDATE users SET total_referrals = total_referrals + 1 WHERE id = $1',
+                    [referrerId]
+                );
+
+                const notificationMessage = `You have a new referral: ${username}!`;
+                await client.query(
+                    'INSERT INTO notifications (user_id, message, link_to) VALUES ($1, $2, $3)',
+                    [referrerId, notificationMessage, '/Referrals']
+                );
+            }
+        }
+        
+        const salt = await bcrypt.genSalt(10);
+        const password_hash = await bcrypt.hash(password, salt);
+        const earn_id = crypto.randomBytes(8).toString('hex');
+        
+        const newUserQuery = await client.query(
+            `INSERT INTO users (username, email, password_hash, avatar_url, earn_id) 
+             VALUES ($1, $2, $3, $4, $5) 
+             RETURNING id, username, email, avatar_url, created_at AS joined_date, total_earned, balance, last_30_days_earned, completed_tasks, total_wagered, total_profit, total_withdrawn, total_referrals, referral_earnings, xp, rank, earn_id`,
+            [username, email, password_hash, `https://i.pravatar.cc/150?u=${username}`, earn_id]
+        );
+
+        const user = newUserQuery.rows[0];
+        const countryName = req.ipInfo?.countryName || 'Unknown';
+        logger.info(`New signup from ${user.username} (IP: ${req.ip}, Country: ${countryName})`);
+
+        await client.query('COMMIT');
+        
+        const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET, { expiresIn: '7d' });
+        
+        res.status(201).json({ token, user: snakeToCamel(user) });
+    } catch (error) {
+        await client.query('ROLLBACK');
+        console.error(error);
+        if (error.code === '23505') { // Unique constraint violation
+             return res.status(400).json({ message: 'Username or email already exists.' });
+        }
+        res.status(500).json({ message: error.message || 'Server error during signup.' });
+    } finally {
+        client.release();
+    }
+});
+
+app.post('/api/auth/signin', checkIpWithIPHub({ blockImmediately: true, blockOnFailure: false }), async (req, res) => {
+    const { email, password } = req.body;
+    try {
+        const result = await pool.query(
+            `SELECT id, username, email, password_hash, avatar_url, created_at AS joined_date, total_earned, balance, last_30_days_earned, completed_tasks, total_wagered, total_profit, total_withdrawn, total_referrals, referral_earnings, xp, rank, earn_id 
+             FROM users WHERE email = $1`, 
+            [email]
+        );
+        if (result.rows.length === 0) {
+            return res.status(400).json({ message: 'Invalid credentials' });
+        }
+        const user = result.rows[0];
+        const isMatch = await bcrypt.compare(password, user.password_hash);
+        if (!isMatch) {
+            return res.status(400).json({ message: 'Invalid credentials' });
+        }
+        const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET, { expiresIn: '7d' });
+        
+        delete user.password_hash; // Don't send password hash to client
+        res.json({ token, user: snakeToCamel(user) });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Server error during signin.' });
+    }
+});
+
+app.get('/api/auth/me', authMiddleware, async (req, res) => {
+    try {
+        const result = await pool.query(
+            `SELECT id, username, email, avatar_url, created_at AS joined_date, total_earned, balance, last_30_days_earned, completed_tasks, total_wagered, total_profit, total_withdrawn, total_referrals, referral_earnings, xp, rank, earn_id 
+             FROM users WHERE id = $1`, 
+            [req.user.id]
+        );
+        if (result.rows.length === 0) {
+            return res.status(404).json({ message: 'User not found.' });
+        }
+        const user = result.rows[0];
+        res.json(snakeToCamel(user));
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Server error fetching user profile.' });
+    }
+});
+
+app.post('/api/auth/admin-login', async (req, res) => {
+    const { email, password } = req.body;
+    try {
+        const result = await pool.query('SELECT * FROM admins WHERE email = $1', [email]);
+        if (result.rows.length === 0) {
+            return res.status(401).json({ message: 'Invalid credentials' });
+        }
+        const admin = result.rows[0];
+        const isMatch = await bcrypt.compare(password, admin.password_hash);
+        if (!isMatch) {
+            return res.status(401).json({ message: 'Invalid credentials' });
+        }
+        const token = jwt.sign({ id: admin.id, role: 'admin' }, process.env.JWT_SECRET, { expiresIn: '1d' });
+        res.json({ token, message: 'Admin login successful' });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Server error during admin signin.' });
+    }
+});
+
+// --- USER PROFILE ROUTES ---
+app.patch('/api/user/profile', authMiddleware, async (req, res) => {
+    const { username, avatarUrl } = req.body;
+    const { id } = req.user;
+
+    if (!username && !avatarUrl) {
+        return res.status(400).json({ message: 'No fields to update were provided.' });
+    }
+    
+    const client = await pool.connect();
+    try {
+        await client.query('BEGIN');
+
+        if (username) {
+            const existingUser = await client.query('SELECT id FROM users WHERE username = $1 AND id != $2', [username, id]);
+            if (existingUser.rows.length > 0) {
+                throw new Error('Username already exists.');
+            }
+        }
+        
+        const fields = [];
+        const values = [];
+        let queryIndex = 1;
+
+        if (username) {
+            fields.push(`username = $${queryIndex++}`);
+            values.push(username);
+        }
+        if (avatarUrl) {
+            fields.push(`avatar_url = $${queryIndex++}`);
+            values.push(avatarUrl);
+        }
+
+        values.push(id);
+
+        const updateUserQuery = `UPDATE users SET ${fields.join(', ')} WHERE id = $${queryIndex} RETURNING id, username, email, avatar_url, created_at AS joined_date, total_earned, balance, last_30_days_earned, completed_tasks, total_wagered, total_profit, total_withdrawn, total_referrals, referral_earnings, xp, rank, earn_id`;
+        
+        const result = await client.query(updateUserQuery, values);
+
+        if (result.rows.length === 0) {
+            throw new Error('User not found or update failed.');
+        }
+
+        await client.query('COMMIT');
+
+        const updatedUser = result.rows[0];
+        res.json(snakeToCamel(updatedUser));
+
+    } catch (error) {
+        await client.query('ROLLBACK');
+        console.error('Error updating user profile:', error);
+        res.status(400).json({ message: error.message || 'Server error updating profile.' });
+    } finally {
+        client.release();
+    }
+});
+
+
+// --- NOTIFICATION ROUTES ---
+app.get('/api/notifications', authMiddleware, async (req, res) => {
+    try {
+        const result = await pool.query(
+            'SELECT * FROM notifications WHERE user_id = $1 ORDER BY created_at DESC LIMIT 20',
+            [req.user.id]
+        );
+        res.json(result.rows.map(snakeToCamel));
+    } catch (error) {
+        console.error('Error fetching notifications:', error);
+        res.status(500).json({ message: 'Server error fetching notifications.' });
+    }
+});
+
+app.post('/api/notifications/read', authMiddleware, async (req, res) => {
+    try {
+        await pool.query(
+            'UPDATE notifications SET is_read = true WHERE user_id = $1 AND is_read = false',
+            [req.user.id]
+        );
+        res.status(200).json({ message: 'Notifications marked as read.' });
+    } catch (error) {
+        console.error('Error marking notifications as read:', error);
+        res.status(500).json({ message: 'Server error updating notifications.' });
+    }
+});
+
+
+// --- TRANSACTION ROUTES ---
+
+// Get transactions for the logged-in user
+app.get('/api/transactions', authMiddleware, async (req, res) => {
+    try {
+        const result = await pool.query(
+            'SELECT * FROM transactions WHERE user_id = $1 ORDER BY date DESC',
+            [req.user.id]
+        );
+        res.json(result.rows.map(snakeToCamel));
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Server error fetching transactions.' });
+    }
+});
+
+// Create a new withdrawal transaction
+app.post('/api/transactions/withdraw', authMiddleware, async (req, res) => {
+    const { id, method, amount, status, type } = req.body;
+    if (!id || !method || !amount || !status || !type) {
+        return res.status(400).json({ message: 'Missing required transaction fields.' });
+    }
+    
+    const withdrawalAmount = parseFloat(amount);
+    if (isNaN(withdrawalAmount) || withdrawalAmount <= 0) {
+        return res.status(400).json({ message: 'Invalid withdrawal amount.' });
+    }
+
+    const client = await pool.connect();
+    try {
+        await client.query('BEGIN');
+
+        const userResult = await client.query('SELECT balance FROM users WHERE id = $1 FOR UPDATE', [req.user.id]);
+        const userBalance = parseFloat(userResult.rows[0].balance);
+
+        if (userBalance < withdrawalAmount) {
+            throw new Error('Insufficient balance.');
+        }
+
+        await client.query('UPDATE users SET balance = balance - $1 WHERE id = $2', [withdrawalAmount, req.user.id]);
+
+        const newTransactionQuery = await client.query(
+            `INSERT INTO transactions (id, user_id, type, method, amount, status, date) 
+             VALUES ($1, $2, $3, $4, $5, $6, NOW()) 
+             RETURNING *`,
+            [id, req.user.id, type, method, withdrawalAmount, status]
+        );
+        
+        await client.query('COMMIT');
+        res.status(201).json(snakeToCamel(newTransactionQuery.rows[0]));
+    } catch (error) {
+        await client.query('ROLLBACK');
+        console.error(error);
+        res.status(400).json({ message: error.message || 'Server error creating withdrawal.' });
+    } finally {
+        client.release();
+    }
+});
+
+// --- PUBLIC CONTENT ROUTES ---
+app.get('/api/payment-methods', async (req, res) => {
+    try {
+        const result = await pool.query('SELECT * FROM payment_methods WHERE is_enabled = true ORDER BY type, name');
+        res.json(result.rows.map(snakeToCamel));
+    } catch (error) {
+        console.error('Error fetching payment methods:', error);
+        res.status(500).json({ message: 'Server error fetching payment methods.' });
+    }
+});
+
+app.get('/api/survey-providers', checkIpWithIPHub({ blockImmediately: false, blockOnFailure: false }), async (req, res) => {
+    if (req.isBlocked) {
+        logger.warn(`Blocked IP ${req.ip} attempted to access survey providers. Returning empty list.`);
+        return res.json([]);
+    }
+    try {
+        const result = await pool.query('SELECT * FROM survey_providers WHERE is_enabled = true ORDER BY id');
+        res.json(result.rows.map(snakeToCamel));
+    } catch (error) {
+        console.error('Error fetching survey providers:', error);
+        res.status(500).json({ message: 'Server error fetching survey providers.' });
+    }
+});
+
+app.get('/api/offer-walls', checkIpWithIPHub({ blockImmediately: false, blockOnFailure: false }), async (req, res) => {
+    if (req.isBlocked) {
+        logger.warn(`Blocked IP ${req.ip} attempted to access offer walls. Returning empty list.`);
+        return res.json([]);
+    }
+    try {
+        const result = await pool.query('SELECT * FROM offer_walls WHERE is_enabled = true ORDER BY id');
+        res.json(result.rows.map(snakeToCamel));
+    } catch (error) {
+        console.error('Error fetching offer walls:', error);
+        res.status(500).json({ message: 'Server error fetching offer walls.' });
+    }
+});
+
+app.get('/api/public/earning-feed', async (req, res) => {
+    try {
+        const result = await pool.query(`
+            SELECT
+                t.id,
+                u.username,
+                u.avatar_url,
+                t.type,
+                t.source,
+                t.method,
+                t.amount
+            FROM transactions t
+            JOIN users u ON t.user_id = u.id
+            WHERE t.status = 'Completed' AND (t.type = 'Task Reward' OR t.type = 'Withdrawal')
+            ORDER BY t.date DESC
+            LIMIT 15
+        `);
+        
+        const feedItems = result.rows.map(item => {
+            let task, provider;
+            if (item.type === 'Task Reward') {
+                task = item.source || 'Task';
+                provider = item.method;
+            } else { // Withdrawal
+                task = 'Withdrawal';
+                provider = item.method;
+            }
+            
+            return {
+                id: item.id,
+                user: item.username,
+                avatar: item.avatar_url,
+                task: task,
+                provider: provider,
+                amount: Number(item.amount)
+            };
+        });
+
+        res.json(feedItems);
+    } catch (error) {
+        console.error('Error fetching public earning feed:', error);
+        res.status(500).json({ message: 'Server error fetching earning feed.' });
+    }
+});
+
+app.get('/api/leaderboard', async (req, res) => {
+    const { period } = req.query; // 'daily', 'weekly', 'monthly'
+    if (!['daily', 'weekly', 'monthly'].includes(period)) {
+        return res.status(400).json({ message: 'Invalid period specified.' });
+    }
+
+    let intervalCondition;
+    switch (period) {
+        case 'daily':
+            intervalCondition = "t.date >= date_trunc('day', NOW())";
+            break;
+        case 'weekly':
+            intervalCondition = "t.date >= date_trunc('week', NOW())";
+            break;
+        case 'monthly':
+            intervalCondition = "t.date >= date_trunc('month', NOW())";
+            break;
+    }
+
+    try {
+        const query = `
+            SELECT
+                u.id,
+                u.username,
+                u.avatar_url,
+                u.xp,
+                SUM(t.amount) AS earned
+            FROM transactions t
+            JOIN users u ON t.user_id = u.id
+            WHERE
+                t.type = 'Task Reward' AND t.status = 'Completed' AND ${intervalCondition}
+            GROUP BY u.id
+            ORDER BY earned DESC
+            LIMIT 20;
+        `;
+
+        const result = await pool.query(query);
+
+        const leaderboardData = result.rows.map((row, index) => ({
+            rank: index + 1,
+            user: row.username,
+            avatar: row.avatar_url,
+            earned: parseFloat(row.earned),
+            level: Math.floor(row.xp / 1000) + 1,
+        }));
+
+        res.json(leaderboardData);
+
+    } catch (error) {
+        console.error('Error fetching leaderboard data:', error);
+        res.status(500).json({ message: 'Server error fetching leaderboard.' });
+    }
+});
+
+
+// --- ADMIN ROUTES ---
+
+app.get('/api/admin/stats', adminAuthMiddleware, async (req, res) => {
+    try {
+        const stats = {};
+        const totalUsersRes = await pool.query('SELECT COUNT(*) FROM users');
+        stats.totalUsers = parseInt(totalUsersRes.rows[0].count, 10);
+
+        const newUsersRes = await pool.query("SELECT COUNT(*) FROM users WHERE created_at >= NOW() - INTERVAL '30 days'");
+        stats.newUsersLast30Days = parseInt(newUsersRes.rows[0].count, 10);
+
+        const totalTasksRes = await pool.query("SELECT COUNT(*) FROM transactions WHERE type = 'Task Reward' AND status = 'Completed'");
+        stats.tasksCompletedAllTime = parseInt(totalTasksRes.rows[0].count, 10);
+
+        const recentTasksRes = await pool.query("SELECT COUNT(*) FROM transactions WHERE type = 'Task Reward' AND status = 'Completed' AND date >= NOW() - INTERVAL '30 days'");
+        stats.tasksCompletedLast30Days = parseInt(recentTasksRes.rows[0].count, 10);
+
+        const totalPaidOutRes = await pool.query("SELECT SUM(amount) FROM transactions WHERE type = 'Withdrawal' AND status = 'Completed'");
+        stats.totalPaidOut = parseFloat(totalPaidOutRes.rows[0].sum) || 0;
+        
+        const pendingWithdrawalsRes = await pool.query("SELECT COUNT(*) FROM transactions WHERE type = 'Withdrawal' AND status = 'Pending'");
+        stats.pendingWithdrawals = parseInt(pendingWithdrawalsRes.rows[0].count, 10);
+        
+        res.json(stats);
+    } catch (error) {
+        console.error('Error fetching admin stats:', error);
+        res.status(500).json({ message: 'Server error fetching stats.' });
+    }
+});
+
+app.get('/api/admin/recent-tasks', adminAuthMiddleware, async (req, res) => {
+    try {
+        const result = await pool.query(`
+            SELECT t.id AS transaction_id, t.date, u.email, t.amount, u.id as user_id
+            FROM transactions t
+            JOIN users u ON t.user_id = u.id
+            WHERE t.type = 'Task Reward' AND t.status = 'Completed'
+            ORDER BY t.date DESC
+            LIMIT 5
+        `);
+        res.json(result.rows.map(snakeToCamel));
+    } catch (error) {
+        console.error('Error fetching recent tasks:', error);
+        res.status(500).json({ message: 'Server error fetching recent tasks.' });
+    }
+});
+
+app.get('/api/admin/recent-signups', adminAuthMiddleware, async (req, res) => {
+    try {
+        const result = await pool.query(`
+            SELECT id, email, created_at AS joined_date
+            FROM users
+            ORDER BY created_at DESC
+            LIMIT 5
+        `);
+        res.json(result.rows.map(snakeToCamel));
+    } catch (error) {
+        console.error('Error fetching recent signups:', error);
+        res.status(500).json({ message: 'Server error fetching recent signups.' });
+    }
+});
+
+// Get all withdrawal transactions for admin panel, with pagination
+app.get('/api/admin/transactions', adminAuthMiddleware, async (req, res) => {
+    const page = parseInt(req.query.page, 10) || 1;
+    const limitQuery = req.query.limit;
+    
+    let limit;
+    if (limitQuery) {
+        limit = parseInt(limitQuery, 10);
+    } else {
+        // A large number to fetch all if limit is not provided
+        limit = 10;
+    }
+
+    const offset = (page - 1) * limit;
+
+    try {
+        const baseQuery = `
+            FROM transactions t
+            JOIN users u ON t.user_id = u.id
+            WHERE t.type = 'Withdrawal'
+        `;
+
+        const totalResult = await pool.query(`SELECT COUNT(*) ${baseQuery}`);
+        const totalItems = parseInt(totalResult.rows[0].count, 10);
+        const totalPages = Math.ceil(totalItems / limit);
+
+        const transactionsResult = await pool.query(`
+            SELECT t.*, u.email, u.id as user_id
+            ${baseQuery}
+            ORDER BY 
+                CASE t.status
+                    WHEN 'Pending' THEN 1
+                    WHEN 'Completed' THEN 2
+                    WHEN 'Rejected' THEN 3
+                    ELSE 4
+                END, 
+                t.date DESC
+            LIMIT $1 OFFSET $2
+        `, [limit, offset]);
+
+        if (limitQuery) {
+            res.json(transactionsResult.rows.map(snakeToCamel));
+        } else {
+            res.json({
+                transactions: transactionsResult.rows.map(snakeToCamel),
+                currentPage: page,
+                totalPages,
+                totalItems
+            });
+        }
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Server error fetching admin transactions.' });
+    }
+});
+
+
+// Update a transaction's status (approve/reject)
+app.patch('/api/admin/transactions/:id', adminAuthMiddleware, async (req, res) => {
+    const { id } = req.params;
+    const { status } = req.body; 
+
+    if (!status || !['Completed', 'Rejected'].includes(status)) {
+        return res.status(400).json({ message: 'Invalid status provided.' });
+    }
+
+    const client = await pool.connect();
+    try {
+        await client.query('BEGIN');
+
+        const transactionResult = await client.query('SELECT * FROM transactions WHERE id = $1 FOR UPDATE', [id]);
+        if (transactionResult.rows.length === 0) {
+            throw new Error('Transaction not found');
+        }
+        const transaction = transactionResult.rows[0];
+        
+        if (transaction.status !== 'Pending') {
+            throw new Error('Transaction is not in a pending state.');
+        }
+
+        const transactionAmount = Number(transaction.amount);
+        if (isNaN(transactionAmount)) {
+            throw new Error('Invalid transaction amount in database.');
+        }
+
+        const updatedTransactionQuery = await client.query(
+            'UPDATE transactions SET status = $1 WHERE id = $2 RETURNING *',
+            [status, id]
+        );
+        const updatedTransaction = updatedTransactionQuery.rows[0];
+
+        if (status === 'Completed') {
+            await client.query(
+                'UPDATE users SET total_withdrawn = total_withdrawn + $1 WHERE id = $2',
+                [transactionAmount, transaction.user_id]
+            );
+        } else if (status === 'Rejected') {
+            await client.query(
+                'UPDATE users SET balance = balance + $1 WHERE id = $2',
+                [transactionAmount, transaction.user_id]
             );
         }
+
+        await client.query('COMMIT');
+
+        const notificationMessage = `Your withdrawal request for $${transactionAmount.toFixed(2)} has been ${status}.`;
+        await pool.query(
+            'INSERT INTO notifications (user_id, message, link_to) VALUES ($1, $2, $3)',
+            [transaction.user_id, notificationMessage, '/Profile']
+        );
+
+        res.json(snakeToCamel(updatedTransaction));
+
+    } catch (error) {
+        await client.query('ROLLBACK');
+        console.error(error);
+        res.status(500).json({ message: error.message || 'Server error updating transaction.' });
+    } finally {
+        client.release();
+    }
+});
+
+app.get('/api/admin/users', adminAuthMiddleware, async (req, res) => {
+    const page = parseInt(req.query.page, 10) || 1;
+    const limit = parseInt(req.query.limit, 10) || 10;
+    const search = req.query.search || '';
+    const offset = (page - 1) * limit;
+
+    try {
+        let whereClause = '';
+        const queryParams = [limit, offset];
+        if (search) {
+            whereClause = `WHERE username ILIKE $3 OR email ILIKE $3`;
+            queryParams.push(`%${search}%`);
+        }
+        
+        const countQueryParams = search ? [`%${search}%`] : [];
+        const totalResult = await pool.query(`SELECT COUNT(*) FROM users ${whereClause}`, countQueryParams);
+        const totalItems = parseInt(totalResult.rows[0].count, 10);
+        const totalPages = Math.ceil(totalItems / limit);
+
+        const usersResult = await pool.query(`
+            SELECT id, username, email, avatar_url, created_at AS joined_date, balance
+            FROM users
+            ${whereClause}
+            ORDER BY created_at DESC
+            LIMIT $1 OFFSET $2
+        `, queryParams);
+
+        res.json({
+            users: usersResult.rows.map(snakeToCamel),
+            currentPage: page,
+            totalPages,
+            totalItems
+        });
+    } catch (error) {
+        console.error('Error fetching users for admin:', error);
+        res.status(500).json({ message: 'Server error fetching users.' });
+    }
+});
+
+
+app.get('/api/admin/users/:userId', adminAuthMiddleware, async (req, res) => {
+    try {
+        const { userId } = req.params;
+        const result = await pool.query(
+            `SELECT id, username, email, avatar_url, created_at AS joined_date, total_earned, balance, last_30_days_earned, completed_tasks, total_wagered, total_profit, total_withdrawn, total_referrals, referral_earnings, xp, rank, earn_id
+             FROM users WHERE id = $1`,
+            [userId]
+        );
+        if (result.rows.length === 0) {
+            return res.status(404).json({ message: 'User not found.' });
+        }
+        res.json(snakeToCamel(result.rows[0]));
+    } catch (error) {
+        console.error('Error fetching user details:', error);
+        res.status(500).json({ message: 'Server error fetching user details.' });
+    }
+});
+
+app.get('/api/admin/users/:userId/transactions', adminAuthMiddleware, async (req, res) => {
+    try {
+        const { userId } = req.params;
+        const result = await pool.query(
+            'SELECT * FROM transactions WHERE user_id = $1 ORDER BY date DESC',
+            [userId]
+        );
+        res.json(result.rows.map(snakeToCamel));
+    } catch (error) {
+        console.error('Error fetching user transactions:', error);
+        res.status(500).json({ message: 'Server error fetching user transactions.' });
+    }
+});
+
+
+app.get('/api/admin/payment-methods', adminAuthMiddleware, async (req, res) => {
+    try {
+        const result = await pool.query('SELECT * FROM payment_methods ORDER BY type, name');
+        res.json(result.rows.map(snakeToCamel));
+    } catch (error) {
+        console.error('Error fetching all payment methods for admin:', error);
+        res.status(500).json({ message: 'Server error fetching payment methods.' });
+    }
+});
+
+app.patch('/api/admin/payment-methods/:id', adminAuthMiddleware, async (req, res) => {
+    const { id } = req.params;
+    const { isEnabled } = req.body;
+
+    if (typeof isEnabled !== 'boolean') {
+        return res.status(400).json({ message: 'Invalid "isEnabled" value.' });
+    }
+
+    try {
+        const result = await pool.query(
+            'UPDATE payment_methods SET is_enabled = $1 WHERE id = $2 RETURNING *',
+            [isEnabled, id]
+        );
+        if (result.rows.length === 0) {
+            return res.status(404).json({ message: 'Payment method not found.' });
+        }
+        res.json(snakeToCamel(result.rows[0]));
+    } catch (error) {
+        console.error('Error updating payment method:', error);
+        res.status(500).json({ message: 'Server error updating payment method.' });
+    }
+});
+
+// Admin Survey Provider Management
+app.get('/api/admin/survey-providers', adminAuthMiddleware, async (req, res) => {
+    try {
+        const result = await pool.query('SELECT * FROM survey_providers ORDER BY name');
+        res.json(result.rows.map(snakeToCamel));
+    } catch (error) {
+        console.error('Error fetching survey providers for admin:', error);
+        res.status(500).json({ message: 'Server error fetching survey providers.' });
+    }
+});
+
+app.patch('/api/admin/survey-providers/:id', adminAuthMiddleware, async (req, res) => {
+    const { id } = req.params;
+    const { isEnabled } = req.body;
+    if (typeof isEnabled !== 'boolean') return res.status(400).json({ message: 'Invalid "isEnabled" value.' });
+    try {
+        const result = await pool.query('UPDATE survey_providers SET is_enabled = $1 WHERE id = $2 RETURNING *', [isEnabled, id]);
+        if (result.rows.length === 0) return res.status(404).json({ message: 'Survey provider not found.' });
+        res.json(snakeToCamel(result.rows[0]));
+    } catch (error) {
+        console.error('Error updating survey provider:', error);
+        res.status(500).json({ message: 'Server error updating survey provider.' });
+    }
+});
+
+// Admin Offer Wall Management
+app.get('/api/admin/offer-walls', adminAuthMiddleware, async (req, res) => {
+    try {
+        const result = await pool.query('SELECT * FROM offer_walls ORDER BY name');
+        res.json(result.rows.map(snakeToCamel));
+    } catch (error) {
+        console.error('Error fetching offer walls for admin:', error);
+        res.status(500).json({ message: 'Server error fetching offer walls.' });
+    }
+});
+
+app.patch('/api/admin/offer-walls/:id', adminAuthMiddleware, async (req, res) => {
+    const { id } = req.params;
+    const { isEnabled } = req.body;
+    if (typeof isEnabled !== 'boolean') return res.status(400).json({ message: 'Invalid "isEnabled" value.' });
+    try {
+        const result = await pool.query('UPDATE offer_walls SET is_enabled = $1 WHERE id = $2 RETURNING *', [isEnabled, id]);
+        if (result.rows.length === 0) return res.status(404).json({ message: 'Offer wall not found.' });
+        res.json(snakeToCamel(result.rows[0]));
+    } catch (error) {
+        console.error('Error updating offer wall:', error);
+        res.status(500).json({ message: 'Server error updating offer wall.' });
+    }
+});
+
+// Helper to convert snake_case from DB to camelCase for frontend
+const snakeToCamel = (obj) => {
+    if (typeof obj !== 'object' || obj === null || obj instanceof Date) return obj;
+    if (Array.isArray(obj)) return obj.map(snakeToCamel);
+    
+    return Object.entries(obj).reduce((acc, [key, value]) => {
+        const camelKey = key.replace(/_([a-z])/g, (g) => g[1].toUpperCase());
+        acc[camelKey] = snakeToCamel(value); // Recursively convert nested objects
+        return acc;
+    }, {});
+};
+
+const seedAdmin = async () => {
+    const client = await pool.connect();
+    try {
+        const adminEmail = 'raihansarker270@gmail.com';
+        const adminCheck = await client.query('SELECT * FROM admins WHERE email = $1', [adminEmail]);
+        if (adminCheck.rows.length === 0) {
+            console.log('Creating default admin user...');
+            const salt = await bcrypt.genSalt(10);
+            const adminPasswordHash = await bcrypt.hash('Wh1@Wh1@', salt);
+            await client.query('INSERT INTO admins (email, password_hash) VALUES ($1, $2)', [adminEmail, adminPasswordHash]);
+            console.log('Default admin user created.');
+        }
+    } catch (err) {
+        console.error('Error seeding admin user:', err.stack);
+    } finally {
+        client.release();
+    }
+};
+
+const seedPaymentMethods = async () => {
+    const client = await pool.connect();
+    try {
+        const check = await client.query('SELECT * FROM payment_methods LIMIT 1');
+        if (check.rows.length > 0) return; // Already seeded
+
+        console.log('Seeding payment methods...');
+        const methods = [
+            { name: 'Gamdom', icon_class: 'fas fa-dice', type: 'special', special_bonus: '+25%' },
+            { name: 'Virtual Visa Interna...', icon_class: 'fab fa-cc-visa', type: 'cash' },
+            { name: 'Bitcoin (BTC)', icon_class: 'fab fa-bitcoin', type: 'crypto' },
+            { name: 'Ethereum (ETH)', icon_class: 'fab fa-ethereum', type: 'crypto' },
+            { name: 'Litecoin (LTC)', icon_class: 'fas fa-litecoin-sign', type: 'crypto' },
+            { name: 'Solana (SOL)', icon_class: 'fas fa-project-diagram', type: 'crypto' },
+            { name: 'Tether (USDT)', icon_class: 'fas fa-dollar-sign', type: 'crypto' },
+            { name: 'USD Coin (USDC)', icon_class: 'fas fa-coins', type: 'crypto' },
+            { name: 'Tron (TRX)', icon_class: 'fas fa-atom', type: 'crypto' },
+            { name: 'Ripple (XRP)', icon_class: 'fab fa-ripple', type: 'crypto' },
+        ];
+        
+        for (const method of methods) {
+            await client.query(
+                'INSERT INTO payment_methods (name, icon_class, type, special_bonus) VALUES ($1, $2, $3, $4)',
+                [method.name, method.icon_class, method.type, method.special_bonus || null]
+            );
+        }
+        console.log('Payment methods seeded successfully.');
+
+    } catch (err) {
+        console.error('Error seeding payment methods:', err.stack);
+    } finally {
+        client.release();
     }
 };
 
 const seedSurveyProviders = async () => {
-    const count = await pool.query('SELECT COUNT(*) FROM survey_providers');
-    if (parseInt(count.rows[0].count) === 0) {
+    const client = await pool.connect();
+    try {
+        const check = await client.query('SELECT * FROM survey_providers LIMIT 1');
+        if (check.rows.length > 0) return;
+
         console.log('Seeding survey providers...');
         const providers = [
-            { name: 'BitLabs', logo: 'https://i.imgur.com/oZznueX.png', rating: 3, type: 'BitLabs' },
-            { name: 'CPX Research', logo: 'https://i.imgur.com/ssL8ALh.png', rating: 3, type: 'CPX RESEARCH' },
-            { name: 'Your-Surveys', logo: 'https://i.imgur.com/pLRnBU2.png', rating: 4, type: 'Your-Surveys' },
-            { name: 'Pollfish', logo: 'https://i.imgur.com/OofFwSR.png', rating: 4, type: 'Pollfish' },
-            { name: 'Prime Surveys', logo: 'https://i.imgur.com/0EGYRXz.png', rating: 3, type: 'Prime Surveys' },
-            { name: 'inBrain', logo: 'https://i.imgur.com/p2jQpqv.png', rating: 2, type: 'inBrain' },
-            { name: 'Adscend Media Surveys', logo: 'https://i.imgur.com/CM6xxOM.png', rating: 4, type: 'Adscend Media' },
-            { name: 'TheoremReach', logo: 'https://i.imgur.com/yvC5YyW.png', rating: 4, type: 'TheoremReach', unlock_requirement: 'Level 5+', is_locked: true },
+          { name: 'BitLabs', logo: 'https://i.imgur.com/oZznueX.png', rating: 3, type: 'BitLabs' },
+          { name: 'CPX Research', logo: 'https://i.imgur.com/ssL8ALh.png', rating: 3, type: 'CPX RESEARCH' },
+          { name: 'Your-Surveys', logo: 'https://i.imgur.com/pLRnBU2.png', rating: 4, type: 'Your-Surveys' },
+          { name: 'Pollfish', logo: 'https://i.imgur.com/OofFwSR.png', rating: 4, type: 'Pollfish' },
+          { name: 'Prime Surveys', logo: 'https://i.imgur.com/0EGYRXz.png', rating: 3, type: 'Prime Surveys' },
+          { name: 'inBrain', logo: 'https://i.imgur.com/AaQPnwe.png', rating: 2, type: 'inBrain' },
+          { name: 'Adscend Media Surveys', logo: 'https://i.imgur.com/iY9g04E.png', rating: 4, type: 'Adscend Media' },
+          { name: 'TheoremReach', logo: 'https://i.imgur.com/yvC5YyW.png', rating: 4, type: 'TheoremReach', is_locked: true, unlock_requirement: "Level 5+" },
         ];
         for (const p of providers) {
-            await pool.query(
-                'INSERT INTO survey_providers (name, logo, rating, type, unlock_requirement, is_locked) VALUES ($1, $2, $3, $4, $5, $6)',
-                [p.name, p.logo, p.rating, p.type, p.unlock_requirement, p.is_locked || false]
-            );
+            await client.query('INSERT INTO survey_providers (name, logo, rating, type, is_locked, unlock_requirement) VALUES ($1, $2, $3, $4, $5, $6)', [p.name, p.logo, p.rating, p.type, p.is_locked || false, p.unlock_requirement || null]);
         }
+        console.log('Survey providers seeded.');
+    } catch (err) {
+        console.error('Error seeding survey providers:', err);
+    } finally {
+        client.release();
     }
 };
 
 const seedOfferWalls = async () => {
-    const count = await pool.query('SELECT COUNT(*) FROM offer_walls');
-    if (parseInt(count.rows[0].count) === 0) {
+    const client = await pool.connect();
+    try {
+        const check = await client.query('SELECT * FROM offer_walls LIMIT 1');
+        if (check.rows.length > 0) return;
+
         console.log('Seeding offer walls...');
         const walls = [
             { name: 'Torox', logo: 'https://i.imgur.com/zbyfSVW.png', bonus: '+20%' },
@@ -127,566 +919,81 @@ const seedOfferWalls = async () => {
             { name: 'AdGem', logo: 'https://i.imgur.com/r9f5k2Z.png' },
         ];
         for (const w of walls) {
-            await pool.query(
-                'INSERT INTO offer_walls (name, logo, bonus, unlock_requirement, is_locked) VALUES ($1, $2, $3, $4, $5)',
-                [w.name, w.logo, w.bonus, w.unlock_requirement, w.is_locked || false]
-            );
+            await client.query('INSERT INTO offer_walls (name, logo, bonus, is_locked, unlock_requirement) VALUES ($1, $2, $3, $4, $5)', [w.name, w.logo, w.bonus || null, w.is_locked || false, w.unlock_requirement || null]);
         }
+        console.log('Offer walls seeded.');
+    } catch (err) {
+        console.error('Error seeding offer walls:', err);
+    } finally {
+        client.release();
     }
 };
 
-// --- Routes ---
-
-// Auth Routes
-// NOTE: blockOnFailure: false ensures users can still register/login if the IP check API is down or fails
-app.post('/api/auth/signup', checkIpWithIPHub({ blockImmediately: true, blockOnFailure: false }), async (req, res) => {
-  const { email, username, password, referralCode } = req.body;
-  // Clean IP address (remove IPv6 prefix if present)
-  const rawIp = req.ip || '127.0.0.1';
-  const ipAddress = rawIp.replace('::ffff:', '');
-
-  const ipInfo = req.ipInfo || {}; // From middleware
-  
-  // Basic IP History entry
-  const ipHistoryEntry = {
-      ip: ipAddress,
-      lastSeen: new Date().toISOString(),
-      isp: ipInfo.isp || ipInfo.org || 'Unknown',
-      country: ipInfo.countryName || 'Unknown',
-      isBlocked: req.isBlocked || false,
-      blockType: req.isBlocked ? (ipInfo.block === 1 ? 'VPN/Proxy' : ipInfo.block === 2 ? 'Data Center' : 'Suspicious') : null
-  };
-
-  try {
-    const userCheck = await pool.query('SELECT * FROM users WHERE email = $1 OR username = $2', [email, username]);
-    if (userCheck.rows.length > 0) {
-      return res.status(400).json({ message: 'User already exists' });
-    }
-
-    const hashedPassword = await bcrypt.hash(password, 10);
-    const earnId = Math.floor(100000 + Math.random() * 900000).toString();
-
-    const newUser = await pool.query(
-      'INSERT INTO users (email, username, password_hash, earn_id, balance, ip_address, country, ip_history) VALUES ($1, $2, $3, $4, 0, $5, $6, $7) RETURNING id, email, username, earn_id, balance, ip_history',
-      [email, username, hashedPassword, earnId, ipAddress, ipInfo.countryName, JSON.stringify([ipHistoryEntry])]
-    );
-
-    const user = snakeToCamel(newUser.rows[0]);
-    const token = jwt.sign({ id: user.id, username: user.username }, JWT_SECRET);
-
-    res.status(201).json({ token, user });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: 'Server error' });
-  }
-});
-
-app.post('/api/auth/signin', checkIpWithIPHub({ blockImmediately: true, blockOnFailure: false }), async (req, res) => {
-  const { email, password } = req.body;
-  const rawIp = req.ip || '127.0.0.1';
-  const ipAddress = rawIp.replace('::ffff:', '');
-  const ipInfo = req.ipInfo || {};
-
-  try {
-    const result = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
-    if (result.rows.length === 0) return res.status(400).json({ message: 'Invalid credentials' });
-
-    const user = result.rows[0];
-    const isMatch = await bcrypt.compare(password, user.password_hash);
-
-    if (!isMatch) return res.status(400).json({ message: 'Invalid credentials' });
-
-    // IP History Update
-    let ipHistory = user.ip_history || [];
-    
-    const ipHistoryEntry = {
-        ip: ipAddress,
-        lastSeen: new Date().toISOString(),
-        isp: ipInfo.isp || ipInfo.org || 'Unknown',
-        country: ipInfo.countryName || 'Unknown',
-        isBlocked: req.isBlocked || false,
-        blockType: req.isBlocked ? (ipInfo.block === 1 ? 'VPN/Proxy' : ipInfo.block === 2 ? 'Data Center' : 'Suspicious') : null
-    };
-
-    // Check if IP already exists in history
-    const existingIndex = ipHistory.findIndex(entry => entry.ip === ipAddress);
-    if (existingIndex > -1) {
-        // Update existing entry
-        ipHistory[existingIndex] = { ...ipHistory[existingIndex], ...ipHistoryEntry };
-    } else {
-        // Add new entry
-        ipHistory.push(ipHistoryEntry);
-    }
-    
-    // Limit history size if needed (e.g., last 20 IPs)
-    if (ipHistory.length > 20) ipHistory = ipHistory.slice(-20);
-
-    // Update User in DB
-    await pool.query(
-        'UPDATE users SET ip_address = $1, country = $2, ip_history = $3 WHERE id = $4',
-        [ipAddress, ipInfo.countryName, JSON.stringify(ipHistory), user.id]
-    );
-
-    const token = jwt.sign({ id: user.id, username: user.username }, JWT_SECRET);
-    res.json({ token, user: snakeToCamel({ ...user, ip_history: ipHistory }) }); // Send updated user back
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: 'Server error' });
-  }
-});
-
-app.post('/api/auth/admin-login', async (req, res) => {
-    const { email, password } = req.body;
-    // Hardcoded admin for demo
-    if (email === 'raihansarker270@gmail.com' && password === 'Wh1@Wh1@') {
-        const token = jwt.sign({ id: 1, role: 'admin', username: 'Admin' }, JWT_SECRET);
-        return res.json({ token });
-    }
-    res.status(401).json({ message: 'Invalid admin credentials' });
-});
-
-app.get('/api/auth/me', authenticateToken, async (req, res) => {
+const seedMockUsersAndTransactions = async () => {
+    const client = await pool.connect();
     try {
-        const result = await pool.query('SELECT * FROM users WHERE id = $1', [req.user.id]);
-        if (result.rows.length === 0) return res.sendStatus(404);
-        res.json(snakeToCamel(result.rows[0]));
-    } catch (error) {
-        res.status(500).json({ message: 'Server error' });
-    }
-});
-
-app.patch('/api/user/profile', authenticateToken, async (req, res) => {
-    const { username, avatarUrl } = req.body;
-    try {
-        const result = await pool.query(
-            'UPDATE users SET username = COALESCE($1, username), avatar_url = COALESCE($2, avatar_url) WHERE id = $3 RETURNING *',
-            [username, avatarUrl, req.user.id]
-        );
-        res.json(snakeToCamel(result.rows[0]));
-    } catch (error) {
-         console.error(error);
-         res.status(500).json({ message: 'Server error' });
-    }
-});
-
-// Public Data Routes
-app.get('/api/survey-providers', async (req, res) => {
-    try {
-        const result = await pool.query('SELECT * FROM survey_providers ORDER BY id');
-        res.json(result.rows.map(snakeToCamel));
-    } catch (error) {
-        res.status(500).json({ message: 'Error fetching surveys' });
-    }
-});
-
-app.get('/api/offer-walls', async (req, res) => {
-    try {
-        const result = await pool.query('SELECT * FROM offer_walls ORDER BY id');
-        res.json(result.rows.map(snakeToCamel));
-    } catch (error) {
-        res.status(500).json({ message: 'Error fetching offer walls' });
-    }
-});
-
-app.get('/api/payment-methods', async (req, res) => {
-    try {
-        const result = await pool.query('SELECT * FROM payment_methods WHERE is_enabled = true ORDER BY id');
-        res.json(result.rows.map(snakeToCamel));
-    } catch (error) {
-        res.status(500).json({ message: 'Error fetching payment methods' });
-    }
-});
-
-app.get('/api/public/earning-feed', async (req, res) => {
-    try {
-        // Fetch real transactions (Tasks, Withdrawals, etc.) from DB
-        // Using COALESCE for provider to ensure it's a string
-        const query = `
-            SELECT t.id, u.username as user, u.avatar_url as avatar, 
-                   CASE WHEN t.type = 'Withdrawal' THEN 'Withdrawal' ELSE t.method END as task,
-                   COALESCE(t.source, '') as provider, 
-                   t.amount
-            FROM transactions t
-            JOIN users u ON t.user_id = u.id
-            ORDER BY t.date DESC
-            LIMIT 20
-        `;
-        const result = await pool.query(query);
-
-        const feedData = result.rows.map(row => ({
-            id: row.id,
-            user: row.user,
-            avatar: row.avatar || `https://i.pravatar.cc/32?u=${row.user}`,
-            task: row.task,
-            provider: row.provider,
-            amount: parseFloat(row.amount)
-        }));
-        
-        res.json(feedData);
-    } catch (error) {
-        console.error('Error fetching public earning feed:', error);
-        res.json([]); // Return empty array on error to prevent crash
-    }
-});
-
-app.get('/api/leaderboard', async (req, res) => {
-    // Mock leaderboard data
-    const leaderboard = [
-        { rank: 1, user: 'CryptoKing', avatar: 'https://i.pravatar.cc/32?u=cryptoking', earned: 1450.75, level: 98 },
-        { rank: 2, user: 'Sparkb6', avatar: 'https://i.pravatar.cc/32?u=sparkb6', earned: 1230.50, level: 92 },
-        { rank: 3, user: 'GamerX', avatar: 'https://i.pravatar.cc/32?u=gamerx', earned: 1100.00, level: 89 },
-    ];
-    res.json(leaderboard);
-});
-
-app.get('/api/notifications', authenticateToken, async (req, res) => {
-    try {
-        const result = await pool.query('SELECT * FROM notifications WHERE user_id = $1 ORDER BY created_at DESC LIMIT 10', [req.user.id]);
-        res.json(result.rows.map(snakeToCamel));
-    } catch (error) {
-        res.status(500).json({ message: 'Error' });
-    }
-});
-
-app.post('/api/notifications/read', authenticateToken, async (req, res) => {
-     try {
-        await pool.query('UPDATE notifications SET is_read = true WHERE user_id = $1', [req.user.id]);
-        res.sendStatus(200);
-    } catch (error) {
-        res.status(500).json({ message: 'Error' });
-    }
-});
-
-// Transaction Routes
-app.get('/api/transactions', authenticateToken, async (req, res) => {
-    try {
-        const result = await pool.query('SELECT * FROM transactions WHERE user_id = $1 ORDER BY date DESC', [req.user.id]);
-        res.json(result.rows.map(snakeToCamel));
-    } catch (error) {
-        res.status(500).json({ message: 'Error' });
-    }
-});
-
-app.post('/api/transactions/withdraw', authenticateToken, async (req, res) => {
-    const { id, type, method, amount, status } = req.body;
-    try {
-        // Check balance
-        const userRes = await pool.query('SELECT balance FROM users WHERE id = $1', [req.user.id]);
-        const currentBalance = parseFloat(userRes.rows[0].balance);
-        
-        if (currentBalance < amount) {
-            return res.status(400).json({ message: 'Insufficient balance' });
+        const userCheck = await client.query("SELECT id FROM users WHERE email NOT LIKE 'raihansarker270@gmail.com' LIMIT 1");
+        if (userCheck.rows.length > 0) {
+            console.log('Mock users already exist, skipping seeding.');
+            return;
         }
 
-        // Deduct balance
-        await pool.query('UPDATE users SET balance = balance - $1, total_withdrawn = total_withdrawn + $1 WHERE id = $2', [amount, req.user.id]);
+        console.log('Seeding mock users and transactions...');
 
-        // Create transaction
-        const result = await pool.query(
-            'INSERT INTO transactions (id, user_id, type, method, amount, status) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *',
-            [id, req.user.id, type, method, amount, status]
-        );
-        res.status(201).json(snakeToCamel(result.rows[0]));
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: 'Error processing withdrawal' });
-    }
-});
-
-// --- ADMIN ROUTES ---
-
-app.get('/api/admin/stats', adminAuthMiddleware, async (req, res) => {
-    try {
-        const totalUsersRes = await pool.query('SELECT COUNT(*) FROM users');
-        const pendingWithdrawalsRes = await pool.query("SELECT COUNT(*) FROM transactions WHERE status = 'Pending' AND type = 'Withdrawal'");
-        const totalPaidOutRes = await pool.query("SELECT SUM(amount) FROM transactions WHERE status = 'Completed' AND type = 'Withdrawal'");
-        
-        // Real queries for dashboard stats
-        const newUsersRes = await pool.query("SELECT COUNT(*) FROM users WHERE created_at > NOW() - INTERVAL '30 days'");
-        const tasksAllRes = await pool.query("SELECT COUNT(*) FROM transactions WHERE type = 'Task Reward' OR source IN ('Task', 'Survey', 'Offer')");
-        const tasks30Res = await pool.query("SELECT COUNT(*) FROM transactions WHERE (type = 'Task Reward' OR source IN ('Task', 'Survey', 'Offer')) AND date > NOW() - INTERVAL '30 days'");
-
-        res.json({
-            totalUsers: parseInt(totalUsersRes.rows[0].count),
-            pendingWithdrawals: parseInt(pendingWithdrawalsRes.rows[0].count),
-            totalPaidOut: parseFloat(totalPaidOutRes.rows[0].sum || 0),
-            newUsersLast30Days: parseInt(newUsersRes.rows[0].count),
-            tasksCompletedAllTime: parseInt(tasksAllRes.rows[0].count),
-            tasksCompletedLast30Days: parseInt(tasks30Res.rows[0].count)
-        });
-    } catch (error) {
-        console.error("Error fetching admin stats:", error);
-        res.status(500).json({ message: 'Error' });
-    }
-});
-
-app.get('/api/admin/recent-tasks', adminAuthMiddleware, async (req, res) => {
-     try {
-         // Fetch recent "Task" type transactions
-         const result = await pool.query(`
-            SELECT t.id as "transactionId", t.date, u.email, t.amount, u.id as "userId"
-            FROM transactions t
-            JOIN users u ON t.user_id = u.id
-            WHERE t.type = 'Task Reward' OR t.source IN ('Task', 'Survey', 'Offer')
-            ORDER BY t.date DESC
-            LIMIT 5
-         `);
-         
-         if (result.rows.length > 0) {
-            return res.json(result.rows);
-         }
-
-         // Fallback Mock if DB empty
-         res.json([
-             { transactionId: 'T123', date: new Date(), email: 'user@example.com', amount: 2.50, userId: 1 },
-             { transactionId: 'T124', date: new Date(), email: 'test@test.com', amount: 1.20, userId: 2 },
-         ]);
-     } catch (error) {
-         res.status(500).json({ message: 'Error fetching recent tasks' });
-     }
-});
-
-app.get('/api/admin/recent-signups', adminAuthMiddleware, async (req, res) => {
-    try {
-        const result = await pool.query('SELECT id, email, created_at as "joinedDate" FROM users ORDER BY created_at DESC LIMIT 5');
-        res.json(result.rows);
-    } catch (error) {
-        res.status(500).json({ message: 'Error' });
-    }
-});
-
-app.get('/api/admin/users', adminAuthMiddleware, async (req, res) => {
-    const page = parseInt(req.query.page) || 1;
-    const limit = 10;
-    const offset = (page - 1) * limit;
-    const search = req.query.search || '';
-
-    try {
-        let query = 'SELECT * FROM users';
-        let countQuery = 'SELECT COUNT(*) FROM users';
-        let params = [];
-
-        if (search) {
-            query += ' WHERE username ILIKE $1 OR email ILIKE $1';
-            countQuery += ' WHERE username ILIKE $1 OR email ILIKE $1';
-            params.push(`%${search}%`);
-        }
-
-        query += ` ORDER BY id DESC LIMIT ${limit} OFFSET ${offset}`;
-
-        const result = await pool.query(query, params);
-        const countResult = await pool.query(countQuery, params);
-        const totalUsers = parseInt(countResult.rows[0].count);
-
-        res.json({
-            users: result.rows.map(snakeToCamel),
-            currentPage: page,
-            totalPages: Math.ceil(totalUsers / limit),
-            totalUsers
-        });
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: 'Error fetching users' });
-    }
-});
-
-app.get('/api/admin/users/:id', adminAuthMiddleware, async (req, res) => {
-    try {
-        const result = await pool.query('SELECT * FROM users WHERE id = $1', [req.params.id]);
-        if (result.rows.length === 0) return res.status(404).json({message: 'User not found'});
-        res.json(snakeToCamel(result.rows[0]));
-    } catch (error) {
-        res.status(500).json({ message: 'Error' });
-    }
-});
-
-app.get('/api/admin/users/:id/transactions', adminAuthMiddleware, async (req, res) => {
-    try {
-        const result = await pool.query('SELECT * FROM transactions WHERE user_id = $1 ORDER BY date DESC', [req.params.id]);
-        res.json(result.rows.map(snakeToCamel));
-    } catch (error) {
-        res.status(500).json({ message: 'Error' });
-    }
-});
-
-app.get('/api/admin/transactions', adminAuthMiddleware, async (req, res) => {
-     const page = parseInt(req.query.page) || 1;
-     const limit = parseInt(req.query.limit) || 10;
-     const offset = (page - 1) * limit;
-    
-    try {
-        const result = await pool.query(`
-            SELECT t.*, u.email, u.id as user_id 
-            FROM transactions t 
-            LEFT JOIN users u ON t.user_id = u.id 
-            WHERE t.type = 'Withdrawal' 
-            ORDER BY t.date DESC 
-            LIMIT $1 OFFSET $2`, [limit, offset]);
+        const users = [];
+        const usernames = ['CryptoKing', 'Sparkb6', 'GamerX', 'SoFi Plus', 'raihansarker', 'Fastslots', 'JohnDoe', 'JaneSmith', 'SurveyFan', 'Newbie'];
+        for (let i = 0; i < usernames.length; i++) {
+            const username = usernames[i];
+            const email = `${username.toLowerCase()}@example.com`;
+            const salt = await bcrypt.genSalt(10);
+            const password_hash = await bcrypt.hash('password123', salt);
+            const earn_id = crypto.randomBytes(8).toString('hex');
+            const avatar_url = `https://i.pravatar.cc/150?u=${username}`;
             
-        const countResult = await pool.query("SELECT COUNT(*) FROM transactions WHERE type = 'Withdrawal'");
-        
-        res.json({
-            transactions: result.rows.map(snakeToCamel),
-            currentPage: page,
-            totalPages: Math.ceil(parseInt(countResult.rows[0].count) / limit)
-        });
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: 'Error fetching transactions' });
-    }
-});
-
-app.patch('/api/admin/transactions/:id', adminAuthMiddleware, async (req, res) => {
-    const { status } = req.body;
-    try {
-        const result = await pool.query(
-            'UPDATE transactions SET status = $1 WHERE id = $2 RETURNING *',
-            [status, req.params.id]
-        );
-        if (result.rows.length === 0) return res.status(404).json({ message: 'Transaction not found' });
-        
-        // If rejected, refund balance
-        if (status === 'Rejected') {
-             const tx = result.rows[0];
-             if (tx.type === 'Withdrawal') {
-                 await pool.query('UPDATE users SET balance = balance + $1, total_withdrawn = total_withdrawn - $1 WHERE id = $2', [tx.amount, tx.user_id]);
-             }
+            const res = await client.query(
+                `INSERT INTO users (username, email, password_hash, avatar_url, earn_id, xp) VALUES ($1, $2, $3, $4, $5, $6) RETURNING id, username, avatar_url, xp`,
+                [username, email, password_hash, avatar_url, Math.floor(Math.random() * 90000) + 1000, earn_id]
+            );
+            users.push(res.rows[0]);
         }
         
-        res.json(snakeToCamel(result.rows[0]));
-    } catch (error) {
-        res.status(500).json({ message: 'Error updating transaction' });
+        const sources = ['Task', 'Survey', 'Offer'];
+        const methods = ['Torox', 'BitLabs', 'CPX Research', 'AdGate Media'];
+
+        for (let i = 0; i < 150; i++) {
+            const user = users[Math.floor(Math.random() * users.length)];
+            const amount = (Math.random() * 25 + 0.5).toFixed(2);
+            // Random date in the last 30 days
+            const date = new Date(Date.now() - Math.floor(Math.random() * 30 * 24 * 60 * 60 * 1000));
+            
+            await client.query(
+                `INSERT INTO transactions (id, user_id, type, method, amount, status, date, source) VALUES ($1, $2, 'Task Reward', $3, $4, 'Completed', $5, $6)`,
+                [`MOCK${Date.now()}${i}`, user.id, methods[Math.floor(Math.random() * methods.length)], amount, date, sources[Math.floor(Math.random() * sources.length)]]
+            );
+
+            await client.query(
+                'UPDATE users SET total_earned = total_earned + $1, balance = balance + $1, completed_tasks = completed_tasks + 1 WHERE id = $2',
+                [amount, user.id]
+            );
+        }
+        console.log('Mock data seeded successfully.');
+
+    } catch (err) {
+        console.error('Error seeding mock data:', err);
+    } finally {
+        client.release();
     }
-});
+};
 
-// Admin Payment Methods
-app.get('/api/admin/payment-methods', adminAuthMiddleware, async (req, res) => {
-    try {
-        const result = await pool.query('SELECT * FROM payment_methods ORDER BY id');
-        res.json(result.rows.map(snakeToCamel));
-    } catch (error) {
-        res.status(500).json({ message: 'Server error' });
-    }
-});
-
-app.patch('/api/admin/payment-methods/:id', adminAuthMiddleware, async (req, res) => {
-    const { id } = req.params;
-    const { isEnabled } = req.body;
-    try {
-        const result = await pool.query(
-            'UPDATE payment_methods SET is_enabled = $1 WHERE id = $2 RETURNING *',
-            [isEnabled, id]
-        );
-        res.json(snakeToCamel(result.rows[0]));
-    } catch (error) {
-        res.status(500).json({ message: 'Server error' });
-    }
-});
-
-// Admin Survey Provider Management
-app.get('/api/admin/survey-providers', adminAuthMiddleware, async (req, res) => {
-    try {
-        const result = await pool.query('SELECT * FROM survey_providers ORDER BY id');
-        res.json(result.rows.map(snakeToCamel));
-    } catch (error) {
-        console.error('Error fetching survey providers for admin:', error);
-        res.status(500).json({ message: 'Server error fetching survey providers.' });
-    }
-});
-
-app.patch('/api/admin/survey-providers/:id', adminAuthMiddleware, async (req, res) => {
-    const { id } = req.params;
-    const { isEnabled, logo, name } = req.body;
-    
-    try {
-        const fields = [];
-        const values = [];
-        let queryIndex = 1;
-
-        if (typeof isEnabled === 'boolean') {
-            fields.push(`is_enabled = $${queryIndex++}`);
-            values.push(isEnabled);
-        }
-        if (logo) {
-            fields.push(`logo = $${queryIndex++}`);
-            values.push(logo);
-        }
-        if (name) {
-            fields.push(`name = $${queryIndex++}`);
-            values.push(name);
-        }
-
-        if (fields.length === 0) {
-             return res.status(400).json({ message: 'No fields to update.' });
-        }
-
-        values.push(id);
-        const query = `UPDATE survey_providers SET ${fields.join(', ')} WHERE id = $${queryIndex} RETURNING *`;
-
-        const result = await pool.query(query, values);
-        if (result.rows.length === 0) return res.status(404).json({ message: 'Survey provider not found.' });
-        res.json(snakeToCamel(result.rows[0]));
-    } catch (error) {
-        console.error('Error updating survey provider:', error);
-        res.status(500).json({ message: 'Server error updating survey provider.' });
-    }
-});
-
-// Admin Offer Wall Management
-app.get('/api/admin/offer-walls', adminAuthMiddleware, async (req, res) => {
-    try {
-        const result = await pool.query('SELECT * FROM offer_walls ORDER BY id');
-        res.json(result.rows.map(snakeToCamel));
-    } catch (error) {
-        console.error('Error fetching offer walls for admin:', error);
-        res.status(500).json({ message: 'Server error fetching offer walls.' });
-    }
-});
-
-app.patch('/api/admin/offer-walls/:id', adminAuthMiddleware, async (req, res) => {
-    const { id } = req.params;
-    const { isEnabled, logo, name } = req.body;
-    
-    try {
-        const fields = [];
-        const values = [];
-        let queryIndex = 1;
-
-        if (typeof isEnabled === 'boolean') {
-            fields.push(`is_enabled = $${queryIndex++}`);
-            values.push(isEnabled);
-        }
-        if (logo) {
-            fields.push(`logo = $${queryIndex++}`);
-            values.push(logo);
-        }
-        if (name) {
-            fields.push(`name = $${queryIndex++}`);
-            values.push(name);
-        }
-
-        if (fields.length === 0) {
-             return res.status(400).json({ message: 'No fields to update.' });
-        }
-
-        values.push(id);
-        const query = `UPDATE offer_walls SET ${fields.join(', ')} WHERE id = $${queryIndex} RETURNING *`;
-
-        const result = await pool.query(query, values);
-        if (result.rows.length === 0) return res.status(404).json({ message: 'Offer wall not found.' });
-        res.json(snakeToCamel(result.rows[0]));
-    } catch (error) {
-        console.error('Error updating offer wall:', error);
-        res.status(500).json({ message: 'Server error updating offer wall.' });
-    }
-});
 
 // Start Server
-initDb().then(() => {
-  seedPaymentMethods();
-  seedSurveyProviders();
-  seedOfferWalls();
-  app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
+app.listen(port, () => {
+  initDb().then(() => {
+      seedAdmin();
+      seedPaymentMethods();
+      seedSurveyProviders();
+      seedOfferWalls();
+      seedMockUsersAndTransactions();
   });
+  console.log(`Server running on http://localhost:${port}`);
 });

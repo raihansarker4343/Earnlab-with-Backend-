@@ -1,4 +1,3 @@
-
 // db.js
 const { Pool } = require('pg');
 require('dotenv').config();
@@ -34,10 +33,7 @@ const initDb = async () => {
         total_referrals INTEGER DEFAULT 0,
         referral_earnings NUMERIC(10, 2) DEFAULT 0,
         xp INTEGER DEFAULT 0,
-        rank VARCHAR(50) DEFAULT 'Newbie',
-        ip_address VARCHAR(45),
-        country VARCHAR(100),
-        ip_history JSONB DEFAULT '[]'::jsonb
+        rank VARCHAR(50) DEFAULT 'Newbie'
       );
 
       CREATE TABLE IF NOT EXISTS admins (
@@ -111,9 +107,6 @@ const initDb = async () => {
     // This serves as a migration for older database schemas.
     await client.query('ALTER TABLE users ADD COLUMN IF NOT EXISTS balance NUMERIC(10, 2) DEFAULT 0');
     await client.query('ALTER TABLE users ADD COLUMN IF NOT EXISTS earn_id VARCHAR(50)');
-    await client.query('ALTER TABLE users ADD COLUMN IF NOT EXISTS ip_address VARCHAR(45)');
-    await client.query('ALTER TABLE users ADD COLUMN IF NOT EXISTS country VARCHAR(100)');
-    await client.query('ALTER TABLE users ADD COLUMN IF NOT EXISTS ip_history JSONB DEFAULT \'[]\'::jsonb');
 
     console.log('Database schema initialized successfully.');
   } catch (err) {

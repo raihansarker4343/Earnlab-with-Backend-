@@ -1,28 +1,23 @@
-
 import React, { useState, useEffect } from 'react';
 import { API_URL } from '../constants';
 import type { EarningFeedItem } from '../types';
 
 const LiveEarningFeed: React.FC = () => {
     const [feedItems, setFeedItems] = useState<EarningFeedItem[]>([]);
-    const [retry, setRetry] = useState(0);
 
     useEffect(() => {
         const fetchFeedData = async () => {
             try {
                 const response = await fetch(`${API_URL}/api/public/earning-feed`);
                 if (!response.ok) {
-                    throw new Error('Failed to fetch');
+                    console.error("Failed to fetch earning feed data.");
+                    return;
                 }
                 const data: EarningFeedItem[] = await response.json();
                 setFeedItems(data);
 
             } catch (error) {
-                // Silently fail or use a warning to avoid cluttering the console for users
-                // console.warn('Live earning feed fetch skipped:', error);
-                
-                // Retry after 5 seconds on failure
-                setTimeout(() => setRetry(r => r + 1), 5000);
+                console.error('Error fetching live earning feed:', error);
             }
         };
 
@@ -33,7 +28,7 @@ const LiveEarningFeed: React.FC = () => {
         
         return () => clearInterval(interval);
 
-    }, [retry]);
+    }, []);
 
     if (feedItems.length === 0) {
         return null; // Don't render anything if there's no data

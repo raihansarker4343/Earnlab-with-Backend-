@@ -1,11 +1,9 @@
-
 // services/ipHubClient.js
 const logger = require('../utils/logger');
 
-async function getIpInfo(ip) {
-  // Read env var here to ensure it's loaded
-  const IPHUB_API_KEY = process.env.IPHUB_API_KEY;
+const IPHUB_API_KEY = process.env.IPHUB_API_KEY;
 
+async function getIpInfo(ip) {
   if (!IPHUB_API_KEY) {
     logger.warn("IPHUB_API_KEY environment variable not set. Skipping IP check.");
     return null;
