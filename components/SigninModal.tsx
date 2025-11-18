@@ -44,7 +44,14 @@ const SigninModal: React.FC<SigninModalProps> = ({ isOpen, onClose, onSwitchToSi
             if (response.ok) {
                 handleLogin(data.token);
             } else {
-                setError(data.message || 'Failed to sign in.');
+                const errorMessage = data.message || 'Failed to sign in.';
+                if (errorMessage.includes('Verification failed')) {
+                    setError('Connection verification failed. This can happen if you are using a VPN/proxy, or due to a temporary network issue. Please disable any VPN/proxy and try again in a few moments.');
+                } else if (errorMessage.includes('VPN/Proxy')) {
+                    setError('Access using a VPN/Proxy is not permitted. Please disable it and try again.');
+                } else {
+                    setError(errorMessage);
+                }
             }
         } catch (err) {
             setError('An error occurred. Please try again.');
@@ -83,8 +90,8 @@ const SigninModal: React.FC<SigninModalProps> = ({ isOpen, onClose, onSwitchToSi
                 
                 <form onSubmit={handleSubmit} className="space-y-4">
                     {error && (
-                        <div className="bg-red-900/60 border border-red-700 text-red-300 p-3 rounded-lg text-sm flex items-center gap-2">
-                            <i className="fas fa-exclamation-triangle flex-shrink-0"></i>
+                        <div className="bg-red-500/10 border-l-4 border-red-500 text-red-200 p-4 text-sm flex items-start gap-3" role="alert">
+                            <i className="fas fa-exclamation-circle flex-shrink-0 text-red-400 mt-0.5"></i>
                             <span className="text-left">{error}</span>
                         </div>
                     )}
