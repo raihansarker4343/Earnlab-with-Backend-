@@ -27,7 +27,7 @@ const checkIpWithIPHub = (options = {}) => {
       logger.info(`IP ${clientIp} served from cache. Block status: ${req.isBlocked}`);
 
       if (blockImmediately && req.isBlocked) {
-        return res.status(403).json({ message: 'Access from your current network is restricted.' });
+        return res.status(403).json({ message: 'Access via VPN/Proxy is not allowed.' });
       }
       return next();
     }
@@ -44,7 +44,7 @@ const checkIpWithIPHub = (options = {}) => {
     if (!ipInfo) {
       if (blockOnFailure) {
         logger.warn(`Blocking IP ${clientIp} due to IP lookup failure.`);
-        return res.status(403).json({ message: 'Could not verify your network. Access denied.' });
+        return res.status(403).json({ message: 'Verification failed. Please try again in a few moments.' });
       } else {
         logger.warn(`Allowing IP ${clientIp} despite IP lookup failure.`);
         req.ipInfo = { ip: clientIp, block: -1, countryName: 'Unknown' }; 
@@ -62,7 +62,7 @@ const checkIpWithIPHub = (options = {}) => {
     logger.info(`IP ${clientIp} fetched from API. Block status: ${req.isBlocked}`);
 
     if (blockImmediately && req.isBlocked) {
-      return res.status(403).json({ message: 'Access from your current network is restricted.' });
+      return res.status(403).json({ message: 'Access via VPN/Proxy is not allowed.' });
     }
 
     next();

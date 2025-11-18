@@ -23,7 +23,7 @@ const OfferPage = React.lazy(() => import('./components/pages/OfferPage'));
 const TasksPage = React.lazy(() => import('./components/pages/TasksPage'));
 const SurveysPage = React.lazy(() => import('./components/pages/SurveysPage'));
 const ReferralsPage = React.lazy(() => import('./components/pages/ReferralsPage'));
-const LeaderboardPage = React.lazy(() => import('./components/pages/LeaderboardPage'));
+const LeaderboardPage = React.lazy(() => import('./components/LeaderboardPage'));
 const DailyBonusPage = React.lazy(() => import('./components/pages/DailyBonusPage'));
 const AchievementsPage = React.lazy(() => import('./components/pages/AchievementsPage'));
 const ChatPage = React.lazy(() => import('./components/pages/ChatPage'));

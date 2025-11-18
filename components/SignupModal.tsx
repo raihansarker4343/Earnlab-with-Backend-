@@ -102,7 +102,12 @@ const SignupModal: React.FC<SignupModalProps> = ({ isOpen, onClose, initialEmail
                 </div>
                 
                 <form onSubmit={handleSubmit} className="space-y-4">
-                    {error && <p className="text-red-400 bg-red-500/20 p-3 rounded-lg text-sm text-center">{error}</p>}
+                    {error && (
+                        <div className="bg-red-900/60 border border-red-700 text-red-300 p-3 rounded-lg text-sm flex items-center gap-2">
+                            <i className="fas fa-exclamation-triangle flex-shrink-0"></i>
+                            <span className="text-left">{error}</span>
+                        </div>
+                    )}
                     <div>
                         <label htmlFor="modal-signup-email" className="block text-sm font-medium text-slate-300 mb-2">Email</label>
                         <div className="relative">
