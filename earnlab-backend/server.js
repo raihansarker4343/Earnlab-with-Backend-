@@ -952,7 +952,7 @@ const seedMockUsersAndTransactions = async () => {
             
             const res = await client.query(
                 `INSERT INTO users (username, email, password_hash, avatar_url, earn_id, xp) VALUES ($1, $2, $3, $4, $5, $6) RETURNING id, username, avatar_url, xp`,
-                [username, email, password_hash, avatar_url, Math.floor(Math.random() * 90000) + 1000, earn_id]
+                [username, email, password_hash, avatar_url, earn_id, Math.floor(Math.random() * 90000) + 1000]
             );
             users.push(res.rows[0]);
         }

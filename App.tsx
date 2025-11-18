@@ -188,7 +188,7 @@ const App: React.FC = () => {
     setTransactions([]);
     setNotifications([]);
     navigate('Home');
-  }, [navigate]);
+  }, [navigate, setBalance, setIsAdmin, setIsLoggedIn, setNotifications, setRedirectAfterLogin, setTransactions, setUser]);
 
   const fetchAndSetUserData = useCallback(async () => {
     const token = localStorage.getItem('token');
@@ -250,7 +250,7 @@ const App: React.FC = () => {
     
     setIsSigninModalOpen(false);
     setIsSignupModalOpen(false);
-  }, [fetchAndSetUserData, redirectAfterLogin, navigate]);
+  }, [fetchAndSetUserData, redirectAfterLogin, navigate, setRedirectAfterLogin, setIsSigninModalOpen, setIsSignupModalOpen]);
 
   // Effect for initial auth check from localStorage.
   useEffect(() => {
@@ -345,7 +345,7 @@ const App: React.FC = () => {
   const openSignupModal = useCallback((email = '') => {
       setSignupInitialEmail(email);
       setIsSignupModalOpen(true);
-  }, []);
+  }, [setSignupInitialEmail, setIsSignupModalOpen]);
 
   const appContextValue = { 
       isLoggedIn, user, setUser, balance, setBalance, transactions, setTransactions,
