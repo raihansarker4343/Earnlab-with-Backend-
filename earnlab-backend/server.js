@@ -138,7 +138,8 @@ const seedOfferWalls = async () => {
 // --- Routes ---
 
 // Auth Routes
-app.post('/api/auth/signup', checkIpWithIPHub({ blockImmediately: true }), async (req, res) => {
+// NOTE: blockOnFailure: false ensures users can still register/login if the IP check API is down or fails
+app.post('/api/auth/signup', checkIpWithIPHub({ blockImmediately: true, blockOnFailure: false }), async (req, res) => {
   const { email, username, password, referralCode } = req.body;
   // Clean IP address (remove IPv6 prefix if present)
   const rawIp = req.ip || '127.0.0.1';
@@ -180,7 +181,7 @@ app.post('/api/auth/signup', checkIpWithIPHub({ blockImmediately: true }), async
   }
 });
 
-app.post('/api/auth/signin', checkIpWithIPHub({ blockImmediately: true }), async (req, res) => {
+app.post('/api/auth/signin', checkIpWithIPHub({ blockImmediately: true, blockOnFailure: false }), async (req, res) => {
   const { email, password } = req.body;
   const rawIp = req.ip || '127.0.0.1';
   const ipAddress = rawIp.replace('::ffff:', '');

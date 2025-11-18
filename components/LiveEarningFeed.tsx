@@ -18,7 +18,9 @@ const LiveEarningFeed: React.FC = () => {
                 setFeedItems(data);
 
             } catch (error) {
-                console.error('Error fetching live earning feed:', error);
+                // Silently fail or use a warning to avoid cluttering the console for users
+                // console.warn('Live earning feed fetch skipped:', error);
+                
                 // Retry after 5 seconds on failure
                 setTimeout(() => setRetry(r => r + 1), 5000);
             }
