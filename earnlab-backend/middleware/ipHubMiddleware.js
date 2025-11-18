@@ -13,7 +13,17 @@ const checkIpWithIPHub = (options = {}) => {
 
   return async (req, res, next) => {
     // req.ip will be the real client IP if 'trust proxy' is set in Express
-    const clientIp = req.ip;
+    // Sanitize IPv6 mapped IPv4 addresses
+    let clientIp = req.ip || '127.0.0.1';
+    clientIp = clientIp.replace('::ffff:', '');
+
+    // Handle local development addresses to allow traffic
+    if (clientIp === '127.0.0.1' || clientIp === '::1') {
+        logger.info(`Localhost IP ${clientIp} detected. Skipping strict IP check.`);
+        req.ipInfo = { ip: clientIp, block: 0, countryName: 'Localhost', isp: 'Local' };
+        req.isBlocked = false;
+        return next();
+    }
 
     if (!clientIp) {
         logger.warn('Could not determine client IP address.');
