@@ -1,7 +1,7 @@
 import React, { useState, useContext, useEffect } from 'react';
-import { AppContext } from '../../App';
-import type { LeaderboardUser } from '../../types';
-import { API_URL } from '../../constants';
+import { AppContext } from '../App';
+import type { LeaderboardUser } from '../types';
+import { API_URL } from '../constants';
 import SkeletonLoader from '../SkeletonLoader';
 
 const getNextResetDate = (period: 'Daily' | 'Weekly' | 'Monthly'): Date => {
