@@ -3,7 +3,7 @@ import OfferWallCard from '../OfferWallCard';
 import type { OfferWall } from '../../types';
 import { API_URL } from '../../constants';
 import SkeletonLoader from '../SkeletonLoader';
-import { AppContext } from '../../App';
+import { AppContext } from '../../types';
 
 const SectionHeader: React.FC<{ title: string, description: string }> = ({ title, description }) => (
     <div className="flex justify-between items-center mb-6">

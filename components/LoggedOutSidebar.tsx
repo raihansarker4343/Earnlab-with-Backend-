@@ -1,5 +1,5 @@
 import React, { useContext } from 'react';
-import { AppContext } from '../App';
+import { AppContext } from '../types';
 import type { SidebarMenuItem } from '../types';
 import { HomeIcon, BlogIcon, GuideIcon, SupportIcon } from './icons/SidebarIcons';
 

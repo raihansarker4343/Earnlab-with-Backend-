@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect, useContext } from 'react';
 import { CHAT_MESSAGES } from '../../constants';
 import type { ChatMessage } from '../../types';
-import { AppContext } from '../../App';
+import { AppContext } from '../../types';
 import { GoogleGenAI } from '@google/genai';
 
 const ChatPage: React.FC = () => {

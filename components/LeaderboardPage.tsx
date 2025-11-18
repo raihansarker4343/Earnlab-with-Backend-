@@ -1,5 +1,5 @@
 import React, { useState, useContext, useEffect } from 'react';
-import { AppContext } from '../App';
+import { AppContext } from '../types';
 import type { LeaderboardUser } from '../types';
 import { API_URL } from '../constants';
 import SkeletonLoader from './SkeletonLoader';

@@ -1,5 +1,5 @@
 import React, { useState, useContext, useEffect } from 'react';
-import { AppContext } from '../../App';
+import { AppContext } from '../../types';
 import type { LeaderboardUser } from '../../types';
 import { API_URL } from '../../constants';
 import SkeletonLoader from '../SkeletonLoader';
@@ -29,7 +29,7 @@ const PrizeCard: React.FC<{ rank: number; prize: string; color: string; icon: st
     </div>
 );
 
-const LeaderboardPage: React.FC = () => {
+const LeaderboardPage = () => {
     const { user } = useContext(AppContext);
     const [activeTab, setActiveTab] = useState<'Daily' | 'Weekly' | 'Monthly'>('Weekly');
     const [leaderboardData, setLeaderboardData] = useState<LeaderboardUser[]>([]);

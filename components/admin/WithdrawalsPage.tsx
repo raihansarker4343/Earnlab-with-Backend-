@@ -1,5 +1,6 @@
 import React, { useContext, useState, useEffect } from 'react';
-import { AppContext } from '../../App';
+// FIX: Corrected the import path for AppContext. It is defined in '../../types', not '../../App'.
+import { AppContext } from '../../types';
 import type { Transaction } from '../../types';
 import { API_URL } from '../../constants';
 import StatusBadge from '../StatusBadge';

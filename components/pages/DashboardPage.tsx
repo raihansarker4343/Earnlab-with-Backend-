@@ -1,5 +1,5 @@
 import React, { useContext, useState, useEffect } from 'react';
-import { AppContext } from '../../App';
+import { AppContext } from '../../types';
 import SkeletonLoader from '../SkeletonLoader';
 import StatusBadge from '../StatusBadge';
 

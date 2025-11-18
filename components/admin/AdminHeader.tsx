@@ -1,5 +1,5 @@
 import React, { useState, useContext } from 'react';
-import { AppContext } from '../../App';
+import { AppContext } from '../../types';
 
 interface HeaderProps {
     onMenuClick: () => void;

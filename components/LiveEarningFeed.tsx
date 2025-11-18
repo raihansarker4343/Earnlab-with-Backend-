@@ -4,19 +4,23 @@ import type { EarningFeedItem } from '../types';
 
 const LiveEarningFeed: React.FC = () => {
     const [feedItems, setFeedItems] = useState<EarningFeedItem[]>([]);
+    const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
         const fetchFeedData = async () => {
             try {
                 const response = await fetch(`${API_URL}/api/public/earning-feed`);
                 if (!response.ok) {
+                    setError("Live feed is temporarily unavailable.");
                     console.error("Failed to fetch earning feed data.");
                     return;
                 }
                 const data: EarningFeedItem[] = await response.json();
                 setFeedItems(data);
+                setError(null); // Clear error on success
 
             } catch (error) {
+                setError("Live feed is temporarily unavailable.");
                 console.error('Error fetching live earning feed:', error);
             }
         };
@@ -30,8 +34,19 @@ const LiveEarningFeed: React.FC = () => {
 
     }, []);
 
+    if (error) {
+        return (
+            <div className="bg-yellow-50 dark:bg-yellow-900/20 border-b border-yellow-200 dark:border-yellow-800/50 overflow-hidden whitespace-nowrap">
+                <div className="flex justify-center items-center p-2 text-sm text-yellow-700 dark:text-yellow-300">
+                    <i className="fas fa-exclamation-triangle mr-2"></i>
+                    {error}
+                </div>
+            </div>
+        );
+    }
+
     if (feedItems.length === 0) {
-        return null; // Don't render anything if there's no data
+        return null; // Don't render anything if there's no data and no error
     }
 
     const duplicatedItems = [...feedItems, ...feedItems];

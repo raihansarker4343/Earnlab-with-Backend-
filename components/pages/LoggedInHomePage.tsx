@@ -5,7 +5,7 @@ import SurveyProviderCard from '../SurveyProviderCard';
 import OfferWallCard from '../OfferWallCard';
 import type { SurveyProvider, OfferWall } from '../../types';
 import { API_URL } from '../../constants';
-import { AppContext } from '../../App';
+import { AppContext } from '../../types';
 
 const featuredTasks = [
   { image: 'https://i.imgur.com/r6355M8.png', title: 'Hero Castle War: T...', description: 'Open the app, registe...', payout: 2.50 },

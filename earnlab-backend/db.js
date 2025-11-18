@@ -141,8 +141,8 @@ const logIpData = async (ip, ipInfo) => {
     await pool.query(query, values);
   } catch (error) {
     // This is designed not to block the main request flow on DB logging failure.
+    // Just log the error, don't re-throw, to avoid unhandled promise rejection noise.
     console.error(`Failed to log IP ${ip} to database.`, error);
-    throw error;
   }
 };
 
