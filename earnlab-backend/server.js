@@ -10,6 +10,16 @@ require('dotenv').config();
 const logger = require('./utils/logger');
 const checkIpWithIPHub = require('./middleware/ipHubMiddleware');
 
+// Helper to create IP log entry from request
+const createIpLogEntry = (req) => ({
+    ip: req.ip,
+    timestamp: new Date().toISOString(),
+    country: req.ipInfo?.countryName || 'Unknown',
+    isp: req.ipInfo?.isp || req.ipInfo?.org || 'Unknown',
+    block_status: req.ipInfo?.block || 0,
+    user_agent: req.headers['user-agent'] || 'Unknown'
+});
+
 const app = express();
 const port = process.env.PORT || 3001;
 
@@ -86,11 +96,13 @@ app.post('/api/auth/signup', checkIpWithIPHub({ blockImmediately: true, blockOnF
         const password_hash = await bcrypt.hash(password, salt);
         const earn_id = crypto.randomBytes(8).toString('hex');
         
+        const ipLog = createIpLogEntry(req);
+
         const newUserQuery = await client.query(
-            `INSERT INTO users (username, email, password_hash, avatar_url, earn_id) 
-             VALUES ($1, $2, $3, $4, $5) 
+            `INSERT INTO users (username, email, password_hash, avatar_url, earn_id, ip_logs) 
+             VALUES ($1, $2, $3, $4, $5, $6) 
              RETURNING id, username, email, avatar_url, created_at AS joined_date, total_earned, balance, last_30_days_earned, completed_tasks, total_wagered, total_profit, total_withdrawn, total_referrals, referral_earnings, xp, rank, earn_id`,
-            [username, email, password_hash, `https://i.pravatar.cc/150?u=${username}`, earn_id]
+            [username, email, password_hash, `https://i.pravatar.cc/150?u=${username}`, earn_id, JSON.stringify([ipLog])]
         );
 
         const user = newUserQuery.rows[0];
@@ -131,6 +143,15 @@ app.post('/api/auth/signin', checkIpWithIPHub({ blockImmediately: true, blockOnF
             return res.status(400).json({ message: 'Invalid credentials' });
         }
         const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET, { expiresIn: '7d' });
+
+        // Update user's ip_logs history by appending the new log
+        const ipLog = createIpLogEntry(req);
+        await pool.query(
+            `UPDATE users 
+             SET ip_logs = COALESCE(ip_logs, '[]'::jsonb) || $1::jsonb 
+             WHERE id = $2`,
+            [JSON.stringify([ipLog]), user.id]
+        );
         
         delete user.password_hash; // Don't send password hash to client
         res.json({ token, user: snakeToCamel(user) });

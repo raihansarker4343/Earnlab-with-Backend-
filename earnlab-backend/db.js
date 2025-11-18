@@ -107,6 +107,9 @@ const initDb = async () => {
     // This serves as a migration for older database schemas.
     await client.query('ALTER TABLE users ADD COLUMN IF NOT EXISTS balance NUMERIC(10, 2) DEFAULT 0');
     await client.query('ALTER TABLE users ADD COLUMN IF NOT EXISTS earn_id VARCHAR(50)');
+    
+    // Add 'ip_logs' column to 'users' table to store user IP history
+    await client.query("ALTER TABLE users ADD COLUMN IF NOT EXISTS ip_logs JSONB DEFAULT '[]'");
 
     console.log('Database schema initialized successfully.');
   } catch (err) {
