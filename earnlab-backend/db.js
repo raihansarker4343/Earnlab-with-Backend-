@@ -91,6 +91,16 @@ const initDb = async () => {
         link_to VARCHAR(255),
         created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
       );
+
+      CREATE TABLE IF NOT EXISTS ip_logs (
+        ip_address VARCHAR(45) PRIMARY KEY,
+        block_status INT NOT NULL,
+        country_code CHAR(2),
+        country_name VARCHAR(100),
+        isp VARCHAR(255),
+        first_seen TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+        last_seen TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+      );
     `);
 
     // Add 'balance' column to 'users' table if it doesn't exist.
@@ -106,4 +116,34 @@ const initDb = async () => {
   }
 };
 
-module.exports = { pool, initDb };
+const logIpData = async (ip, ipInfo) => {
+  const query = `
+    INSERT INTO ip_logs (ip_address, block_status, country_code, country_name, isp, last_seen)
+    VALUES ($1, $2, $3, $4, $5, CURRENT_TIMESTAMP)
+    ON CONFLICT (ip_address)
+    DO UPDATE SET 
+      block_status = EXCLUDED.block_status,
+      country_code = EXCLUDED.country_code,
+      country_name = EXCLUDED.country_name,
+      isp = EXCLUDED.isp,
+      last_seen = CURRENT_TIMESTAMP;
+  `;
+
+  const values = [
+    ip,
+    ipInfo.block,
+    ipInfo.countryCode || null,
+    ipInfo.countryName || null,
+    ipInfo.isp || ipInfo.org || null,
+  ];
+
+  try {
+    await pool.query(query, values);
+  } catch (error) {
+    // This is designed not to block the main request flow on DB logging failure.
+    console.error(`Failed to log IP ${ip} to database.`, error);
+    throw error;
+  }
+};
+
+module.exports = { pool, initDb, logIpData };

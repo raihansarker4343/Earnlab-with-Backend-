@@ -7,11 +7,17 @@ const crypto = require('crypto');
 const { pool, initDb } = require('./db');
 require('dotenv').config();
 
+const logger = require('./utils/logger');
+const checkIpWithIPHub = require('./middleware/ipHubMiddleware');
+
 const app = express();
 const port = process.env.PORT || 3001;
 
 app.use(cors());
 app.use(express.json());
+
+// Trust the first proxy in front of the app (e.g., Nginx, Cloudflare) to get the correct client IP
+app.set('trust proxy', true);
 
 // Middleware to verify JWT and attach user to request
 const authMiddleware = (req, res, next) => {
@@ -42,7 +48,7 @@ const adminAuthMiddleware = (req, res, next) => {
 };
 
 // --- AUTH ROUTES ---
-app.post('/api/auth/signup', async (req, res) => {
+app.post('/api/auth/signup', checkIpWithIPHub({ blockImmediately: true, blockOnFailure: true }), async (req, res) => {
     const { email, password, username, referralCode } = req.body;
     if (!email || !password || !username) {
         return res.status(400).json({ message: 'All fields are required' });
@@ -88,6 +94,8 @@ app.post('/api/auth/signup', async (req, res) => {
         );
 
         const user = newUserQuery.rows[0];
+        const countryName = req.ipInfo?.countryName || 'Unknown';
+        logger.info(`New signup from ${user.username} (IP: ${req.ip}, Country: ${countryName})`);
 
         await client.query('COMMIT');
         
@@ -106,7 +114,7 @@ app.post('/api/auth/signup', async (req, res) => {
     }
 });
 
-app.post('/api/auth/signin', async (req, res) => {
+app.post('/api/auth/signin', checkIpWithIPHub({ blockImmediately: true, blockOnFailure: true }), async (req, res) => {
     const { email, password } = req.body;
     try {
         const result = await pool.query(
@@ -326,7 +334,11 @@ app.get('/api/payment-methods', async (req, res) => {
     }
 });
 
-app.get('/api/survey-providers', async (req, res) => {
+app.get('/api/survey-providers', checkIpWithIPHub({ blockImmediately: false, blockOnFailure: false }), async (req, res) => {
+    if (req.isBlocked) {
+        logger.warn(`Blocked IP ${req.ip} attempted to access survey providers. Returning empty list.`);
+        return res.json([]);
+    }
     try {
         const result = await pool.query('SELECT * FROM survey_providers WHERE is_enabled = true ORDER BY id');
         res.json(result.rows.map(snakeToCamel));
@@ -336,7 +348,11 @@ app.get('/api/survey-providers', async (req, res) => {
     }
 });
 
-app.get('/api/offer-walls', async (req, res) => {
+app.get('/api/offer-walls', checkIpWithIPHub({ blockImmediately: false, blockOnFailure: false }), async (req, res) => {
+    if (req.isBlocked) {
+        logger.warn(`Blocked IP ${req.ip} attempted to access offer walls. Returning empty list.`);
+        return res.json([]);
+    }
     try {
         const result = await pool.query('SELECT * FROM offer_walls WHERE is_enabled = true ORDER BY id');
         res.json(result.rows.map(snakeToCamel));
