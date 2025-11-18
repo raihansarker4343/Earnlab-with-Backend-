@@ -1,5 +1,5 @@
 import React, { useContext, useState, useEffect, useRef } from 'react';
-import { AppContext } from '../types';
+import { AppContext } from '../App';
 import { BellIcon, ChevronDownIcon, WalletIcon, LogoutIcon, MenuIcon } from './icons/HeaderIcons';
 import { MoonIcon, SunIcon } from './icons/FooterIcons';
 import { API_URL } from '../constants';

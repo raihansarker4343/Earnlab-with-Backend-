@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef, useContext } from 'react';
-// FIX: Corrected the import path for AppContext. It is defined in '../../types', not '../../App'.
-import { AppContext } from '../../types';
+import { AppContext } from '../../App';
 import { FAQ_ITEMS, REWARD_OPTIONS, TESTIMONIALS, FEATURED_OFFERS } from '../../constants';
 import type { FaqItem } from '../../types';
 

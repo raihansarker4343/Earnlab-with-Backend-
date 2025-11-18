@@ -8,7 +8,7 @@ const ipCache = new Map();
 const CACHE_TTL = 60 * 60 * 1000; // 1 hour in milliseconds
 
 const checkIpWithIPHub = (options = {}) => {
-  const { blockImmediately = false, blockOnFailure = false } = options;
+  const { blockImmediately = false, blockOnFailure = true } = options;
 
   return async (req, res, next) => {
     // req.ip will be the real client IP if 'trust proxy' is set in Express
@@ -35,30 +35,31 @@ const checkIpWithIPHub = (options = {}) => {
     // 2. If not in cache, call API
     const ipInfo = await getIpInfo(clientIp);
     
+    // Log every checked IP to the database without blocking the request flow
+    if (ipInfo) {
+      logIpData(clientIp, ipInfo).catch(err => logger.error('DB logging failed:', err));
+    }
+
     // 3. Handle API failure
     if (!ipInfo) {
-      // Create a synthetic info object to represent the failure for logging
-      const failureInfo = { block: -1, countryName: 'Lookup Failed' };
-      logIpData(clientIp, failureInfo).catch(err => logger.error('DB logging failed (on API fail):', err));
-
       if (blockOnFailure) {
         logger.warn(`Blocking IP ${clientIp} due to IP lookup failure.`);
         return res.status(403).json({ message: 'Verification failed. Please try again in a few moments.' });
       } else {
         logger.warn(`Allowing IP ${clientIp} despite IP lookup failure.`);
-        req.ipInfo = { ip: clientIp, ...failureInfo }; 
+        req.ipInfo = { ip: clientIp, block: -1, countryName: 'Unknown' }; 
         req.isBlocked = false; // Fail-open
         return next();
       }
     }
 
-    // 4. Process successful API response and log it
-    logIpData(clientIp, ipInfo).catch(err => logger.error('DB logging failed (on API success):', err));
-    ipCache.set(clientIp, { data: ipInfo, timestamp: Date.now() });
-    logger.info(`IP ${clientIp} fetched from API. Block status: ${ipInfo.block > 0}`);
-
+    // 4. Process successful API response
     req.ipInfo = ipInfo;
-    req.isBlocked = ipInfo.block > 0;
+    req.isBlocked = ipInfo.block > 0; // block is 1 for VPN/Proxy, 2 for DC. 0 is good.
+
+    // 5. Update cache
+    ipCache.set(clientIp, { data: ipInfo, timestamp: Date.now() });
+    logger.info(`IP ${clientIp} fetched from API. Block status: ${req.isBlocked}`);
 
     if (blockImmediately && req.isBlocked) {
       return res.status(403).json({ message: 'Access via VPN/Proxy is not allowed.' });

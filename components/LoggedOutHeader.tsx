@@ -1,5 +1,5 @@
 import React, { useContext } from 'react';
-import { AppContext } from '../types';
+import { AppContext } from '../App';
 import { MenuIcon } from './icons/HeaderIcons';
 import { MoonIcon, SunIcon } from './icons/FooterIcons';
 

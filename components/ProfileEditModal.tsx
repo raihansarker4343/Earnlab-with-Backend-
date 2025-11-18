@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useContext } from 'react';
-import { AppContext } from '../types';
+import { AppContext } from '../App';
 import type { User } from '../types';
 import { API_URL } from '../constants';
 

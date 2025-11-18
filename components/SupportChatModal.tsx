@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect, useContext } from 'react';
-import { AppContext } from '../types';
+import { AppContext } from '../App';
 import { GoogleGenAI, Chat } from '@google/genai';
 
 interface SupportChatModalProps {

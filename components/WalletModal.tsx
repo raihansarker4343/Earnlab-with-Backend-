@@ -1,5 +1,5 @@
 import React, { useContext, useState, useEffect } from 'react';
-import { AppContext } from '../types';
+import { AppContext } from '../App';
 import { API_URL } from '../constants';
 import type { Transaction, PaymentMethod } from '../types';
 import SkeletonLoader from './SkeletonLoader';

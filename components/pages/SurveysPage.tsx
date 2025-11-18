@@ -3,7 +3,7 @@ import SurveyProviderCard from '../SurveyProviderCard';
 import type { SurveyProvider } from '../../types';
 import { API_URL } from '../../constants';
 import SkeletonLoader from '../SkeletonLoader';
-import { AppContext } from '../../types';
+import { AppContext } from '../../App';
 
 const SurveysPage: React.FC = () => {
     const [providers, setProviders] = useState<SurveyProvider[]>([]);

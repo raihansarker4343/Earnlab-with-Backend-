@@ -1,11 +1,11 @@
-import React, { useState, useCallback, useEffect, Suspense, useRef } from 'react';
+import React, { useState, useCallback, useEffect, Suspense } from 'react';
 import Sidebar from './components/Sidebar';
 import Header from './components/Header';
 import LoggedOutHeader from './components/LoggedOutHeader';
 import WalletModal from './components/WalletModal';
 import LiveEarningFeed from './components/LiveEarningFeed';
 import Footer from './components/Footer';
-import { AppContext, type User, type Transaction, type Notification } from './types';
+import type { User, Transaction, Notification } from './types';
 import LoggedOutSidebar from './components/LoggedOutSidebar';
 import SigninModal from './components/SigninModal';
 import SignupModal from './components/SignupModal';
@@ -57,6 +57,76 @@ const AdGemPage = React.lazy(() => import('./components/pages/offers/AdGemPage')
 const AdminLayout = React.lazy(() => import('./components/admin/AdminLayout'));
 const AdminLoginPage = React.lazy(() => import('./components/admin/AdminLoginPage'));
 
+
+export const AppContext = React.createContext<{
+  isLoggedIn: boolean;
+  user: User | null;
+  setUser: React.Dispatch<React.SetStateAction<User | null>>;
+  balance: number;
+  setBalance: React.Dispatch<React.SetStateAction<number>>;
+  transactions: Transaction[];
+  setTransactions: React.Dispatch<React.SetStateAction<Transaction[]>>;
+  notifications: Notification[];
+  setNotifications: React.Dispatch<React.SetStateAction<Notification[]>>;
+  handleLogin: (token: string) => Promise<void>;
+  handleLogout: () => void;
+  isWalletModalOpen: boolean;
+  setIsWalletModalOpen: React.Dispatch<React.SetStateAction<boolean>>;
+  isSigninModalOpen: boolean;
+  setIsSigninModalOpen: React.Dispatch<React.SetStateAction<boolean>>;
+  isSignupModalOpen: boolean;
+  openSignupModal: (email?: string) => void;
+  currentPage: string;
+  setCurrentPage: (pageName: string) => void;
+  isSidebarCollapsed: boolean;
+  setIsSidebarCollapsed: React.Dispatch<React.SetStateAction<boolean>>;
+  isMobileSidebarOpen: boolean;
+  setIsMobileSidebarOpen: React.Dispatch<React.SetStateAction<boolean>>;
+  theme: 'light' | 'dark';
+  setTheme: React.Dispatch<React.SetStateAction<'light' | 'dark'>>;
+  isSupportChatModalOpen: boolean;
+  setIsSupportChatModalOpen: React.Dispatch<React.SetStateAction<boolean>>;
+  isWithdrawSuccessModalOpen: boolean;
+  setIsWithdrawSuccessModalOpen: React.Dispatch<React.SetStateAction<boolean>>;
+  isProfileEditModalOpen: boolean;
+  setIsProfileEditModalOpen: React.Dispatch<React.SetStateAction<boolean>>;
+  isAdmin: boolean;
+  setIsAdmin: React.Dispatch<React.SetStateAction<boolean>>;
+}>({
+  isLoggedIn: false,
+  user: null,
+  setUser: () => {},
+  balance: 0,
+  setBalance: () => {},
+  transactions: [],
+  setTransactions: () => {},
+  notifications: [],
+  setNotifications: () => {},
+  handleLogin: async () => {},
+  handleLogout: () => {},
+  isWalletModalOpen: false,
+  setIsWalletModalOpen: () => {},
+  isSigninModalOpen: false,
+  setIsSigninModalOpen: () => {},
+  isSignupModalOpen: false,
+  openSignupModal: () => {},
+  currentPage: 'Home',
+  setCurrentPage: () => {},
+  isSidebarCollapsed: false,
+  setIsSidebarCollapsed: () => {},
+  isMobileSidebarOpen: false,
+  setIsMobileSidebarOpen: () => {},
+  theme: 'dark',
+  setTheme: () => {},
+  isSupportChatModalOpen: false,
+  setIsSupportChatModalOpen: () => {},
+  isWithdrawSuccessModalOpen: false,
+  setIsWithdrawSuccessModalOpen: () => {},
+  isProfileEditModalOpen: false,
+  setIsProfileEditModalOpen: () => {},
+  isAdmin: false,
+  setIsAdmin: () => {},
+});
 
 const PageLoader: React.FC = () => (
     <div className="flex items-center justify-center h-full w-full p-8">
@@ -143,11 +213,6 @@ const getPageFromHash = (hashPath: string): string => {
 const App: React.FC = () => {
   const [isAdmin, setIsAdmin] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const isLoggedInRef = useRef(isLoggedIn);
-  useEffect(() => {
-    isLoggedInRef.current = isLoggedIn;
-  }, [isLoggedIn]);
-
   const [user, setUser] = useState<User | null>(null);
   const [balance, setBalance] = useState(0);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
@@ -188,14 +253,12 @@ const App: React.FC = () => {
     setTransactions([]);
     setNotifications([]);
     navigate('Home');
-  }, [navigate, setBalance, setIsAdmin, setIsLoggedIn, setNotifications, setRedirectAfterLogin, setTransactions, setUser]);
+  }, [navigate]);
 
   const fetchAndSetUserData = useCallback(async () => {
     const token = localStorage.getItem('token');
     if (!token) {
-        if (isLoggedInRef.current) {
-          handleLogout();
-        }
+        if (isLoggedIn) handleLogout();
         return;
     }
 
@@ -237,7 +300,7 @@ const App: React.FC = () => {
         console.error("Failed to fetch user data:", error);
         handleLogout();
     }
-  }, [handleLogout, setBalance, setIsLoggedIn, setNotifications, setTransactions, setUser]);
+  }, [isLoggedIn, handleLogout]);
 
   const handleLogin = useCallback(async (token: string) => {
     localStorage.setItem('token', token);
@@ -250,7 +313,7 @@ const App: React.FC = () => {
     
     setIsSigninModalOpen(false);
     setIsSignupModalOpen(false);
-  }, [fetchAndSetUserData, redirectAfterLogin, navigate, setRedirectAfterLogin, setIsSigninModalOpen, setIsSignupModalOpen]);
+  }, [fetchAndSetUserData, redirectAfterLogin, navigate]);
 
   // Effect for initial auth check from localStorage.
   useEffect(() => {
@@ -329,23 +392,18 @@ const App: React.FC = () => {
     const handleFocus = () => {
       if (localStorage.getItem('token')) {
         fetchAndSetUserData();
-      } else {
-        // If the token is gone (e.g., logged out in another tab), log out here too.
-        if (isLoggedInRef.current) {
-          handleLogout();
-        }
       }
     };
     window.addEventListener('focus', handleFocus);
     return () => {
       window.removeEventListener('focus', handleFocus);
     };
-  }, [fetchAndSetUserData, handleLogout]);
+  }, [fetchAndSetUserData]);
 
-  const openSignupModal = useCallback((email = '') => {
+  const openSignupModal = (email = '') => {
       setSignupInitialEmail(email);
       setIsSignupModalOpen(true);
-  }, [setSignupInitialEmail, setIsSignupModalOpen]);
+  };
 
   const appContextValue = { 
       isLoggedIn, user, setUser, balance, setBalance, transactions, setTransactions,
