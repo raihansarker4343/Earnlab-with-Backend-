@@ -48,7 +48,7 @@ const adminAuthMiddleware = (req, res, next) => {
 };
 
 // --- AUTH ROUTES ---
-app.post('/api/auth/signup', checkIpWithIPHub({ blockImmediately: true, blockOnFailure: true }), async (req, res) => {
+app.post('/api/auth/signup', checkIpWithIPHub({ blockImmediately: true, blockOnFailure: false }), async (req, res) => {
     const { email, password, username, referralCode } = req.body;
     if (!email || !password || !username) {
         return res.status(400).json({ message: 'All fields are required' });
@@ -114,7 +114,7 @@ app.post('/api/auth/signup', checkIpWithIPHub({ blockImmediately: true, blockOnF
     }
 });
 
-app.post('/api/auth/signin', checkIpWithIPHub({ blockImmediately: true, blockOnFailure: true }), async (req, res) => {
+app.post('/api/auth/signin', checkIpWithIPHub({ blockImmediately: true, blockOnFailure: false }), async (req, res) => {
     const { email, password } = req.body;
     try {
         const result = await pool.query(
