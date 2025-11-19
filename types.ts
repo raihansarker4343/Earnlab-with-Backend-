@@ -69,8 +69,7 @@ export interface FaqItem {
 
 export interface RewardOption {
   name: string;
-  logo: string;
-  bgColor: string;
+  imageUrl: string;
 }
 
 export interface LeaderboardUser {

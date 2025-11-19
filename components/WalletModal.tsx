@@ -11,7 +11,7 @@ const WithdrawalConfirmation: React.FC<{
     onBack: () => void;
 }> = ({ details, onConfirm, onBack }) => {
     const amount = parseFloat(details.amount) || 0;
-    const fee = amount * 0.01; // Simulate a 1% fee
+    const fee = amount * 0; // Simulate a 1% fee
     const totalDeducted = amount + fee;
 
     return (

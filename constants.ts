@@ -3,7 +3,7 @@ import type { User, EarningFeedItem, FaqItem, RewardOption, LeaderboardUser, Ach
 // The backend API is hosted at a single, consistent URL.
 // We will use this absolute URL for all API calls, regardless of the frontend's environment.
 // The backend server is configured with CORS to accept requests from any origin, which is why this works.
-export const API_URL = 'https://earnlab-with-backend.onrender.com';
+export const API_URL = 'https://musical-fiesta-q7jq74v4jj7xc46j6-3001.app.github.dev';
 
 // FIX: Added OFFER_WALLS and SURVEY_PROVIDERS constants back.
 // These are used by the individual offer/survey pages, which are static placeholders.
@@ -32,28 +32,9 @@ export const SURVEY_PROVIDERS: SurveyProvider[] = [
   { id: 3, name: 'Your-Surveys', logo: 'https://i.imgur.com/pLRnBU2.png', rating: 4, type: 'Your-Surveys', isEnabled: true },
   { id: 4, name: 'Pollfish', logo: 'https://i.imgur.com/OofFwSR.png', rating: 4, type: 'Pollfish', isEnabled: true },
   { id: 5, name: 'Prime Surveys', logo: 'https://i.imgur.com/0EGYRXz.png', rating: 3, type: 'Prime Surveys', isEnabled: true },
-  { id: 6, name: 'inBrain', logo: 'https://i.imgur.com/AaQPnwe.png', rating: 2, type: 'inBrain', isEnabled: true },
+  { id: 6, name: 'inBrain', logo: 'https://i.imgur.com/NqFthOW.png', rating: 2, type: 'inBrain', isEnabled: true },
   { id: 7, name: 'Adscend Media Surveys', logo: 'https://i.imgur.com/iY9g04E.png', rating: 4, type: 'Adscend Media', isEnabled: true },
   { id: 8, name: 'TheoremReach', logo: 'https://i.imgur.com/yvC5YyW.png', rating: 4, type: 'TheoremReach', isLocked: true, unlockRequirement: "Level 5+", isEnabled: true },
-];
-
-export const EARNING_FEED_ITEMS: EarningFeedItem[] = [
-  // FIX: Changed id from number to string to match EarningFeedItem type.
-  { id: '1', user: 'Sparkb6', avatar: 'https://i.pravatar.cc/32?u=sparkb6', task: 'Bitcoin (BTC)', provider: '', amount: 141.96 },
-  // FIX: Changed id from number to string to match EarningFeedItem type.
-  { id: '2', user: 'SoFi Plus', avatar: 'https://i.pravatar.cc/32?u=sofi', task: '$10 Mont...', provider: 'RevU', amount: 28.13 },
-  // FIX: Changed id from number to string to match EarningFeedItem type.
-  { id: '3', user: 'Fastslots', avatar: 'https://i.pravatar.cc/32?u=fastslots', task: '[DE/AT/C...', provider: 'AdToWall', amount: 47.85 },
-  // FIX: Changed id from number to string to match EarningFeedItem type.
-  { id: '4', user: 'JohnDoe', avatar: 'https://i.pravatar.cc/32?u=johndoe', task: 'Sea of Conquest: P...', provider: 'Torox', amount: 24.01 },
-  // FIX: Changed id from number to string to match EarningFeedItem type.
-  { id: '5', user: 'JaneSmith', avatar: 'https://i.pravatar.cc/32?u=janesmith', task: 'BitLabs - Survey', provider: 'BitLabs', amount: 1.11 },
-  // FIX: Changed id from number to string to match EarningFeedItem type.
-  { id: '6', user: 'GamerX', avatar: 'https://i.pravatar.cc/32?u=gamerx', task: 'Project Entropy - Ge...', provider: 'Torox', amount: 5.27 },
-  // FIX: Changed id from number to string to match EarningFeedItem type.
-  { id: '7', user: 'CryptoKing', avatar: 'https://i.pravatar.cc/32?u=cryptoking', task: 'Browinner [DE/BE/...', provider: 'AdToWall', amount: 60.38 },
-  // FIX: Changed id from number to string to match EarningFeedItem type.
-  { id: '8', user: 'SurveyFan', avatar: 'https://i.pravatar.cc/32?u=surveyfan', task: 'BitLabs - Survey', provider: 'BitLabs', amount: 0.75 },
 ];
 
 export const FAQ_ITEMS: FaqItem[] = [
@@ -63,19 +44,33 @@ export const FAQ_ITEMS: FaqItem[] = [
     { question: 'How long do withdrawals take?', answer: 'Withdrawal times can vary depending on the method chosen. E-wallets like PayPal are typically fast, while other methods might take a few business days. We strive to process all withdrawals as quickly as possible.' },
 ];
 
+// constants.ts
+
+export interface RewardOption {
+    name: string;
+    imageUrl: string;
+}
+
 export const REWARD_OPTIONS: RewardOption[] = [
-    { name: 'PayPal', logo: 'fab fa-paypal', bgColor: 'bg-blue-200 text-blue-800' },
-    { name: 'VISA', logo: 'fab fa-cc-visa', bgColor: 'bg-indigo-200 text-indigo-800' },
-    { name: 'Amazon', logo: 'fab fa-amazon', bgColor: 'bg-amber-400 text-black' },
-    { name: 'Walmart', logo: 'fas fa-store', bgColor: 'bg-sky-500 text-white' },
-    { name: 'Bitcoin', logo: 'fab fa-bitcoin', bgColor: 'bg-orange-500 text-white' },
-    { name: 'Litecoin', logo: 'fas fa-litecoin-sign', bgColor: 'bg-gray-400 text-black' },
-    { name: 'Apple', logo: 'fab fa-apple', bgColor: 'bg-gray-800 text-white' },
-    { name: 'Google Play', logo: 'fab fa-google-play', bgColor: 'bg-white text-gray-700' },
-    { name: 'DoorDash', logo: 'fas fa-truck', bgColor: 'bg-red-500 text-white' },
-    { name: 'Nike', logo: 'fas fa-check-double', bgColor: 'bg-black text-white' },
-    { name: 'Roblox', logo: 'fas fa-gamepad', bgColor: 'bg-gray-300 text-black' },
-    { name: 'Steam', logo: 'fab fa-steam', bgColor: 'bg-gray-900 text-white' },
+    { name: 'PayPal', imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/b/b5/PayPal.svg' },
+    { name: 'ACH', imageUrl: 'https://babki.app/images/reward_icons/cash/Bank%20Transfer.svg' },
+    { name: 'Venmo', imageUrl: 'https://babki.app/images/reward_icons/cash/Venmo.svg' },
+    { name: 'Cash App', imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/c/c5/Square_Cash_app_logo.svg/1024px-Square_Cash_app_logo.svg.png' },
+    { name: 'Amazon', imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/a/a9/Amazon_logo.svg' },
+    { name: 'Apple', imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/f/fa/Apple_logo_black.svg' },
+    { name: 'Visa', imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/5/5e/Visa_Inc._logo.svg' },
+    { name: 'Walmart', imageUrl: 'https://babki.app/images/reward_icons/gift_card/Walmart.png' },
+    { name: 'Target', imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/c/c5/Target_Corporation_logo_%28vector%29.svg' },
+    { name: 'Xbox', imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/f/f9/Xbox_one_logo.svg' },
+    { name: 'Adidas', imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/2/20/Adidas_Logo.svg' },
+    { name: 'Best Buy', imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/f/f5/Best_Buy_Logo.svg' },
+    { name: 'DoorDash', imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/6/6a/DoorDash_Logo.svg/640px-DoorDash_Logo.svg.png' },
+    { name: 'Binance', imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/12/Binance_logo.svg/640px-Binance_logo.svg.png' },
+    { name: 'Litecoin', imageUrl: 'https://i.imgur.com/JdWwak2.png' },
+    { name: 'Tether', imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/7/73/Tether_Logo.svg/640px-Tether_Logo.svg.png' },
+    { name: 'Coinbase', imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/1a/Coinbase.svg/640px-Coinbase.svg.png' },
+    { name: 'Airtm', imageUrl: 'https://res.cloudinary.com/dsezfqke7/image/upload/v1763576611/airtmmain_eydrcd.png' },
+    
 ];
 
 export const LEADERBOARD_USERS: LeaderboardUser[] = [
