@@ -3,7 +3,7 @@ import type { User, EarningFeedItem, FaqItem, RewardOption, LeaderboardUser, Ach
 // The backend API is hosted at a single, consistent URL.
 // We will use this absolute URL for all API calls, regardless of the frontend's environment.
 // The backend server is configured with CORS to accept requests from any origin, which is why this works.
-export const API_URL = 'https://musical-fiesta-q7jq74v4jj7xc46j6-3001.app.github.dev';
+export const API_URL = 'https://earnlab-with-backend.onrender.com';
 
 // FIX: Added OFFER_WALLS and SURVEY_PROVIDERS constants back.
 // These are used by the individual offer/survey pages, which are static placeholders.
