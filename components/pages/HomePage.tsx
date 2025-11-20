@@ -252,7 +252,7 @@ const earningMethods = [
       'Discover new brands and apps, install or complete a few simple steps, and earn money for each offer you finish — it’s like getting paid to explore.',
     earnLabel: 'Payout per completed offer',
     earnAmount: '$1.00 - $75.00',
-    baseImage: 'https://i.imgur.com/g2bn5eQ.png',
+    baseImage: 'https://res.cloudinary.com/dsezfqke7/image/upload/v1763645504/raihan_nncr3t.png',
     overlays: [
       {
         src: 'https://i.imgur.com/g2bn5eQ.png',
@@ -499,7 +499,7 @@ const HomePageContent: React.FC = () => {
               isBestWaysInView ? 'opacity-100' : 'opacity-0'
             }`}
           >
-            Best ways to earn
+            Easy ways to earn money
           </h2>
 
           <div className="container mx-auto grid grid-cols-1 md:grid-cols-3 gap-8 px-8">

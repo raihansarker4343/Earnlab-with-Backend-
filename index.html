@@ -320,117 +320,213 @@
    (Optimized Smooth Animations + Better Position Balance)
    ============================================================ */
 
-/* Vertical floating motion */
-@keyframes earn-float-up-down {
-  0%   { transform: translateY(0); }
-  50%  { transform: translateY(-10px); }
-  100% { transform: translateY(0); }
-}
+    /* Vertical floating motion */
+    @keyframes earn-float-up-down {
+      0% {
+        transform: translateY(0);
+      }
 
-/* Diagonal floating motion */
-@keyframes earn-float-diagonal {
-  0%   { transform: translate(0, 0); }
-  50%  { transform: translate(14px, -14px); }
-  100% { transform: translate(0, 0); }
-}
+      50% {
+        transform: translateY(-10px);
+      }
 
-/* Base styling (all overlay icons) */
-.earn-floating-icon {
-  position: absolute;
-  width: 80px;                /* keeps them visible but not too big */
-  height: 80px;
-  object-fit: contain;
-  border-radius: 16px;
-  z-index: 20;
-  pointer-events: none;
-  filter: drop-shadow(0 8px 20px rgba(40, 40, 40, 0.55));
-  transition: transform 0.3s ease-out;
-}
+      100% {
+        transform: translateY(0);
+      }
+    }
 
-/* Hover effect (optional but sexy) */
-.earn-floating-icon:hover {
-  transform: scale(1.08);
-  filter: drop-shadow(0 0 18px rgba(56, 189, 248, 0.75));
-}
+    /* Diagonal floating motion */
+    @keyframes earn-float-diagonal {
+      0% {
+        transform: translate(0, 0);
+      }
 
-/* ===== ICON POSITIONS (per card) ===== */
+      50% {
+        transform: translate(14px, -14px);
+      }
 
-/* Icon #1 — top-left floating */
-.earn-floating-1 {
-  top: 8%;
-  left: 5%;
-  animation: earn-float-up-down 4.2s ease-in-out infinite;
-}
+      100% {
+        transform: translate(0, 0);
+      }
+    }
 
-/* Icon #2 — mid-right floating */
-.earn-floating-2 {
-  top: 38%;
-  right: 6%;
-  animation: earn-float-up-down 4.8s ease-in-out infinite 0.2s;
-}
+    /* Base styling (all overlay icons) */
+    .earn-floating-icon {
+      position: absolute;
+      width: 80px;
+      /* keeps them visible but not too big */
+      height: 80px;
+      object-fit: contain;
+      border-radius: 16px;
+      z-index: 20;
+      pointer-events: none;
+      filter: drop-shadow(0 8px 20px rgba(40, 40, 40, 0.55));
+      transition: transform 0.3s ease-out;
+    }
 
-/* Icon #3 — small diagonal drift (optional) */
-.earn-floating-3 {
-  top: 18%;
-  right: 22%;
-  animation: earn-float-diagonal 5.4s ease-in-out infinite 0.3s;
-}
+    /* Hover effect (optional but sexy) */
+    .earn-floating-icon:hover {
+      transform: scale(1.08);
+      filter: drop-shadow(0 0 18px rgba(56, 189, 248, 0.75));
+    }
 
-  /* --- Base style for overlay icons ---(best way to earn section end) */
+    /* ===== ICON POSITIONS (per card) ===== */
+
+    /* Icon #1 — top-left floating */
+    .earn-floating-1 {
+      top: 8%;
+      left: 5%;
+      animation: earn-float-up-down 4.2s ease-in-out infinite;
+    }
+
+    /* Icon #2 — mid-right floating */
+    .earn-floating-2 {
+      top: 38%;
+      right: 6%;
+      animation: earn-float-up-down 4.8s ease-in-out infinite 0.2s;
+    }
+
+    /* Icon #3 — small diagonal drift (optional) */
+    .earn-floating-3 {
+      top: 18%;
+      right: 22%;
+      animation: earn-float-diagonal 5.4s ease-in-out infinite 0.3s;
+    }
+
+    /* --- Base style for overlay icons ---(best way to earn section end) */
   </style>
 
 
   <style>
-  
-  /* ===== Global small floating icons over the whole page (flat/cartoon style) ===== */
+    /* ===== Global small floating icons over the whole page (flat/cartoon style) ===== */
 
-  @keyframes global-icon-float {
-    0%   { transform: translateY(0); }
-    50%  { transform: translateY(-10px); }
-    100% { transform: translateY(0); }
-  }
+    @keyframes global-icon-float {
+      0% {
+        transform: translateY(0);
+      }
 
-  /* ===== Global small floating icons (neon flat) ===== */
+      50% {
+        transform: translateY(-10px);
+      }
 
-.global-floating-icon {
-  position: absolute;
-  width: 40px;
-  height: 40px;
-  object-fit: contain;
-  opacity: 0.7;
-  filter: drop-shadow(0 6px 14px rgba(15, 23, 42, 0.6));
-  animation: global-icon-float 7s ease-in-out infinite;
-  transition: transform 0.3s ease-out, opacity 0.3s ease-out, filter 0.3s ease-out;
-}
+      100% {
+        transform: translateY(0);
+      }
+    }
 
-/* Hover effect */
-.global-floating-icon:hover {
-  transform: translateY(-4px) scale(1.18) rotate(4deg);
-  opacity: 1;
-  filter: drop-shadow(0 0 18px rgba(56, 189, 248, 0.9));
-}
+    /* ===== Global small floating icons (neon flat) ===== */
 
-/* 👉 Hero area (top 0–30%) */
-.global-floating-1  { top: 6%;  left: 8%;   animation-duration: 7s;   }
-.global-floating-2  { top: 10%; right: 12%; animation-duration: 6.4s; }
-.global-floating-3  { top: 18%; left: 20%;  animation-duration: 7.6s; }
-.global-floating-4  { top: 22%; right: 6%;  animation-duration: 6.8s; }
-.global-floating-5  { top: 26%; left: 4%;   animation-duration: 7.2s; }
+    .global-floating-icon {
+      position: absolute;
+      width: 40px;
+      height: 40px;
+      object-fit: contain;
+      opacity: 0.7;
+      filter: drop-shadow(0 6px 14px rgba(15, 23, 42, 0.6));
+      animation: global-icon-float 7s ease-in-out infinite;
+      transition: transform 0.3s ease-out, opacity 0.3s ease-out, filter 0.3s ease-out;
+    }
 
-/* 👉 Mid area (30–60%) */
-.global-floating-6  { top: 34%; right: 18%; animation-duration: 7.9s; }
-.global-floating-7  { top: 38%; left: 32%;  animation-duration: 6.6s; }
-.global-floating-8  { top: 44%; right: 10%; animation-duration: 7.3s; }
-.global-floating-9  { top: 50%; left: 12%;  animation-duration: 6.9s; }
-.global-floating-10 { top: 54%; right: 26%; animation-duration: 7.5s; }
+    /* Hover effect */
+    .global-floating-icon:hover {
+      transform: translateY(-4px) scale(1.18) rotate(4deg);
+      opacity: 1;
+      filter: drop-shadow(0 0 18px rgba(56, 189, 248, 0.9));
+    }
 
-/* 👉 নিচের অংশে কিছু (extra depth, কিন্তু সব না) */
-.global-floating-11 { top: 62%; left: 6%;   animation-duration: 7.1s; }
-.global-floating-12 { top: 66%; right: 14%; animation-duration: 8.0s; }
-.global-floating-13 { top: 70%; left: 26%;  animation-duration: 7.4s; }
-.global-floating-14 { top: 74%; right: 8%;  animation-duration: 6.7s; }
-.global-floating-15 { top: 80%; left: 45%;  animation-duration: 7.8s; }
-</style>
+    /* 👉 Hero area (top 0–30%) */
+    .global-floating-1 {
+      top: 6%;
+      left: 8%;
+      animation-duration: 7s;
+    }
+
+    .global-floating-2 {
+      top: 10%;
+      right: 12%;
+      animation-duration: 6.4s;
+    }
+
+    .global-floating-3 {
+      top: 18%;
+      left: 20%;
+      animation-duration: 7.6s;
+    }
+
+    .global-floating-4 {
+      top: 22%;
+      right: 6%;
+      animation-duration: 6.8s;
+    }
+
+    .global-floating-5 {
+      top: 26%;
+      left: 4%;
+      animation-duration: 7.2s;
+    }
+
+    /* 👉 Mid area (30–60%) */
+    .global-floating-6 {
+      top: 34%;
+      right: 18%;
+      animation-duration: 7.9s;
+    }
+
+    .global-floating-7 {
+      top: 38%;
+      left: 32%;
+      animation-duration: 6.6s;
+    }
+
+    .global-floating-8 {
+      top: 44%;
+      right: 10%;
+      animation-duration: 7.3s;
+    }
+
+    .global-floating-9 {
+      top: 50%;
+      left: 12%;
+      animation-duration: 6.9s;
+    }
+
+    .global-floating-10 {
+      top: 54%;
+      right: 26%;
+      animation-duration: 7.5s;
+    }
+
+    /* 👉 নিচের অংশে কিছু (extra depth, কিন্তু সব না) */
+    .global-floating-11 {
+      top: 62%;
+      left: 6%;
+      animation-duration: 7.1s;
+    }
+
+    .global-floating-12 {
+      top: 66%;
+      right: 14%;
+      animation-duration: 8.0s;
+    }
+
+    .global-floating-13 {
+      top: 70%;
+      left: 26%;
+      animation-duration: 7.4s;
+    }
+
+    .global-floating-14 {
+      top: 74%;
+      right: 8%;
+      animation-duration: 6.7s;
+    }
+
+    .global-floating-15 {
+      top: 80%;
+      left: 45%;
+      animation-duration: 7.8s;
+    }
+  </style>
 
 
   <script type="importmap">
