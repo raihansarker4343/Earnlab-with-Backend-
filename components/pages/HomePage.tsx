@@ -538,7 +538,7 @@ const HomePageContent: React.FC = () => {
                   <p className="text-sm text-slate-500 dark:text-slate-400">
                     {method.earnLabel}
                   </p>
-                  <p className="text-3xl font-bold text-slate-900 dark:text-white">
+                  <p className="text-3xl font-bold text-slate-900 text-green-400">
                     {method.earnAmount}
                   </p>
                 </div>
