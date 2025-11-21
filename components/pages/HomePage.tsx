@@ -209,20 +209,20 @@ const DailyBonusesIcon = () => (
 
 // Global small floating icons (flat cartoon style, external URLs)
 const GLOBAL_FLOATING_ICONS = [
-  { src: "https://cdn-icons-png.flaticon.com/512/1197/1197511.png", className: "global-floating-1" }, // Bitcoin Neon
-  { src: "https://cdn-icons-png.flaticon.com/512/1197/1197510.png", className: "global-floating-2" }, // Ethereum Neon
-  { src: "https://cdn-icons-png.flaticon.com/512/1197/1197516.png", className: "global-floating-3" }, // Binance Neon
-  { src: "https://cdn-icons-png.flaticon.com/512/3176/3176366.png", className: "global-floating-4" }, // Gamepad Neon
-  { src: "https://cdn-icons-png.flaticon.com/512/3176/3176363.png", className: "global-floating-5" }, // Controller Neon
-  { src: "https://cdn-icons-png.flaticon.com/512/4843/4843127.png", className: "global-floating-6" }, // Gift Card Neon
-  { src: "https://cdn-icons-png.flaticon.com/512/4843/4843117.png", className: "global-floating-7" }, // Wallet Neon
-  { src: "https://cdn-icons-png.flaticon.com/512/4843/4843133.png", className: "global-floating-8" }, // Coin Stack Neon
-  { src: "https://cdn-icons-png.flaticon.com/512/3176/3176381.png", className: "global-floating-9" }, // Star Neon
-  { src: "https://cdn-icons-png.flaticon.com/512/3176/3176360.png", className: "global-floating-10" }, // Trophy Neon
-  { src: "https://cdn-icons-png.flaticon.com/512/4843/4843143.png", className: "global-floating-11" }, // Stats/Chart Neon
-  { src: "https://cdn-icons-png.flaticon.com/512/4843/4843173.png", className: "global-floating-12" }, // Bell Neon
-  { src: "https://cdn-icons-png.flaticon.com/512/4843/4843160.png", className: "global-floating-13" }, // Neon Rocket
-  { src: "https://cdn-icons-png.flaticon.com/512/1177/1177568.png", className: "global-floating-14" }, // Neon Dollar Coin
+  { src: "https://cryptologos.cc/logos/bitcoin-btc-logo.svg?v=002", className: "global-floating-1" }, // Bitcoin Neon
+  { src: "https://cryptologos.cc/logos/bitcoin-btc-logo.svg?v=002", className: "global-floating-2" }, // Ethereum Neon
+  { src: "https://cryptologos.cc/logos/bitcoin-btc-logo.svg?v=002", className: "global-floating-3" }, // Binance Neon
+  { src: "https://cryptologos.cc/logos/bitcoin-btc-logo.svg?v=002", className: "global-floating-4" }, // Gamepad Neon
+  { src: "https://cryptologos.cc/logos/bitcoin-btc-logo.svg?v=002", className: "global-floating-5" }, // Controller Neon
+  { src: "https://cryptologos.cc/logos/bitcoin-btc-logo.svg?v=002", className: "global-floating-6" }, // Gift Card Neon
+  { src: "https://cryptologos.cc/logos/bitcoin-btc-logo.svg?v=002", className: "global-floating-7" }, // Wallet Neon
+  { src: "https://cryptologos.cc/logos/bitcoin-btc-logo.svg?v=002", className: "global-floating-8" }, // Coin Stack Neon
+  { src: "https://cryptologos.cc/logos/bitcoin-btc-logo.svg?v=002", className: "global-floating-9" }, // Star Neon
+  { src: "https://cryptologos.cc/logos/bitcoin-btc-logo.svg?v=002", className: "global-floating-10" }, // Trophy Neon
+  { src: "https://cryptologos.cc/logos/bitcoin-btc-logo.svg?v=002", className: "global-floating-11" }, // Stats/Chart Neon
+  { src: "https://cryptologos.cc/logos/bitcoin-btc-logo.svg?v=002", className: "global-floating-12" }, // Bell Neon
+  { src: "https://cryptologos.cc/logos/bitcoin-btc-logo.svg?v=002", className: "global-floating-13" }, // Neon Rocket
+  { src: "https://cryptologos.cc/logos/bitcoin-btc-logo.svg?v=002", className: "global-floating-14" }, // Neon Dollar Coin
 ];
 
 

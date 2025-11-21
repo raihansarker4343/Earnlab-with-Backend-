@@ -47,7 +47,7 @@ const LiveEarningFeed: React.FC = () => {
               <div className="text-sm">
                   <span className="font-bold text-slate-900 dark:text-white">{item.user}</span>
                   {isWithdrawal ? (
-                      <span className="text-slate-500 dark:text-slate-400"> withdrew</span>
+                      <span className="text-slate-500 dark:text-slate-400"> Withdraw</span>
                   ) : (
                       <span className="text-slate-500 dark:text-slate-400"> earned from {item.task}</span>
                   )}
