@@ -1,9 +1,7 @@
 import type { User, EarningFeedItem, FaqItem, RewardOption, LeaderboardUser, Achievement, ChatMessage, Testimonial, FeaturedOffer, Transaction, OfferWall, SurveyProvider } from './types';
 
-// The backend API is hosted at a single, consistent URL.
-// We will use this absolute URL for all API calls, regardless of the frontend's environment.
-// The backend server is configured with CORS to accept requests from any origin, which is why this works.
-export const API_URL = 'https://earnlab-with-backend.onrender.com';
+// Point to local backend for development to ensure DB changes are reflected and fetch works.
+export const API_URL = 'http://localhost:3001';
 
 // FIX: Added OFFER_WALLS and SURVEY_PROVIDERS constants back.
 // These are used by the individual offer/survey pages, which are static placeholders.
@@ -43,13 +41,6 @@ export const FAQ_ITEMS: FaqItem[] = [
     { question: 'How do I withdraw Coins?', answer: 'You can withdraw your earnings through a wide range of options, including PayPal, gift cards (like Amazon, Visa, Walmart), and cryptocurrencies. Just go to the "Withdraw" section, select your preferred method, and follow the instructions.' },
     { question: 'How long do withdrawals take?', answer: 'Withdrawal times can vary depending on the method chosen. E-wallets like PayPal are typically fast, while other methods might take a few business days. We strive to process all withdrawals as quickly as possible.' },
 ];
-
-// constants.ts
-
-export interface RewardOption {
-    name: string;
-    imageUrl: string;
-}
 
 export const REWARD_OPTIONS: RewardOption[] = [
     { name: 'PayPal', imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/b/b5/PayPal.svg' },
@@ -148,6 +139,11 @@ export const TESTIMONIALS: Testimonial[] = [
   },
   {
     text: 'Payouts are very fast, and contact is always friendly and satisfactory. They respond very quickly to inquiries, and a good solution is always found. Thank you, and keep up the good work!',
+    author: 'Gerd T.',
+    rating: 5,
+  },
+  {
+    text: 'Payouts1 are very fast, and contact is always friendly and satisfactory. They respond very quickly to inquiries, and a good solution is always found. Thank you, and keep up the good work!',
     author: 'Gerd T.',
     rating: 5,
   },

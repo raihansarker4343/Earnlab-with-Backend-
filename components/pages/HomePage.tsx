@@ -309,6 +309,7 @@ const HomePageContent: React.FC = () => {
   const [mounted, setMounted] = useState(false);
   const { openSignupModal } = useContext(AppContext);
   const [email, setEmail] = useState('');
+  const [currentTestimonialIndex, setCurrentTestimonialIndex] = useState(0);
 
   const handleStartEarning = (e: React.FormEvent) => {
     e.preventDefault();
@@ -331,7 +332,13 @@ const HomePageContent: React.FC = () => {
   const [statsRef, isStatsInView] = useInView({ threshold: 0.15 });
   const [faqRef, isFaqInView] = useInView({ threshold: 0.15 });
 
-  
+  const handleNextTestimonial = () => {
+    setCurrentTestimonialIndex((prev) => (prev + 1) % TESTIMONIALS.length);
+  };
+
+  const handlePrevTestimonial = () => {
+    setCurrentTestimonialIndex((prev) => (prev - 1 + TESTIMONIALS.length) % TESTIMONIALS.length);
+  };
 
   return (
     <div className="relative bg-white dark:bg-[#0b111e] text-slate-700 dark:text-slate-300 overflow-x-hidden">
@@ -607,7 +614,7 @@ const HomePageContent: React.FC = () => {
             <div className="max-w-3xl mx-auto mb-16">
               <h2 className="text-4xl md:text-5xl font-extrabold text-slate-900 dark:text-white mb-6">
                 Choose from{' '}
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600">
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-green-500 to-green-400 font-bold">
                   100+ Rewards
                 </span>
               </h2>
@@ -655,38 +662,76 @@ const HomePageContent: React.FC = () => {
             <h2 className="text-4xl font-bold text-slate-900 dark:text-white mt-4 mb-12">
               Everybody loves EarnLab
             </h2>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-left">
-              {TESTIMONIALS.map((testimonial, i) => (
-                <div
-                  key={i}
-                  className={`bg-white dark:bg-[#1e293b] p-8 rounded-2xl shadow-lg border border-slate-200 dark:border-slate-800 relative flex flex-col transition-all duration-500 ease-out hover:-translate-y-2 ${
-                    isTestimonialsInView
-                      ? 'opacity-100 translate-y-0'
-                      : 'opacity-0 translate-y-8'
-                  }`}
-                  style={{ transitionDelay: `${i * 150}ms` }}
-                >
-                  <i className="fas fa-quote-left text-6xl text-teal-400 opacity-20 absolute top-6 left-6" />
-                  <div className="relative z-10 flex flex-col flex-grow">
-                    <p className="text-slate-600 dark:text-slate-400 mb-6 flex-grow">
-                      {testimonial.text}
-                    </p>
-                    <div className="mt-auto">
-                      <p className="font-bold text-slate-800 dark:text-white">
-                        {testimonial.author}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-left min-h-[300px]">
+              {[0, 1, 2].map((offset) => {
+                const index = (currentTestimonialIndex + offset) % TESTIMONIALS.length;
+                const testimonial = TESTIMONIALS[index];
+                return (
+                  <div
+                    key={`${testimonial.author}-${index}`}
+                    className={`bg-white dark:bg-[#1e293b] p-8 rounded-2xl shadow-lg border border-slate-200 dark:border-slate-800 relative flex flex-col transition-all duration-500 ease-out hover:-translate-y-2 ${
+                      isTestimonialsInView
+                        ? 'opacity-100 translate-y-0'
+                        : 'opacity-0 translate-y-8'
+                    }`}
+                    style={{ transitionDelay: `${offset * 150}ms` }}
+                  >
+                    <i className="fas fa-quote-left text-6xl text-teal-400 opacity-20 absolute top-6 left-6" />
+                    <div className="relative z-10 flex flex-col flex-grow">
+                      <p className="text-slate-600 dark:text-slate-400 mb-6 flex-grow">
+                        {testimonial.text}
                       </p>
-                      <div className="flex items-center mt-2">
-                        {[...Array(testimonial.rating)].map((_, starIndex) => (
-                          <i
-                            key={starIndex}
-                            className="fas fa-star text-green-400"
-                          />
-                        ))}
+                      <div className="mt-auto">
+                        <p className="font-bold text-slate-800 dark:text-white">
+                          {testimonial.author}
+                        </p>
+                        <div className="flex items-center mt-2">
+                          {[...Array(testimonial.rating)].map((_, starIndex) => (
+                            <i
+                              key={starIndex}
+                              className="fas fa-star text-green-400"
+                            />
+                          ))}
+                        </div>
                       </div>
                     </div>
                   </div>
+                );
+              })}
+            </div>
+            
+            {/* Pagination Controls */}
+            <div className="flex items-center justify-center gap-6 mt-12">
+                <button 
+                    onClick={handlePrevTestimonial}
+                    className="w-12 h-12 flex items-center justify-center rounded-xl bg-slate-200 dark:bg-[#1e2235] hover:bg-slate-300 dark:hover:bg-[#2a2f44] text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-all active:scale-95"
+                    aria-label="Previous testimonial"
+                >
+                    <i className="fas fa-chevron-left"></i>
+                </button>
+
+                <div className="flex items-center gap-2">
+                    {TESTIMONIALS.map((_, i) => (
+                        <button 
+                            key={i} 
+                            onClick={() => setCurrentTestimonialIndex(i)}
+                            className={`rounded-full transition-all duration-300 ${
+                                i === currentTestimonialIndex 
+                                ? 'w-3 h-3 bg-slate-800 dark:bg-white' 
+                                : 'w-2 h-2 bg-slate-300 dark:bg-slate-600 hover:bg-slate-400 dark:hover:bg-slate-500'
+                            }`}
+                            aria-label={`Go to testimonial ${i + 1}`}
+                        />
+                    ))}
                 </div>
-              ))}
+
+                <button 
+                    onClick={handleNextTestimonial}
+                    className="w-12 h-12 flex items-center justify-center rounded-xl bg-slate-200 dark:bg-[#1e2235] hover:bg-slate-300 dark:hover:bg-[#2a2f44] text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-all active:scale-95"
+                     aria-label="Next testimonial"
+                >
+                    <i className="fas fa-chevron-right"></i>
+                </button>
             </div>
           </div>
         </section>

@@ -857,30 +857,39 @@ const seedAdmin = async () => {
 const seedPaymentMethods = async () => {
     const client = await pool.connect();
     try {
-        const check = await client.query('SELECT * FROM payment_methods LIMIT 1');
-        if (check.rows.length > 0) return; // Already seeded
-
-        console.log('Seeding payment methods...');
+        console.log('Seeding/Updating payment methods...');
         const methods = [
             { name: 'Gamdom', icon_class: 'fas fa-dice', type: 'special', special_bonus: '+25%' },
             { name: 'Virtual Visa Interna...', icon_class: 'fab fa-cc-visa', type: 'cash' },
-            { name: 'Bitcoin (BTC)', icon_class: 'fab fa-bitcoin', type: 'crypto' },
-            { name: 'Ethereum (ETH)', icon_class: 'fab fa-ethereum', type: 'crypto' },
-            { name: 'Litecoin (LTC)', icon_class: 'fas fa-litecoin-sign', type: 'crypto' },
-            { name: 'Solana (SOL)', icon_class: 'fas fa-project-diagram', type: 'crypto' },
-            { name: 'Tether (USDT)', icon_class: 'fas fa-dollar-sign', type: 'crypto' },
-            { name: 'USD Coin (USDC)', icon_class: 'fas fa-coins', type: 'crypto' },
-            { name: 'Tron (TRX)', icon_class: 'fas fa-atom', type: 'crypto' },
-            { name: 'Ripple (XRP)', icon_class: 'fab fa-ripple', type: 'crypto' },
+            // Crypto with external URLs
+            { name: 'Binance Coin (BNB)', icon_class: 'https://cryptologos.cc/logos/bnb-bnb-logo.png?v=029', type: 'crypto' },
+            { name: 'Bitcoin (BTC)', icon_class: 'https://cryptologos.cc/logos/bitcoin-btc-logo.png?v=029', type: 'crypto' },
+            { name: 'Ethereum (ETH)', icon_class: 'https://cryptologos.cc/logos/ethereum-eth-logo.png?v=029', type: 'crypto' },
+            { name: 'Litecoin (LTC)', icon_class: 'https://cryptologos.cc/logos/litecoin-ltc-logo.png?v=029', type: 'crypto' },
+            { name: 'Solana (SOL)', icon_class: 'https://cryptologos.cc/logos/solana-sol-logo.png?v=029', type: 'crypto' },
+            { name: 'Tether (USDT)', icon_class: 'https://cryptologos.cc/logos/tether-usdt-logo.png?v=029', type: 'crypto' },
+            { name: 'USD Coin (USDC)', icon_class: 'https://cryptologos.cc/logos/usd-coin-usdc-logo.png?v=029', type: 'crypto' },
+            { name: 'Tron (TRX)', icon_class: 'https://cryptologos.cc/logos/tron-trx-logo.png?v=029', type: 'crypto' },
         ];
         
         for (const method of methods) {
-            await client.query(
-                'INSERT INTO payment_methods (name, icon_class, type, special_bonus) VALUES ($1, $2, $3, $4)',
-                [method.name, method.icon_class, method.type, method.special_bonus || null]
-            );
+            // Check if exists
+            const check = await client.query('SELECT id FROM payment_methods WHERE name = $1', [method.name]);
+            if (check.rows.length > 0) {
+                // Always update to ensure latest icon/config
+                await client.query(
+                    'UPDATE payment_methods SET icon_class = $1, type = $2, special_bonus = $3 WHERE name = $4',
+                    [method.icon_class, method.type, method.special_bonus || null, method.name]
+                );
+            } else {
+                // Insert
+                await client.query(
+                    'INSERT INTO payment_methods (name, icon_class, type, special_bonus) VALUES ($1, $2, $3, $4)',
+                    [method.name, method.icon_class, method.type, method.special_bonus || null]
+                );
+            }
         }
-        console.log('Payment methods seeded successfully.');
+        console.log('Payment methods seeded/updated successfully.');
 
     } catch (err) {
         console.error('Error seeding payment methods:', err.stack);

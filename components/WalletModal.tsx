@@ -367,7 +367,11 @@ const WalletModal: React.FC = () => {
                                 {groupedMethods.special.map(method => (
                                      <button key={method.id} className="w-full bg-slate-100 dark:bg-[#1e293b] hover:bg-slate-200 dark:hover:bg-slate-700 p-4 rounded-lg flex justify-between items-center">
                                         <div className="flex items-center gap-3">
-                                            <i className={`${method.iconClass} text-green-400 text-xl`}></i>
+                                             {method.iconClass.startsWith('http') ? (
+                                                <img src={method.iconClass} alt={method.name} className="w-8 h-8 object-contain" />
+                                            ) : (
+                                                <i className={`${method.iconClass} text-green-400 text-xl`}></i>
+                                            )}
                                             <span className="font-semibold">{method.name}</span>
                                         </div>
                                         {method.specialBonus && <span className="bg-green-500/20 text-green-400 text-xs font-bold px-2 py-1 rounded">{method.specialBonus}</span>}
@@ -380,7 +384,11 @@ const WalletModal: React.FC = () => {
                                 <h3 className="text-sm font-semibold text-slate-500 dark:text-slate-400 mb-2">Cash</h3>
                                  {groupedMethods.cash.map(method => (
                                     <button key={method.id} className="w-full bg-slate-100 dark:bg-[#1e293b] hover:bg-slate-200 dark:hover:bg-slate-700 p-4 rounded-lg flex items-center gap-3">
-                                        <i className={`${method.iconClass} text-blue-400 text-xl`}></i>
+                                        {method.iconClass.startsWith('http') ? (
+                                            <img src={method.iconClass} alt={method.name} className="w-8 h-8 object-contain" />
+                                        ) : (
+                                            <i className={`${method.iconClass} text-blue-400 text-xl`}></i>
+                                        )}
                                         <span className="font-semibold">{method.name}</span>
                                     </button>
                                 ))}
@@ -394,10 +402,14 @@ const WalletModal: React.FC = () => {
                                         <button 
                                           key={crypto.id} 
                                           onClick={() => handleSelectCrypto(crypto.name)}
-                                          className="bg-slate-100 dark:bg-[#1e293b] hover:bg-slate-200 dark:hover:bg-slate-700 p-4 rounded-lg text-center flex flex-col items-center justify-center gap-2"
+                                          className="bg-slate-100 dark:bg-[#1e293b] hover:bg-slate-200 dark:hover:bg-slate-700 p-4 rounded-lg text-center flex flex-col items-center justify-center gap-2 transition-transform active:scale-95"
                                         >
-                                            <i className={`${crypto.iconClass}`}></i>
-                                            <span className="block text-xs font-semibold">{crypto.name}</span>
+                                            {crypto.iconClass.startsWith('http') ? (
+                                                <img src={crypto.iconClass} alt={crypto.name} className="w-10 h-10 object-contain mb-2" />
+                                            ) : (
+                                                <i className={`${crypto.iconClass} text-3xl mb-2 text-blue-500 dark:text-blue-400`}></i>
+                                            )}
+                                            <span className="block text-xs font-bold text-slate-700 dark:text-slate-200">{crypto.name}</span>
                                         </button>
                                     ))}
                                 </div>
