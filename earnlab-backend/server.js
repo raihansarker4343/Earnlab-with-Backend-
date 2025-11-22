@@ -26,7 +26,7 @@ const port = process.env.PORT || 3001;
 //Backend CORS
 const allowedOrigins = [
   'http://localhost:5173',                  // Vite dev frontend
-  'https://earnlab-with-backend.onrender.com' // ধরলাম test frontend
+  'https://earnlab-with-backend-static.onrender.com' // ধরলাম test frontend
 ];
 
 app.use(cors({
