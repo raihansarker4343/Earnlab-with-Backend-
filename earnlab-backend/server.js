@@ -23,8 +23,23 @@ const createIpLogEntry = (req) => ({
 const app = express();
 const port = process.env.PORT || 3001;
 
-app.use(cors());
-app.use(express.json());
+//Backend CORS
+const allowedOrigins = [
+  'http://localhost:5173',                  // Vite dev frontend
+  'https://earnlab-with-backend.onrender.com' // ধরলাম test frontend
+];
+
+app.use(cors({
+  origin: function (origin, callback) {
+    if (!origin) return callback(null, true);
+    if (!allowedOrigins.includes(origin)) {
+      return callback(new Error('CORS not allowed'), false);
+    }
+    return callback(null, true);
+  },
+  credentials: true,
+}));
+
 
 // Trust the first proxy in front of the app (e.g., Nginx, Cloudflare) to get the correct client IP
 app.set('trust proxy', true);
