@@ -4,6 +4,7 @@ import { LockIcon } from './icons/SurveyIcons';
 import StarRating from './StarRating';
 
 const SurveyProviderCard: React.FC<{ provider: SurveyProvider }> = ({ provider }) => {
+    
     const gradients: { [key: string]: string } = {
         'BitLabs': 'from-blue-900/40 to-slate-900/10',
         'CPX Research': 'from-cyan-900/40 to-slate-900/10',
@@ -17,7 +18,9 @@ const SurveyProviderCard: React.FC<{ provider: SurveyProvider }> = ({ provider }
     };
     const gradient = gradients[provider.name] || 'from-slate-800/40 to-slate-900/10';
 
-    const href = `/#/${provider.name}`;
+    // Clean and pretty URL → /CPXResearch
+    const slug = provider.name.replace(/[^a-zA-Z0-9]/g, '');
+    const href = `/${slug}`;
 
     const cardContent = (
         <>
@@ -26,11 +29,10 @@ const SurveyProviderCard: React.FC<{ provider: SurveyProvider }> = ({ provider }
 
             <div className={`relative z-10 flex flex-col items-center justify-center flex-grow w-full ${provider.isLocked ? 'opacity-50' : ''}`}>
                 <div className="relative w-full h-full flex items-center justify-center">
-                    {/* Default State (Logo) */}
                     <div className="absolute inset-0 flex items-center justify-center transition-opacity duration-300 opacity-100 group-hover:opacity-0">
                         <img src={provider.logo} alt={provider.name} className="h-8 max-w-[80%] object-contain" />
                     </div>
-                    {/* Hover State (Play Button) */}
+
                     <div className="absolute inset-0 flex flex-col items-center justify-center transition-opacity duration-300 opacity-0 group-hover:opacity-100">
                         <div className="w-12 h-12 rounded-full bg-green-500/80 flex items-center justify-center mb-2 transition-transform group-hover:scale-110">
                             <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 20 20">
@@ -61,16 +63,13 @@ const SurveyProviderCard: React.FC<{ provider: SurveyProvider }> = ({ provider }
         </>
     );
 
-    const className = `bg-[#2a3044] rounded-2xl p-4 w-full flex flex-col items-center justify-between text-center h-48 relative overflow-hidden transition-all duration-300 border border-slate-700/50 group hover:-translate-y-1`;
+    const className =
+        'bg-[#2a3044] rounded-2xl p-4 w-full flex flex-col items-center justify-between text-center h-48 relative overflow-hidden transition-all duration-300 border border-slate-700/50 group hover:-translate-y-1';
 
     if (provider.isLocked) {
-        return (
-            <div className={`${className} cursor-not-allowed`}>
-                {cardContent}
-            </div>
-        );
+        return <div className={`${className} cursor-not-allowed`}>{cardContent}</div>;
     }
-    
+
     return (
         <a
             href={href}
