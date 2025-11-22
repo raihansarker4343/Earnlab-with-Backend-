@@ -188,26 +188,34 @@ const sanitizeUser = (rawUser: User): User => {
     return user;
 };
 
-const getPageFromHash = (hashPath: string): string => {
-    if (!hashPath || hashPath === '#' || hashPath === '#/') return 'Home';
-    
-    const pageKey = hashPath.startsWith('#/') ? hashPath.substring(2) : hashPath.substring(1);
-    
-    const cleanPageKeyWithCase = pageKey;
+const getPageFromPath = (pathname: string): string => {
+  // Home route
+  if (!pathname || pathname === '/' || pathname === '') return 'Home';
 
-    const cleanPageKeyLower = cleanPageKeyWithCase.replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
+  // "/CPXResearch" → ["", "CPXResearch"] → "CPXResearch"
+  const segments = pathname.split('/').filter(Boolean);
+  const pageSegment = segments[0]; // আমরা শুধু প্রথম অংশ ব্যবহার করছি
 
-    if (cleanPageKeyLower.startsWith('admin')) {
-        return cleanPageKeyWithCase;
-    }
+  const cleanPageKeyWithCase = pageSegment;
+  const cleanPageKeyLower = cleanPageKeyWithCase
+    .replace(/[^a-zA-Z0-9]/g, '')
+    .toLowerCase();
 
-    const pageNames = Object.keys(pageComponentsMap);
-    const foundPageName = pageNames.find(
-        (name) => name.replace(/[^a-zA-Z0-9]/g, '').toLowerCase() === cleanPageKeyLower
-    );
+  // Admin route
+  if (cleanPageKeyLower.startsWith('admin')) {
+    return cleanPageKeyWithCase;
+  }
 
-    return foundPageName || 'Home';
+  // আমাদের pageComponentsMap এর key–গুলোর সাথে ম্যাচ করা
+  const pageNames = Object.keys(pageComponentsMap);
+  const foundPageName = pageNames.find(
+    (name) =>
+      name.replace(/[^a-zA-Z0-9]/g, '').toLowerCase() === cleanPageKeyLower
+  );
+
+  return foundPageName || 'Home';
 };
+
 
 
 const App: React.FC = () => {
@@ -235,12 +243,22 @@ const App: React.FC = () => {
   const [isLoadingAuth, setIsLoadingAuth] = useState(true);
 
   const navigate = useCallback((pageName: string) => {
-      const pageKey = pageName === 'Home' ? '/' : `/${pageName.replace(/[^a-zA-Z0-9]/g, '').toLowerCase()}`;
-      const newHash = `#${pageKey}`;
-      if (window.location.hash !== newHash) {
-          window.location.hash = newHash;
-      }
-  }, []);
+  // "CPX Research" → "/CPXResearch"
+  const path =
+    pageName === 'Home'
+      ? '/'
+      : `/${pageName.replace(/[^a-zA-Z0-9]/g, '')}`;
+
+  if (window.location.pathname !== path) {
+    // URL পরিবর্তন করো (hash ছাড়া)
+    const { search } = window.location; // ?ref=... থাকলে রেখে দেই
+    window.history.pushState({}, '', path + search);
+
+    // আমাদের route handler কে notify করি
+    window.dispatchEvent(new PopStateEvent('popstate'));
+  }
+}, []);
+
   
   const handleLogout = useCallback(() => {
     localStorage.removeItem('token');
@@ -344,48 +362,50 @@ const App: React.FC = () => {
   }, [fetchAndSetUserData, handleLogout]);
 
   // Effect to handle routing via hash changes.
-  useEffect(() => {
-    if (isLoadingAuth) return;
+  // Effect to handle routing via path changes (no hash)
+useEffect(() => {
+  if (isLoadingAuth) return;
 
-    const handleHashChange = () => {
-        const hash = window.location.hash;
-        
-        // Check for referral code in the hash's query string
-        const [path, queryString] = hash.split('?');
-        if (queryString) {
-            const params = new URLSearchParams(queryString);
-            const ref = params.get('ref');
-            if (ref) {
-                localStorage.setItem('referralCode', ref);
-            }
-        }
+  const handleLocationChange = () => {
+    const { pathname, search } = window.location;
 
-        const pageFromHash = getPageFromHash(path); // Use only the path part for navigation
+    // query string থেকে referral code পড়া (?ref=...)
+    if (search) {
+      const params = new URLSearchParams(search);
+      const ref = params.get('ref');
+      if (ref) {
+        localStorage.setItem('referralCode', ref);
+      }
+    }
 
-        if (pageFromHash.toLowerCase().startsWith('admin')) {
-            setPage(pageFromHash);
-            return;
-        }
-        
-        const token = localStorage.getItem('token');
-        const isProtectedRoute = pageFromHash !== 'Home';
+    const pageFromPath = getPageFromPath(pathname);
 
-        if (isProtectedRoute && !token) {
-            setRedirectAfterLogin(pageFromHash);
-            navigate('Home');
-            setIsSigninModalOpen(true);
-        } else {
-            setPage(pageFromHash);
-        }
-    };
+    // Admin routes
+    if (pageFromPath.toLowerCase().startsWith('admin')) {
+      setPage(pageFromPath);
+      return;
+    }
 
-    window.addEventListener('hashchange', handleHashChange);
-    handleHashChange();
+    const token = localStorage.getItem('token');
+    const isProtectedRoute = pageFromPath !== 'Home';
 
-    return () => {
-      window.removeEventListener('hashchange', handleHashChange);
-    };
-  }, [isLoadingAuth, isLoggedIn, navigate]);
+    if (isProtectedRoute && !token) {
+      setRedirectAfterLogin(pageFromPath);
+      navigate('Home');
+      setIsSigninModalOpen(true);
+    } else {
+      setPage(pageFromPath);
+    }
+  };
+
+  window.addEventListener('popstate', handleLocationChange);
+  handleLocationChange(); // first load এও handle করি
+
+  return () => {
+    window.removeEventListener('popstate', handleLocationChange);
+  };
+}, [isLoadingAuth, navigate]);
+
   
   // Effect to refetch data when tab becomes visible/focused
   useEffect(() => {
