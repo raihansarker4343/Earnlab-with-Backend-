@@ -1,8 +1,10 @@
 import type { User, EarningFeedItem, FaqItem, RewardOption, LeaderboardUser, Achievement, ChatMessage, Testimonial, FeaturedOffer, Transaction, OfferWall, SurveyProvider } from './types';
 
 // Point to local backend for development to ensure DB changes are reflected and fetch works.
-export const API_URL =
-  import.meta.env.VITE_API_URL || 'http://localhost:4000';
+
+export const API_URL = "https://earnlab-with-backend.onrender.com";
+
+
 
 // FIX: Added OFFER_WALLS and SURVEY_PROVIDERS constants back.
 // These are used by the individual offer/survey pages, which are static placeholders.

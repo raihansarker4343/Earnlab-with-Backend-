@@ -25,20 +25,24 @@ const port = process.env.PORT || 3001;
 
 //Backend CORS
 const allowedOrigins = [
-  'http://localhost:5173',                  // Vite dev frontend
-  'https://earnlab-with-backend-static.onrender.com' // ধরলাম test frontend
+  "http://localhost:5173",                                   // local dev
+  "https://earnlab-with-backend-static.onrender.com",       // Render static frontend
 ];
 
 app.use(cors({
-  origin: function (origin, callback) {
-    if (!origin) return callback(null, true);
+  origin(origin, callback) {
+    if (!origin) return callback(null, true); // postback / curl ইত্যাদির জন্য
     if (!allowedOrigins.includes(origin)) {
-      return callback(new Error('CORS not allowed'), false);
+      console.log("❌ CORS BLOCK:", origin);
+      return callback(new Error("Not allowed by CORS"), false);
     }
     return callback(null, true);
   },
   credentials: true,
 }));
+
+app.use(express.json());
+
 
 
 // Trust the first proxy in front of the app (e.g., Nginx, Cloudflare) to get the correct client IP
