@@ -304,47 +304,90 @@ app.get('/api/transactions', authMiddleware, async (req, res) => {
 });
 
 // Create a new withdrawal transaction
+// Create a new withdrawal transaction (with ban check)
 app.post('/api/transactions/withdraw', authMiddleware, async (req, res) => {
-    const { id, method, amount, status, type } = req.body;
-    if (!id || !method || !amount || !status || !type) {
-        return res.status(400).json({ message: 'Missing required transaction fields.' });
+  const { id, method, amount, status, type } = req.body;
+
+  // Basic validation
+  if (!id || !method || !amount || !status || !type) {
+    return res
+      .status(400)
+      .json({ message: 'Missing required transaction fields.' });
+  }
+
+  const withdrawalAmount = parseFloat(amount);
+  if (isNaN(withdrawalAmount) || withdrawalAmount <= 0) {
+    return res
+      .status(400)
+      .json({ message: 'Invalid withdrawal amount.' });
+  }
+
+  const client = await pool.connect();
+
+  try {
+    await client.query('BEGIN');
+
+    // 🔹 ইউজারের ব্যালেন্স + ban স্ট্যাটাস লক করে আনছি
+    const userResult = await client.query(
+      'SELECT balance, is_banned FROM users WHERE id = $1 FOR UPDATE',
+      [req.user.id]
+    );
+
+    if (userResult.rows.length === 0) {
+      await client.query('ROLLBACK');
+      return res.status(404).json({ message: 'User not found.' });
     }
-    
-    const withdrawalAmount = parseFloat(amount);
-    if (isNaN(withdrawalAmount) || withdrawalAmount <= 0) {
-        return res.status(400).json({ message: 'Invalid withdrawal amount.' });
+
+    const dbUser = userResult.rows[0];
+
+    // 🔹 যদি user banned হয় → withdraw ব্লক করে দেই
+    if (dbUser.is_banned) {
+      await client.query('ROLLBACK');
+      return res.status(403).json({
+        message:
+          'Your account is restricted from withdrawals. Please contact support.',
+      });
     }
 
-    const client = await pool.connect();
-    try {
-        await client.query('BEGIN');
+    const userBalance = parseFloat(dbUser.balance);
 
-        const userResult = await client.query('SELECT balance FROM users WHERE id = $1 FOR UPDATE', [req.user.id]);
-        const userBalance = parseFloat(userResult.rows[0].balance);
-
-        if (userBalance < withdrawalAmount) {
-            throw new Error('Insufficient balance.');
-        }
-
-        await client.query('UPDATE users SET balance = balance - $1 WHERE id = $2', [withdrawalAmount, req.user.id]);
-
-        const newTransactionQuery = await client.query(
-            `INSERT INTO transactions (id, user_id, type, method, amount, status, date) 
-             VALUES ($1, $2, $3, $4, $5, $6, NOW()) 
-             RETURNING *`,
-            [id, req.user.id, type, method, withdrawalAmount, status]
-        );
-        
-        await client.query('COMMIT');
-        res.status(201).json(snakeToCamel(newTransactionQuery.rows[0]));
-    } catch (error) {
-        await client.query('ROLLBACK');
-        console.error(error);
-        res.status(400).json({ message: error.message || 'Server error creating withdrawal.' });
-    } finally {
-        client.release();
+    if (isNaN(userBalance)) {
+      throw new Error('Invalid user balance.');
     }
+
+    if (userBalance < withdrawalAmount) {
+      throw new Error('Insufficient balance.');
+    }
+
+    // 🔹 ব্যালেন্স কমিয়ে দিচ্ছি
+    await client.query(
+      'UPDATE users SET balance = balance - $1 WHERE id = $2',
+      [withdrawalAmount, req.user.id]
+    );
+
+    // 🔹 transactions টেবিলে withdraw transaction ইনসার্ট
+    const newTransactionQuery = await client.query(
+      `INSERT INTO transactions (id, user_id, type, method, amount, status, date)
+       VALUES ($1, $2, $3, $4, $5, $6, NOW())
+       RETURNING *`,
+      [id, req.user.id, type, method, withdrawalAmount, status]
+    );
+
+    await client.query('COMMIT');
+    return res
+      .status(201)
+      .json(snakeToCamel(newTransactionQuery.rows[0]));
+  } catch (error) {
+    await client.query('ROLLBACK');
+    console.error('Withdraw error:', error);
+    return res.status(400).json({
+      message: error.message || 'Server error creating withdrawal.',
+    });
+  } finally {
+    client.release();
+  }
 });
+
 
 // --- PUBLIC CONTENT ROUTES ---
 app.get('/api/payment-methods', async (req, res) => {
