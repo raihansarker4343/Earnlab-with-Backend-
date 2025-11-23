@@ -93,11 +93,11 @@ app.post('/api/auth/signup', checkIpWithIPHub({ blockImmediately: true, blockOnF
                 );
             }
         }
-        
+
         const salt = await bcrypt.genSalt(10);
         const password_hash = await bcrypt.hash(password, salt);
         const earn_id = crypto.randomBytes(8).toString('hex');
-        
+
         const ipLog = createIpLogEntry(req);
 
         const newUserQuery = await client.query(
@@ -112,15 +112,15 @@ app.post('/api/auth/signup', checkIpWithIPHub({ blockImmediately: true, blockOnF
         logger.info(`New signup from ${user.username} (IP: ${req.ip}, Country: ${countryName})`);
 
         await client.query('COMMIT');
-        
+
         const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET, { expiresIn: '7d' });
-        
+
         res.status(201).json({ token, user: snakeToCamel(user) });
     } catch (error) {
         await client.query('ROLLBACK');
         console.error(error);
         if (error.code === '23505') { // Unique constraint violation
-             return res.status(400).json({ message: 'Username or email already exists.' });
+            return res.status(400).json({ message: 'Username or email already exists.' });
         }
         res.status(500).json({ message: error.message || 'Server error during signup.' });
     } finally {
@@ -133,7 +133,7 @@ app.post('/api/auth/signin', checkIpWithIPHub({ blockImmediately: true, blockOnF
     try {
         const result = await pool.query(
             `SELECT id, username, email, password_hash, avatar_url, created_at AS joined_date, total_earned, balance, last_30_days_earned, completed_tasks, total_wagered, total_profit, total_withdrawn, total_referrals, referral_earnings, xp, rank, earn_id 
-             FROM users WHERE email = $1`, 
+             FROM users WHERE email = $1`,
             [email]
         );
         if (result.rows.length === 0) {
@@ -154,7 +154,7 @@ app.post('/api/auth/signin', checkIpWithIPHub({ blockImmediately: true, blockOnF
              WHERE id = $2`,
             [JSON.stringify([ipLog]), user.id]
         );
-        
+
         delete user.password_hash; // Don't send password hash to client
         res.json({ token, user: snakeToCamel(user) });
     } catch (error) {
@@ -167,7 +167,7 @@ app.get('/api/auth/me', authMiddleware, async (req, res) => {
     try {
         const result = await pool.query(
             `SELECT id, username, email, avatar_url, created_at AS joined_date, total_earned, balance, last_30_days_earned, completed_tasks, total_wagered, total_profit, total_withdrawn, total_referrals, referral_earnings, xp, rank, earn_id 
-             FROM users WHERE id = $1`, 
+             FROM users WHERE id = $1`,
             [req.user.id]
         );
         if (result.rows.length === 0) {
@@ -209,7 +209,7 @@ app.patch('/api/user/profile', authMiddleware, async (req, res) => {
     if (!username && !avatarUrl) {
         return res.status(400).json({ message: 'No fields to update were provided.' });
     }
-    
+
     const client = await pool.connect();
     try {
         await client.query('BEGIN');
@@ -220,7 +220,7 @@ app.patch('/api/user/profile', authMiddleware, async (req, res) => {
                 throw new Error('Username already exists.');
             }
         }
-        
+
         const fields = [];
         const values = [];
         let queryIndex = 1;
@@ -237,7 +237,7 @@ app.patch('/api/user/profile', authMiddleware, async (req, res) => {
         values.push(id);
 
         const updateUserQuery = `UPDATE users SET ${fields.join(', ')} WHERE id = $${queryIndex} RETURNING id, username, email, avatar_url, created_at AS joined_date, total_earned, balance, last_30_days_earned, completed_tasks, total_wagered, total_profit, total_withdrawn, total_referrals, referral_earnings, xp, rank, earn_id`;
-        
+
         const result = await client.query(updateUserQuery, values);
 
         if (result.rows.length === 0) {
@@ -306,86 +306,86 @@ app.get('/api/transactions', authMiddleware, async (req, res) => {
 // Create a new withdrawal transaction
 // Create a new withdrawal transaction (with ban check)
 app.post('/api/transactions/withdraw', authMiddleware, async (req, res) => {
-  const { id, method, amount, status, type } = req.body;
+    const { id, method, amount, status, type } = req.body;
 
-  // Basic validation
-  if (!id || !method || !amount || !status || !type) {
-    return res
-      .status(400)
-      .json({ message: 'Missing required transaction fields.' });
-  }
-
-  const withdrawalAmount = parseFloat(amount);
-  if (isNaN(withdrawalAmount) || withdrawalAmount <= 0) {
-    return res
-      .status(400)
-      .json({ message: 'Invalid withdrawal amount.' });
-  }
-
-  const client = await pool.connect();
-
-  try {
-    await client.query('BEGIN');
-
-    // 🔹 ইউজারের ব্যালেন্স + ban স্ট্যাটাস লক করে আনছি
-    const userResult = await client.query(
-      'SELECT balance, is_banned FROM users WHERE id = $1 FOR UPDATE',
-      [req.user.id]
-    );
-
-    if (userResult.rows.length === 0) {
-      await client.query('ROLLBACK');
-      return res.status(404).json({ message: 'User not found.' });
+    // Basic validation
+    if (!id || !method || !amount || !status || !type) {
+        return res
+            .status(400)
+            .json({ message: 'Missing required transaction fields.' });
     }
 
-    const dbUser = userResult.rows[0];
-
-    // 🔹 যদি user banned হয় → withdraw ব্লক করে দেই
-    if (dbUser.is_banned) {
-      await client.query('ROLLBACK');
-      return res.status(403).json({
-        message:
-          'Your account is restricted from withdrawals. Please contact support.',
-      });
+    const withdrawalAmount = parseFloat(amount);
+    if (isNaN(withdrawalAmount) || withdrawalAmount <= 0) {
+        return res
+            .status(400)
+            .json({ message: 'Invalid withdrawal amount.' });
     }
 
-    const userBalance = parseFloat(dbUser.balance);
+    const client = await pool.connect();
 
-    if (isNaN(userBalance)) {
-      throw new Error('Invalid user balance.');
-    }
+    try {
+        await client.query('BEGIN');
 
-    if (userBalance < withdrawalAmount) {
-      throw new Error('Insufficient balance.');
-    }
+        // 🔹 ইউজারের ব্যালেন্স + ban স্ট্যাটাস লক করে আনছি
+        const userResult = await client.query(
+            'SELECT balance, is_banned FROM users WHERE id = $1 FOR UPDATE',
+            [req.user.id]
+        );
 
-    // 🔹 ব্যালেন্স কমিয়ে দিচ্ছি
-    await client.query(
-      'UPDATE users SET balance = balance - $1 WHERE id = $2',
-      [withdrawalAmount, req.user.id]
-    );
+        if (userResult.rows.length === 0) {
+            await client.query('ROLLBACK');
+            return res.status(404).json({ message: 'User not found.' });
+        }
 
-    // 🔹 transactions টেবিলে withdraw transaction ইনসার্ট
-    const newTransactionQuery = await client.query(
-      `INSERT INTO transactions (id, user_id, type, method, amount, status, date)
+        const dbUser = userResult.rows[0];
+
+        // 🔹 যদি user banned হয় → withdraw ব্লক করে দেই
+        if (dbUser.is_banned) {
+            await client.query('ROLLBACK');
+            return res.status(403).json({
+                message:
+                    'Your account is restricted from withdrawals. Please contact support.',
+            });
+        }
+
+        const userBalance = parseFloat(dbUser.balance);
+
+        if (isNaN(userBalance)) {
+            throw new Error('Invalid user balance.');
+        }
+
+        if (userBalance < withdrawalAmount) {
+            throw new Error('Insufficient balance.');
+        }
+
+        // 🔹 ব্যালেন্স কমিয়ে দিচ্ছি
+        await client.query(
+            'UPDATE users SET balance = balance - $1 WHERE id = $2',
+            [withdrawalAmount, req.user.id]
+        );
+
+        // 🔹 transactions টেবিলে withdraw transaction ইনসার্ট
+        const newTransactionQuery = await client.query(
+            `INSERT INTO transactions (id, user_id, type, method, amount, status, date)
        VALUES ($1, $2, $3, $4, $5, $6, NOW())
        RETURNING *`,
-      [id, req.user.id, type, method, withdrawalAmount, status]
-    );
+            [id, req.user.id, type, method, withdrawalAmount, status]
+        );
 
-    await client.query('COMMIT');
-    return res
-      .status(201)
-      .json(snakeToCamel(newTransactionQuery.rows[0]));
-  } catch (error) {
-    await client.query('ROLLBACK');
-    console.error('Withdraw error:', error);
-    return res.status(400).json({
-      message: error.message || 'Server error creating withdrawal.',
-    });
-  } finally {
-    client.release();
-  }
+        await client.query('COMMIT');
+        return res
+            .status(201)
+            .json(snakeToCamel(newTransactionQuery.rows[0]));
+    } catch (error) {
+        await client.query('ROLLBACK');
+        console.error('Withdraw error:', error);
+        return res.status(400).json({
+            message: error.message || 'Server error creating withdrawal.',
+        });
+    } finally {
+        client.release();
+    }
 });
 
 
@@ -445,7 +445,7 @@ app.get('/api/public/earning-feed', async (req, res) => {
             ORDER BY t.date DESC
             LIMIT 15
         `);
-        
+
         const feedItems = result.rows.map(item => {
             let task, provider;
             if (item.type === 'Task Reward') {
@@ -455,7 +455,7 @@ app.get('/api/public/earning-feed', async (req, res) => {
                 task = 'Withdrawal';
                 provider = item.method;
             }
-            
+
             return {
                 id: item.id,
                 user: item.username,
@@ -547,10 +547,10 @@ app.get('/api/admin/stats', adminAuthMiddleware, async (req, res) => {
 
         const totalPaidOutRes = await pool.query("SELECT SUM(amount) FROM transactions WHERE type = 'Withdrawal' AND status = 'Completed'");
         stats.totalPaidOut = parseFloat(totalPaidOutRes.rows[0].sum) || 0;
-        
+
         const pendingWithdrawalsRes = await pool.query("SELECT COUNT(*) FROM transactions WHERE type = 'Withdrawal' AND status = 'Pending'");
         stats.pendingWithdrawals = parseInt(pendingWithdrawalsRes.rows[0].count, 10);
-        
+
         res.json(stats);
     } catch (error) {
         console.error('Error fetching admin stats:', error);
@@ -594,7 +594,7 @@ app.get('/api/admin/recent-signups', adminAuthMiddleware, async (req, res) => {
 app.get('/api/admin/transactions', adminAuthMiddleware, async (req, res) => {
     const page = parseInt(req.query.page, 10) || 1;
     const limitQuery = req.query.limit;
-    
+
     let limit;
     if (limitQuery) {
         limit = parseInt(limitQuery, 10);
@@ -650,7 +650,7 @@ app.get('/api/admin/transactions', adminAuthMiddleware, async (req, res) => {
 // Update a transaction's status (approve/reject)
 app.patch('/api/admin/transactions/:id', adminAuthMiddleware, async (req, res) => {
     const { id } = req.params;
-    const { status } = req.body; 
+    const { status } = req.body;
 
     if (!status || !['Completed', 'Rejected'].includes(status)) {
         return res.status(400).json({ message: 'Invalid status provided.' });
@@ -665,7 +665,7 @@ app.patch('/api/admin/transactions/:id', adminAuthMiddleware, async (req, res) =
             throw new Error('Transaction not found');
         }
         const transaction = transactionResult.rows[0];
-        
+
         if (transaction.status !== 'Pending') {
             throw new Error('Transaction is not in a pending state.');
         }
@@ -725,7 +725,7 @@ app.get('/api/admin/users', adminAuthMiddleware, async (req, res) => {
             whereClause = `WHERE username ILIKE $3 OR email ILIKE $3`;
             queryParams.push(`%${search}%`);
         }
-        
+
         const countQueryParams = search ? [`%${search}%`] : [];
         const totalResult = await pool.query(`SELECT COUNT(*) FROM users ${whereClause}`, countQueryParams);
         const totalItems = parseInt(totalResult.rows[0].count, 10);
@@ -872,7 +872,7 @@ app.patch('/api/admin/offer-walls/:id', adminAuthMiddleware, async (req, res) =>
 const snakeToCamel = (obj) => {
     if (typeof obj !== 'object' || obj === null || obj instanceof Date) return obj;
     if (Array.isArray(obj)) return obj.map(snakeToCamel);
-    
+
     return Object.entries(obj).reduce((acc, [key, value]) => {
         const camelKey = key.replace(/_([a-z])/g, (g) => g[1].toUpperCase());
         acc[camelKey] = snakeToCamel(value); // Recursively convert nested objects
@@ -916,7 +916,7 @@ const seedPaymentMethods = async () => {
             { name: 'USD Coin (USDC)', icon_class: 'https://cryptologos.cc/logos/usd-coin-usdc-logo.png?v=029', type: 'crypto' },
             { name: 'Tron (TRX)', icon_class: 'https://cryptologos.cc/logos/tron-trx-logo.png?v=029', type: 'crypto' },
         ];
-        
+
         for (const method of methods) {
             // Check if exists
             const check = await client.query('SELECT id FROM payment_methods WHERE name = $1', [method.name]);
@@ -951,14 +951,14 @@ const seedSurveyProviders = async () => {
 
         console.log('Seeding survey providers...');
         const providers = [
-          { name: 'BitLabs', logo: 'https://i.imgur.com/oZznueX.png', rating: 3, type: 'BitLabs' },
-          { name: 'CPX Research', logo: 'https://i.imgur.com/ssL8ALh.png', rating: 3, type: 'CPX RESEARCH' },
-          { name: 'Your-Surveys', logo: 'https://i.imgur.com/pLRnBU2.png', rating: 4, type: 'Your-Surveys' },
-          { name: 'Pollfish', logo: 'https://i.imgur.com/OofFwSR.png', rating: 4, type: 'Pollfish' },
-          { name: 'Prime Surveys', logo: 'https://i.imgur.com/0EGYRXz.png', rating: 3, type: 'Prime Surveys' },
-          { name: 'inBrain', logo: 'https://i.imgur.com/AaQPnwe.png', rating: 2, type: 'inBrain' },
-          { name: 'Adscend Media Surveys', logo: 'https://i.imgur.com/iY9g04E.png', rating: 4, type: 'Adscend Media' },
-          { name: 'TheoremReach', logo: 'https://i.imgur.com/yvC5YyW.png', rating: 4, type: 'TheoremReach', is_locked: true, unlock_requirement: "Level 5+" },
+            { name: 'BitLabs', logo: 'https://i.imgur.com/oZznueX.png', rating: 3, type: 'BitLabs' },
+            { name: 'CPX Research', logo: 'https://i.imgur.com/ssL8ALh.png', rating: 3, type: 'CPX RESEARCH' },
+            { name: 'Your-Surveys', logo: 'https://i.imgur.com/pLRnBU2.png', rating: 4, type: 'Your-Surveys' },
+            { name: 'Pollfish', logo: 'https://i.imgur.com/OofFwSR.png', rating: 4, type: 'Pollfish' },
+            { name: 'Prime Surveys', logo: 'https://i.imgur.com/0EGYRXz.png', rating: 3, type: 'Prime Surveys' },
+            { name: 'inBrain', logo: 'https://i.imgur.com/AaQPnwe.png', rating: 2, type: 'inBrain' },
+            { name: 'Adscend Media Surveys', logo: 'https://i.imgur.com/iY9g04E.png', rating: 4, type: 'Adscend Media' },
+            { name: 'TheoremReach', logo: 'https://i.imgur.com/yvC5YyW.png', rating: 4, type: 'TheoremReach', is_locked: true, unlock_requirement: "Level 5+" },
         ];
         for (const p of providers) {
             await client.query('INSERT INTO survey_providers (name, logo, rating, type, is_locked, unlock_requirement) VALUES ($1, $2, $3, $4, $5, $6)', [p.name, p.logo, p.rating, p.type, p.is_locked || false, p.unlock_requirement || null]);
@@ -1024,14 +1024,14 @@ const seedMockUsersAndTransactions = async () => {
             const password_hash = await bcrypt.hash('password123', salt);
             const earn_id = crypto.randomBytes(8).toString('hex');
             const avatar_url = `https://i.pravatar.cc/150?u=${username}`;
-            
+
             const res = await client.query(
                 `INSERT INTO users (username, email, password_hash, avatar_url, earn_id, xp) VALUES ($1, $2, $3, $4, $5, $6) RETURNING id, username, avatar_url, xp`,
                 [username, email, password_hash, avatar_url, Math.floor(Math.random() * 90000) + 1000, earn_id]
             );
             users.push(res.rows[0]);
         }
-        
+
         const sources = ['Task', 'Survey', 'Offer'];
         const methods = ['Torox', 'BitLabs', 'CPX Research', 'AdGate Media'];
 
@@ -1040,7 +1040,7 @@ const seedMockUsersAndTransactions = async () => {
             const amount = (Math.random() * 25 + 0.5).toFixed(2);
             // Random date in the last 30 days
             const date = new Date(Date.now() - Math.floor(Math.random() * 30 * 24 * 60 * 60 * 1000));
-            
+
             await client.query(
                 `INSERT INTO transactions (id, user_id, type, method, amount, status, date, source) VALUES ($1, $2, 'Task Reward', $3, $4, 'Completed', $5, $6)`,
                 [`MOCK${Date.now()}${i}`, user.id, methods[Math.floor(Math.random() * methods.length)], amount, date, sources[Math.floor(Math.random() * sources.length)]]
@@ -1063,12 +1063,12 @@ const seedMockUsersAndTransactions = async () => {
 
 // Start Server
 app.listen(port, () => {
-  initDb().then(() => {
-      seedAdmin();
-      seedPaymentMethods();
-      seedSurveyProviders();
-      seedOfferWalls();
-      seedMockUsersAndTransactions();
-  });
-  console.log(`Server running on http://localhost:${port}`);
+    initDb().then(() => {
+        seedAdmin();
+        seedPaymentMethods();
+        seedSurveyProviders();
+        seedOfferWalls();
+        seedMockUsersAndTransactions();
+    });
+    console.log(`Server running on http://localhost:${port}`);
 });
