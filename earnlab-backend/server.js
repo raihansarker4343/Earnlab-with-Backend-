@@ -23,24 +23,7 @@ const createIpLogEntry = (req) => ({
 const app = express();
 const port = process.env.PORT || 3001;
 
-//Backend CORS
-const allowedOrigins = [
-  "http://localhost:5173",                                   // local dev
-  "https://earnlab-with-backend-static.onrender.com",       // Render static frontend
-];
-
-app.use(cors({
-  origin(origin, callback) {
-    if (!origin) return callback(null, true); // postback / curl ইত্যাদির জন্য
-    if (!allowedOrigins.includes(origin)) {
-      console.log("❌ CORS BLOCK:", origin);
-      return callback(new Error("Not allowed by CORS"), false);
-    }
-    return callback(null, true);
-  },
-  credentials: true,
-}));
-
+app.use(cors());
 app.use(express.json());
 
 
