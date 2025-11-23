@@ -13,10 +13,9 @@ import SupportChatModal from './components/SupportChatModal';
 import { API_URL } from './constants';
 import WithdrawalSuccessModal from './components/WithdrawalSuccessModal';
 import ProfileEditModal from './components/ProfileEditModal';
+import BlockedWithdrawModal from './components/BlockedWithdrawModal';
 
 
-// Lazy load page components
-const HomePageContent = React.lazy(() => import('./components/pages/HomePage'));
 const LoggedInHomePage = React.lazy(() => import('./components/pages/LoggedInHomePage'));
 const DashboardPage = React.lazy(() => import('./components/pages/DashboardPage'));
 const OfferPage = React.lazy(() => import('./components/pages/OfferPage'));
