@@ -372,7 +372,7 @@ const HomePageContent: React.FC = () => {
                 }`}
               >
                 <h1 className="text-5xl md:text-6xl font-extrabold leading-tight mb-4">
-                  <span className="text-[#34d399]">Get paid</span> for testing apps, games & surveys
+                  <span className="text-[#34d399]">Monetize Your Free Time</span> Paid App and Game Testing
                 </h1>
                 <p className="text-slate-300 mb-8 flex flex-wrap items-center gap-x-3 text-sm sm:text-base">
                   <span>
