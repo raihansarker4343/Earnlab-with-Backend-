@@ -1,4 +1,4 @@
-import type { User, EarningFeedItem, FaqItem, RewardOption, LeaderboardUser, Achievement, ChatMessage, Testimonial, FeaturedOffer, Transaction, OfferWall, SurveyProvider } from './types';
+import type { User, FaqItem, RewardOption, LeaderboardUser, Achievement, ChatMessage, Testimonial, FeaturedOffer, OfferWall, SurveyProvider } from './types';
 
 // Point to local backend for development to ensure DB changes are reflected and fetch works.
 
