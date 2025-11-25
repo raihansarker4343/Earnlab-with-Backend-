@@ -62,10 +62,10 @@ const Footer: React.FC = () => {
                         <div>
                             <h4 className="font-semibold text-slate-900 dark:text-white mb-4">Help</h4>
                             <ul className="space-y-2">
-                                <li><a href="#" className="hover:text-slate-900 dark:hover:text-white">Frequently Asked</a></li>
-                                <li><a href="#" className="hover:text-slate-900 dark:hover:text-white">Help Desk</a></li>
-                                <li><a href="#" className="hover:text-slate-900 dark:hover:text-white">Support</a></li>
-                                <li><a href="#" className="hover:text-slate-900 dark:hover:text-white">Fairness</a></li>
+                                <li><a href="/FrequentlyAsked" onClick={(e) => handleNavClick(e, 'Frequently Asked')} className="hover:text-slate-900 dark:hover:text-white">Frequently Asked</a></li>
+                                <li><a href="/HelpDesk" onClick={(e) => handleNavClick(e, 'Help Desk')} className="hover:text-slate-900 dark:hover:text-white">Help Desk</a></li>
+                                <li><a href="/Support" onClick={(e) => handleNavClick(e, 'Support')} className="hover:text-slate-900 dark:hover:text-white">Support</a></li>
+                                <li><a href="/Fairness" onClick={(e) => handleNavClick(e, 'Fairness')} className="hover:text-slate-900 dark:hover:text-white">Fairness</a></li>
                             </ul>
                         </div>
                     </div>

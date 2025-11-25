@@ -61,6 +61,12 @@ const PrivacyPolicyPage = React.lazy(() => import('./components/about/PrivacyPol
 const CookiePolicyPage = React.lazy(() => import('./components/about/CookiePolicyPage'));
 const AmlKycPolicyPage = React.lazy(() => import('./components/about/AmlKycPolicyPage'));
 
+// Lazy load "Help" pages
+const FrequentlyAskedPage = React.lazy(() => import('./components/help/FrequentlyAskedPage'));
+const HelpDeskPage = React.lazy(() => import('./components/help/HelpDeskPage'));
+const SupportPage = React.lazy(() => import('./components/help/SupportPage'));
+const FairnessPage = React.lazy(() => import('./components/help/FairnessPage'));
+
 // Lazy load admin panel
 const AdminLayout = React.lazy(() => import('./components/admin/AdminLayout'));
 const AdminLoginPage = React.lazy(() => import('./components/admin/AdminLoginPage'));
@@ -180,6 +186,10 @@ const pageComponentsMap: { [key: string]: React.ReactNode } = {
     'Privacy Policy': <PrivacyPolicyPage />,
     'Cookie Policy': <CookiePolicyPage />,
     'AML & KYC Policy': <AmlKycPolicyPage />,
+    'Frequently Asked': <FrequentlyAskedPage />,
+    'Help Desk': <HelpDeskPage />,
+    'Support': <SupportPage />,
+    'Fairness': <FairnessPage />,
     'Boxes': <div className="text-slate-900 dark:text-white text-3xl font-bold">Boxes Page</div>,
     'Battles': <div className="text-slate-900 dark:text-white text-3xl font-bold">Battles Page</div>,
 };
@@ -401,8 +411,11 @@ useEffect(() => {
     }
 
     const token = localStorage.getItem('token');
-    const isProtectedRoute = pageFromPath !== 'Home' && 
-                             !['Blog', 'Guides', 'Terms of Service', 'Privacy Policy', 'Cookie Policy', 'AML & KYC Policy'].includes(pageFromPath);
+    const publicPages = [
+        'Blog', 'Guides', 'Terms of Service', 'Privacy Policy', 'Cookie Policy', 'AML & KYC Policy',
+        'Frequently Asked', 'Help Desk', 'Support', 'Fairness'
+    ];
+    const isProtectedRoute = pageFromPath !== 'Home' && !publicPages.includes(pageFromPath);
 
     if (isProtectedRoute && !token) {
       setRedirectAfterLogin(pageFromPath);
