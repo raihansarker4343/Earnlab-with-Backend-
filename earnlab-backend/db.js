@@ -33,7 +33,8 @@ const initDb = async () => {
         total_referrals INTEGER DEFAULT 0,
         referral_earnings NUMERIC(10, 2) DEFAULT 0,
         xp INTEGER DEFAULT 0,
-        rank VARCHAR(50) DEFAULT 'Newbie'
+        rank VARCHAR(50) DEFAULT 'Newbie',
+        is_banned BOOLEAN DEFAULT FALSE
       );
 
       CREATE TABLE IF NOT EXISTS admins (
@@ -110,6 +111,9 @@ const initDb = async () => {
     
     // Add 'ip_logs' column to 'users' table to store user IP history
     await client.query("ALTER TABLE users ADD COLUMN IF NOT EXISTS ip_logs JSONB DEFAULT '[]'");
+
+    // Add 'is_banned' column to 'users' table to support banning functionality
+    await client.query('ALTER TABLE users ADD COLUMN IF NOT EXISTS is_banned BOOLEAN DEFAULT FALSE');
 
     console.log('Database schema initialized successfully.');
   } catch (err) {

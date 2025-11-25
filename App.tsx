@@ -53,6 +53,14 @@ const LootablyPage = React.lazy(() => import('./components/pages/offers/Lootably
 const TimeWallPage = React.lazy(() => import('./components/pages/offers/TimeWallPage'));
 const AdGemPage = React.lazy(() => import('./components/pages/offers/AdGemPage'));
 
+// Lazy load "About" pages
+const BlogPage = React.lazy(() => import('./components/about/BlogPage'));
+const GuidesPage = React.lazy(() => import('./components/about/GuidesPage'));
+const TermsOfServicePage = React.lazy(() => import('./components/about/TermsOfServicePage'));
+const PrivacyPolicyPage = React.lazy(() => import('./components/about/PrivacyPolicyPage'));
+const CookiePolicyPage = React.lazy(() => import('./components/about/CookiePolicyPage'));
+const AmlKycPolicyPage = React.lazy(() => import('./components/about/AmlKycPolicyPage'));
+
 // Lazy load admin panel
 const AdminLayout = React.lazy(() => import('./components/admin/AdminLayout'));
 const AdminLoginPage = React.lazy(() => import('./components/admin/AdminLoginPage'));
@@ -166,6 +174,12 @@ const pageComponentsMap: { [key: string]: React.ReactNode } = {
     'Daily Bonus': <DailyBonusPage />,
     'Achievements': <AchievementsPage />,
     'Chat': <ChatPage />,
+    'Blog': <BlogPage />,
+    'Guides': <GuidesPage />,
+    'Terms of Service': <TermsOfServicePage />,
+    'Privacy Policy': <PrivacyPolicyPage />,
+    'Cookie Policy': <CookiePolicyPage />,
+    'AML & KYC Policy': <AmlKycPolicyPage />,
     'Boxes': <div className="text-slate-900 dark:text-white text-3xl font-bold">Boxes Page</div>,
     'Battles': <div className="text-slate-900 dark:text-white text-3xl font-bold">Battles Page</div>,
 };
@@ -387,7 +401,8 @@ useEffect(() => {
     }
 
     const token = localStorage.getItem('token');
-    const isProtectedRoute = pageFromPath !== 'Home';
+    const isProtectedRoute = pageFromPath !== 'Home' && 
+                             !['Blog', 'Guides', 'Terms of Service', 'Privacy Policy', 'Cookie Policy', 'AML & KYC Policy'].includes(pageFromPath);
 
     if (isProtectedRoute && !token) {
       setRedirectAfterLogin(pageFromPath);

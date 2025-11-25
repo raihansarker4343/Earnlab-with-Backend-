@@ -23,6 +23,13 @@ const createIpLogEntry = (req) => ({
 const app = express();
 const port = process.env.PORT || 3001;
 
+// 👉 নতুন postback routes ইমপোর্ট
+const cpxPostbackRoutes = require('./routes/postback/cpx');
+const bitlabsPostbackRoutes = require('./routes/postback/bitlabs');
+
+app.use('/api/postback', cpxPostbackRoutes);     // /api/postback/cpx
+app.use('/api/postback', bitlabsPostbackRoutes); // /api/postback/bitlabs
+
 //Backend CORS
 app.use(cors());
 app.use(express.json());
@@ -105,7 +112,7 @@ app.post('/api/auth/signup', checkIpWithIPHub({ blockImmediately: true, blockOnF
             `INSERT INTO users (username, email, password_hash, avatar_url, earn_id, ip_logs) 
              VALUES ($1, $2, $3, $4, $5, $6) 
              RETURNING id, username, email, avatar_url, created_at AS joined_date, total_earned, balance, last_30_days_earned, completed_tasks, total_wagered, total_profit, total_withdrawn, total_referrals, referral_earnings, xp, rank, earn_id`,
-            [username, email, password_hash, `https://i.pravatar.cc/150?u=${username}`, earn_id, JSON.stringify([ipLog])]
+            [username, email, password_hash, `https://api.dicebear.com/8.x/initials/png?seed=${username}`, earn_id, JSON.stringify([ipLog])]
         );
 
         const user = newUserQuery.rows[0];
