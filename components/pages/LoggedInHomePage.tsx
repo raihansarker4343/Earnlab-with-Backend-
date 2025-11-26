@@ -10,7 +10,7 @@ import { AppContext } from '../../App';
 const featuredTasks = [
   { image: 'https://i.imgur.com/r6355M8.png', title: 'Hero Castle War: T...', description: 'Open the app, registe...', payout: 2.50 },
   { image: 'https://shorturl.at/WFqAo', title: 'Wild Fish - Android...', description: 'Be the best fisherman...', payout: 1.75 },
-  { image: 'https://i.imgur.com/wI4aB9a.png', title: 'CortalyCash', description: 'Complete all steps list...', payout: 5.00 },
+  { image: 'https://shorturl.at/SFXpL', title: 'CortalyCash', description: 'Complete all steps list...', payout: 5.00 },
   { image: 'https://i.imgur.com/Y8H4yT6.png', title: 'WW Click Box - Mu...', description: 'Answer the survey qu...', payout: 0.80 },
   { image: 'https://i.imgur.com/lO7qD52.png', title: 'Treehouse Fishing ...', description: 'Climb into your treeho...', payout: 3.20 },
   { image: 'https://i.imgur.com/wZ68tB3.png', title: 'Money Quiz', description: 'Register using full vali...', payout: 1.10 },
