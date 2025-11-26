@@ -52,6 +52,7 @@ export interface OfferWall {
   isLocked?: boolean;
   unlockRequirement?: string;
   isEnabled: boolean;
+  rating?: number;
 }
 
 export interface SidebarMenuItem {

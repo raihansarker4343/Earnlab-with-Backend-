@@ -78,6 +78,7 @@ const initDb = async () => {
         id SERIAL PRIMARY KEY,
         name VARCHAR(100) NOT NULL,
         logo TEXT,
+        rating INTEGER,
         bonus VARCHAR(50),
         unlock_requirement VARCHAR(255),
         is_locked BOOLEAN DEFAULT false,

@@ -12,19 +12,19 @@ export const API_URL = "https://earnlab-with-backend.onrender.com";
 // constant is the simplest fix to resolve import errors on those pages without
 // a larger refactor. The data is copied from the backend's seed script.
 export const OFFER_WALLS: OfferWall[] = [
-    { id: 1, name: 'Torox', logo: 'https://i.imgur.com/zbyfSVW.png', bonus: '+20%', isEnabled: true, isLocked: false },
-    { id: 2, name: 'Adscend Media', logo: 'https://i.imgur.com/iY9g04E.png', bonus: '+50%', isEnabled: true, isLocked: false },
-    { id: 3, name: 'AdToWall', logo: 'https://i.imgur.com/x0iP1C9.png', isEnabled: true, isLocked: false },
-    { id: 4, name: 'RevU', logo: 'https://i.imgur.com/yvC5YyW.png', isLocked: true, unlockRequirement: 'Earn $2.50 to unlock', bonus: '+50%', isEnabled: true },
-    { id: 5, name: 'AdGate Media', logo: 'https://i.imgur.com/Q2yG7nS.png', isEnabled: true, isLocked: false },
-    { id: 6, name: 'MyChips', logo: 'https://i.imgur.com/yvC5YyW.png', isLocked: true, unlockRequirement: 'Earn $2.50 to unlock', bonus: '+50%', isEnabled: true },
-    { id: 7, name: 'MM Wall', logo: 'https://i.imgur.com/6XzWfP1.png', isEnabled: true, isLocked: false },
-    { id: 8, name: 'Aye-T Studios', logo: 'https://i.imgur.com/J3t5e6E.png', isEnabled: true, isLocked: false },
-    { id: 9, name: 'Monlix', logo: 'https://i.imgur.com/ePFr12w.png', isEnabled: true, isLocked: false },
-    { id: 10, name: 'Hang My Ads', logo: 'https://i.imgur.com/yvC5YyW.png', isLocked: true, unlockRequirement: 'Earn $1.00 to unlock', isEnabled: true },
-    { id: 11, name: 'Lootably', logo: 'https://i.imgur.com/i9nO27d.png', isEnabled: true, isLocked: false },
-    { id: 12, name: 'Time Wall', logo: 'https://i.imgur.com/nJgq1t7.png', isEnabled: true, isLocked: false },
-    { id: 13, name: 'AdGem', logo: 'https://i.imgur.com/r9f5k2Z.png', isEnabled: true, isLocked: false },
+    { id: 1, name: 'Torox', logo: 'https://i.imgur.com/zbyfSVW.png', bonus: '+20%', isEnabled: true, isLocked: false, rating: 5 },
+    { id: 2, name: 'Adscend Media', logo: 'https://i.imgur.com/iY9g04E.png', bonus: '+50%', isEnabled: true, isLocked: false, rating: 4 },
+    { id: 3, name: 'AdToWall', logo: 'https://i.imgur.com/x0iP1C9.png', isEnabled: true, isLocked: false, rating: 4 },
+    { id: 4, name: 'RevU', logo: 'https://i.imgur.com/yvC5YyW.png', isLocked: true, unlockRequirement: 'Earn $2.50 to unlock', bonus: '+50%', isEnabled: true, rating: 5 },
+    { id: 5, name: 'AdGate Media', logo: 'https://i.imgur.com/Q2yG7nS.png', isEnabled: true, isLocked: false, rating: 3 },
+    { id: 6, name: 'MyChips', logo: 'https://i.imgur.com/yvC5YyW.png', isLocked: true, unlockRequirement: 'Earn $2.50 to unlock', bonus: '+50%', isEnabled: true, rating: 4 },
+    { id: 7, name: 'MM Wall', logo: 'https://i.imgur.com/6XzWfP1.png', isEnabled: true, isLocked: false, rating: 3 },
+    { id: 8, name: 'Aye-T Studios', logo: 'https://i.imgur.com/J3t5e6E.png', isEnabled: true, isLocked: false, rating: 4 },
+    { id: 9, name: 'Monlix', logo: 'https://i.imgur.com/ePFr12w.png', isEnabled: true, isLocked: false, rating: 3 },
+    { id: 10, name: 'Hang My Ads', logo: 'https://i.imgur.com/yvC5YyW.png', isLocked: true, unlockRequirement: 'Earn $1.00 to unlock', isEnabled: true, rating: 4 },
+    { id: 11, name: 'Lootably', logo: 'https://i.imgur.com/i9nO27d.png', isEnabled: true, isLocked: false, rating: 3 },
+    { id: 12, name: 'Time Wall', logo: 'https://i.imgur.com/nJgq1t7.png', isEnabled: true, isLocked: false, rating: 4 },
+    { id: 13, name: 'AdGem', logo: 'https://i.imgur.com/r9f5k2Z.png', isEnabled: true, isLocked: false, rating: 4 },
 ];
 
 export const SURVEY_PROVIDERS: SurveyProvider[] = [

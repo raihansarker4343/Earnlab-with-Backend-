@@ -1040,7 +1040,7 @@ const seedOfferWalls = async () => {
             { name: 'Hang My Ads', logo: 'https://i.imgur.com/yvC5YyW.png', is_locked: true, unlock_requirement: 'Earn $1.00 to unlock' },
             { name: 'Lootably', logo: 'https://i.imgur.com/i9nO27d.png' },
             { name: 'Time Wall', logo: 'https://i.imgur.com/nJgq1t7.png' },
-            { name: 'AdGem', logo: 'https://i.imgur.com/r9f5k2Z.png' },
+            { name: 'AdGem', logo: 'https://i.imgur.com/r9f5k2Z.png', rating: 3 },
         ];
         for (const w of walls) {
             await client.query('INSERT INTO offer_walls (name, logo, bonus, is_locked, unlock_requirement) VALUES ($1, $2, $3, $4, $5)', [w.name, w.logo, w.bonus || null, w.is_locked || false, w.unlock_requirement || null]);

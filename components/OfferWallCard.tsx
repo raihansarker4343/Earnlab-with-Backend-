@@ -1,6 +1,7 @@
 import React from 'react';
 import type { OfferWall } from '../types';
 import { LockIcon } from './icons/SurveyIcons';
+import StarRating from './StarRating';
 
 const OfferWallCard: React.FC<{ wall: OfferWall }> = ({ wall }) => {
     const gradients: { [key: string]: string } = {
@@ -52,6 +53,11 @@ const OfferWallCard: React.FC<{ wall: OfferWall }> = ({ wall }) => {
 
             <div className={`relative z-10 w-full ${wall.isLocked ? 'opacity-50' : ''}`}>
                 <p className="font-bold text-white mt-auto">{wall.name}</p>
+                {wall.rating !== undefined && wall.rating > 0 && (
+                    <div className="mt-2 flex justify-center">
+                        <StarRating rating={wall.rating} />
+                    </div>
+                )}
             </div>
 
             {wall.isLocked && (
