@@ -142,13 +142,13 @@ const LoggedInHomePage: React.FC = () => {
         <div className="space-y-12">
             {/* Top Banners */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                <img src="https://i.imgur.com/kP4dmA8.png" alt="Earn Money" className="rounded-lg w-full h-auto object-cover cursor-pointer hover:opacity-90 transition-opacity" />
-                <img src="https://i.imgur.com/s6n5s7H.png" alt="Monthly Race" className="rounded-lg w-full h-auto object-cover cursor-pointer hover:opacity-90 transition-opacity" />
-                <img src="https://i.imgur.com/uN83F9y.png" alt="Rewards" className="rounded-lg w-full h-auto object-cover cursor-pointer hover:opacity-90 transition-opacity" />
+                <img src="https://res.cloudinary.com/dsezfqke7/image/upload/v1764164444/CbsLDah3fAlDDqaOTg-UuXejkqhkdZ54Z8zjEh3N6xJVAowU12wrrgQFvXWio8p_i4QAVXPHbbG6r1i8lQ5x_w416-h235-rw_aoc2pk.webp" alt="Earn Money" className="rounded-lg w-full h-auto object-cover cursor-pointer hover:opacity-90 transition-opacity" />
+                <img src="https://res.cloudinary.com/dsezfqke7/image/upload/v1764164054/cKv9DpQx7jqFjbiC5YDxJUDOHDKkXZcN1kaVsVhCD078P89PNd4c7vY5owtA38xz0Nk_w416-h235-rw_hjrhhq.webp" alt="Monthly Race" className="rounded-lg w-full h-auto object-cover cursor-pointer hover:opacity-90 transition-opacity" />
+                <img src="https://res.cloudinary.com/dsezfqke7/image/upload/v1764164295/xH0v0E_tdlO_jffww7nAE2968JTeN6LzKdz02QBFI2RqBoQjEMPhEekK70jn_gzRzrqb_w416-h235-rw_hqna8z.webp" alt="Rewards" className="rounded-lg w-full h-auto object-cover cursor-pointer hover:opacity-90 transition-opacity" />
             </div>
 
             {/* Recommended for you */}
-            <section>
+           {/* <section>
                 <div className="mb-6">
                     <h2 className="text-2xl font-bold text-slate-900 dark:text-white">Recommended for You</h2>
                     <p className="text-slate-500 dark:text-slate-400">AI-powered suggestions based on your activity</p>
@@ -184,7 +184,7 @@ const LoggedInHomePage: React.FC = () => {
                         ))
                     )}
                 </div>
-            </section>
+            </section> */}
 
             {/* Featured Tasks */}
             <section>
