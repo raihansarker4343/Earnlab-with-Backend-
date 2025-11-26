@@ -210,19 +210,9 @@ const DailyBonusesIcon = () => (
 // Global small floating icons (flat cartoon style, external URLs)
 const GLOBAL_FLOATING_ICONS = [
   { src: "https://cryptologos.cc/logos/bitcoin-btc-logo.svg?v=002", className: "global-floating-1" }, // Bitcoin Neon
-  { src: "https://cryptologos.cc/logos/bitcoin-btc-logo.svg?v=002", className: "global-floating-2" }, // Ethereum Neon
-  { src: "https://cryptologos.cc/logos/bitcoin-btc-logo.svg?v=002", className: "global-floating-3" }, // Binance Neon
-  { src: "https://cryptologos.cc/logos/bitcoin-btc-logo.svg?v=002", className: "global-floating-4" }, // Gamepad Neon
-  { src: "https://cryptologos.cc/logos/bitcoin-btc-logo.svg?v=002", className: "global-floating-5" }, // Controller Neon
-  { src: "https://cryptologos.cc/logos/bitcoin-btc-logo.svg?v=002", className: "global-floating-6" }, // Gift Card Neon
-  { src: "https://cryptologos.cc/logos/bitcoin-btc-logo.svg?v=002", className: "global-floating-7" }, // Wallet Neon
-  { src: "https://cryptologos.cc/logos/bitcoin-btc-logo.svg?v=002", className: "global-floating-8" }, // Coin Stack Neon
-  { src: "https://cryptologos.cc/logos/bitcoin-btc-logo.svg?v=002", className: "global-floating-9" }, // Star Neon
-  { src: "https://cryptologos.cc/logos/bitcoin-btc-logo.svg?v=002", className: "global-floating-10" }, // Trophy Neon
-  { src: "https://cryptologos.cc/logos/bitcoin-btc-logo.svg?v=002", className: "global-floating-11" }, // Stats/Chart Neon
-  { src: "https://cryptologos.cc/logos/bitcoin-btc-logo.svg?v=002", className: "global-floating-12" }, // Bell Neon
-  { src: "https://cryptologos.cc/logos/bitcoin-btc-logo.svg?v=002", className: "global-floating-13" }, // Neon Rocket
-  { src: "https://cryptologos.cc/logos/bitcoin-btc-logo.svg?v=002", className: "global-floating-14" }, // Neon Dollar Coin
+  { src: "https://cryptologos.cc/logos/ethereum-eth-logo.png?v=002", className: "global-floating-2" }, // Ethereum Neon
+  { src: "https://cryptologos.cc/logos/tether-usdt-logo.png?v=002", className: "global-floating-3" }, // Binance Neon
+  { src: "https://cryptologos.cc/logos/litecoin-ltc-logo.png?v=002", className: "global-floating-4" }, // Gamepad Neon
 ];
 
 
