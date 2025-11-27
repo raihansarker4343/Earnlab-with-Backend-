@@ -10,6 +10,8 @@ import LoggedOutSidebar from './components/LoggedOutSidebar';
 import SigninModal from './components/SigninModal';
 import SignupModal from './components/SignupModal';
 import SupportChatModal from './components/SupportChatModal';
+import ForgotPasswordModal from './components/ForgotPasswordModal';
+import ResetPasswordModal from './components/ResetPasswordModal';
 import { API_URL } from './constants';
 import WithdrawalSuccessModal from './components/WithdrawalSuccessModal';
 import ProfileEditModal from './components/ProfileEditModal';
@@ -253,7 +255,10 @@ const App: React.FC = () => {
   const [isSupportChatModalOpen, setIsSupportChatModalOpen] = useState(false);
   const [isSigninModalOpen, setIsSigninModalOpen] = useState(false);
   const [isSignupModalOpen, setIsSignupModalOpen] = useState(false);
+  const [isForgotPasswordOpen, setIsForgotPasswordOpen] = useState(false);
+  const [isResetPasswordOpen, setIsResetPasswordOpen] = useState(false);
   const [signupInitialEmail, setSignupInitialEmail] = useState('');
+  const [resetTokenFromUrl, setResetTokenFromUrl] = useState('');
   const [page, setPage] = useState('Home');
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
@@ -352,9 +357,11 @@ const App: React.FC = () => {
         navigate(redirectAfterLogin);
         setRedirectAfterLogin(null);
     }
-    
+
     setIsSigninModalOpen(false);
     setIsSignupModalOpen(false);
+    setIsForgotPasswordOpen(false);
+    setIsResetPasswordOpen(false);
   }, [fetchAndSetUserData, redirectAfterLogin, navigate]);
 
   // Effect for initial auth check from localStorage.
@@ -392,14 +399,26 @@ useEffect(() => {
 
   const handleLocationChange = () => {
     const { pathname, search } = window.location;
+    const params = new URLSearchParams(search);
 
     // query string থেকে referral code পড়া (?ref=...)
-    if (search) {
-      const params = new URLSearchParams(search);
-      const ref = params.get('ref');
-      if (ref) {
-        localStorage.setItem('referralCode', ref);
-      }
+    const ref = params.get('ref');
+    if (ref) {
+      localStorage.setItem('referralCode', ref);
+    }
+
+    const resetTokenParam = params.get('resetToken');
+    if (resetTokenParam) {
+      setResetTokenFromUrl(resetTokenParam);
+      setIsResetPasswordOpen(true);
+      setIsSigninModalOpen(false);
+      setIsSignupModalOpen(false);
+      setIsForgotPasswordOpen(false);
+
+      params.delete('resetToken');
+      const newSearch = params.toString();
+      const newUrl = `${pathname}${newSearch ? `?${newSearch}` : ''}`;
+      window.history.replaceState({}, '', newUrl);
     }
 
     const pageFromPath = getPageFromPath(pathname);
@@ -451,6 +470,30 @@ useEffect(() => {
   const openSignupModal = (email = '') => {
       setSignupInitialEmail(email);
       setIsSignupModalOpen(true);
+      setIsSigninModalOpen(false);
+      setIsForgotPasswordOpen(false);
+      setIsResetPasswordOpen(false);
+  };
+
+  const openForgotPassword = () => {
+      setIsSigninModalOpen(false);
+      setIsSignupModalOpen(false);
+      setIsForgotPasswordOpen(true);
+  };
+
+  const openResetPassword = (token = '') => {
+      if (token) {
+          setResetTokenFromUrl(token);
+      }
+      setIsSigninModalOpen(false);
+      setIsSignupModalOpen(false);
+      setIsForgotPasswordOpen(false);
+      setIsResetPasswordOpen(true);
+  };
+
+  const handleResetSuccess = () => {
+      setIsResetPasswordOpen(false);
+      setIsSigninModalOpen(true);
   };
 
   const appContextValue = { 
@@ -513,11 +556,15 @@ useEffect(() => {
   
   const switchToSignup = () => {
       setIsSigninModalOpen(false);
+      setIsForgotPasswordOpen(false);
+      setIsResetPasswordOpen(false);
       setIsSignupModalOpen(true);
   };
 
   const switchToSignin = () => {
       setIsSignupModalOpen(false);
+      setIsForgotPasswordOpen(false);
+      setIsResetPasswordOpen(false);
       setIsSigninModalOpen(true);
   };
 
@@ -596,11 +643,25 @@ useEffect(() => {
                     isOpen={isSigninModalOpen}
                     onClose={() => setIsSigninModalOpen(false)}
                     onSwitchToSignup={switchToSignup}
+                    onForgotPassword={openForgotPassword}
                 />
                 <SignupModal
                     isOpen={isSignupModalOpen}
                     onClose={() => setIsSignupModalOpen(false)}
                     initialEmail={signupInitialEmail}
+                    onSwitchToSignin={switchToSignin}
+                />
+                <ForgotPasswordModal
+                    isOpen={isForgotPasswordOpen}
+                    onClose={() => setIsForgotPasswordOpen(false)}
+                    onSwitchToSignin={switchToSignin}
+                    onSwitchToReset={() => openResetPassword(resetTokenFromUrl)}
+                />
+                <ResetPasswordModal
+                    isOpen={isResetPasswordOpen}
+                    initialToken={resetTokenFromUrl}
+                    onClose={() => { setIsResetPasswordOpen(false); setResetTokenFromUrl(''); }}
+                    onSuccess={handleResetSuccess}
                     onSwitchToSignin={switchToSignin}
                 />
             </>

@@ -6,9 +6,10 @@ interface SigninModalProps {
     isOpen: boolean;
     onClose: () => void;
     onSwitchToSignup: () => void;
+    onForgotPassword: () => void;
 }
 
-const SigninModal: React.FC<SigninModalProps> = ({ isOpen, onClose, onSwitchToSignup }) => {
+const SigninModal: React.FC<SigninModalProps> = ({ isOpen, onClose, onSwitchToSignup, onForgotPassword }) => {
     const { handleLogin } = useContext(AppContext);
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
@@ -129,9 +130,13 @@ const SigninModal: React.FC<SigninModalProps> = ({ isOpen, onClose, onSwitchToSi
                         </div>
                     </div>
                     
-                    <a href="#" className="text-sm text-green-400 hover:underline text-right block w-full pt-1">
+                    <button
+                        type="button"
+                        onClick={onForgotPassword}
+                        className="text-sm text-green-400 hover:underline text-right block w-full pt-1 text-left"
+                    >
                         Forgot your password?
-                    </a>
+                    </button>
 
                     <button 
                         type="submit"
