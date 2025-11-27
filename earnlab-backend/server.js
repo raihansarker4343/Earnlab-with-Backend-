@@ -5,6 +5,7 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
 const { pool, initDb } = require('./db');
+const { sendPasswordResetEmail } = require('./services/emailService');
 require('dotenv').config();
 
 const logger = require('./utils/logger');
@@ -140,7 +141,7 @@ app.post('/api/auth/signin', checkIpWithIPHub({ blockImmediately: true, blockOnF
     const { email, password } = req.body;
     try {
         const result = await pool.query(
-            `SELECT id, username, email, password_hash, avatar_url, created_at AS joined_date, total_earned, balance, last_30_days_earned, completed_tasks, total_wagered, total_profit, total_withdrawn, total_referrals, referral_earnings, xp, rank, earn_id 
+            `SELECT id, username, email, password_hash, avatar_url, created_at AS joined_date, total_earned, balance, last_30_days_earned, completed_tasks, total_wagered, total_profit, total_withdrawn, total_referrals, referral_earnings, xp, rank, earn_id
              FROM users WHERE email = $1`, 
             [email]
         );
@@ -171,10 +172,100 @@ app.post('/api/auth/signin', checkIpWithIPHub({ blockImmediately: true, blockOnF
     }
 });
 
+app.post('/api/auth/forgot-password', async (req, res) => {
+    const { email } = req.body;
+
+    if (!email) {
+        return res.status(400).json({ message: 'Email is required.' });
+    }
+
+    try {
+        const userResult = await pool.query('SELECT id, username, email FROM users WHERE email = $1', [email]);
+
+        if (userResult.rows.length > 0) {
+            const user = userResult.rows[0];
+            const token = crypto.randomBytes(32).toString('hex');
+            const tokenHash = crypto.createHash('sha256').update(token).digest('hex');
+            const expiresAt = new Date(Date.now() + 60 * 60 * 1000); // 60 minutes
+
+            await pool.query('DELETE FROM password_reset_tokens WHERE user_id = $1 OR expires_at < NOW()', [user.id]);
+            await pool.query(
+                'INSERT INTO password_reset_tokens (user_id, token_hash, expires_at) VALUES ($1, $2, $3)',
+                [user.id, tokenHash, expiresAt]
+            );
+
+            const baseUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+            const resetLink = `${baseUrl}?resetToken=${token}`;
+
+            try {
+                await sendPasswordResetEmail(user.email, user.username, resetLink);
+            } catch (err) {
+                console.error('Error sending reset email:', err);
+            }
+        }
+
+        res.status(200).json({ message: 'If an account exists for this email, a reset link has been sent.' });
+    } catch (error) {
+        console.error('Error handling forgot password:', error);
+        res.status(500).json({ message: 'Unable to process password reset request.' });
+    }
+});
+
+app.post('/api/auth/reset-password', async (req, res) => {
+    const { token, password } = req.body;
+
+    if (!token || !password) {
+        return res.status(400).json({ message: 'Token and new password are required.' });
+    }
+
+    const tokenHash = crypto.createHash('sha256').update(token).digest('hex');
+    const client = await pool.connect();
+
+    try {
+        await client.query('BEGIN');
+        const tokenResult = await client.query(
+            `SELECT prt.id, prt.user_id, prt.expires_at, prt.used
+             FROM password_reset_tokens prt
+             WHERE prt.token_hash = $1
+             ORDER BY prt.created_at DESC
+             LIMIT 1`,
+            [tokenHash]
+        );
+
+        if (tokenResult.rows.length === 0) {
+            throw new Error('Invalid or expired reset token.');
+        }
+
+        const resetToken = tokenResult.rows[0];
+        const isExpired = new Date(resetToken.expires_at) < new Date();
+        if (resetToken.used || isExpired) {
+            throw new Error('Invalid or expired reset token.');
+        }
+
+        const salt = await bcrypt.genSalt(10);
+        const password_hash = await bcrypt.hash(password, salt);
+
+        await client.query('UPDATE users SET password_hash = $1 WHERE id = $2', [password_hash, resetToken.user_id]);
+        await client.query('UPDATE password_reset_tokens SET used = true WHERE id = $1', [resetToken.id]);
+
+        await client.query('COMMIT');
+        res.status(200).json({ message: 'Password updated successfully.' });
+    } catch (error) {
+        await client.query('ROLLBACK');
+        if (error.message.includes('Invalid or expired reset token')) {
+            return res.status(400).json({ message: 'Invalid or expired reset token.' });
+        }
+        console.error('Error resetting password:', error);
+        res.status(500).json({ message: 'Unable to reset password.' });
+    } finally {
+        client.release();
+    }
+});
+
 app.get('/api/auth/me', authMiddleware, async (req, res) => {
     try {
         const result = await pool.query(
-            `SELECT id, username, email, avatar_url, created_at AS joined_date, total_earned, balance, last_30_days_earned, completed_tasks, total_wagered, total_profit, total_withdrawn, total_referrals, referral_earnings, xp, rank, earn_id 
+            `SELECT id, username, email, avatar_url, created_at AS joined_date, total_earned, balance, last_30_days_earned, completed_tasks, total_wagered, total_profit, total_withdrawn, total_referrals, referral_earnings, xp, rank, earn_id
              FROM users WHERE id = $1`, 
             [req.user.id]
         );
