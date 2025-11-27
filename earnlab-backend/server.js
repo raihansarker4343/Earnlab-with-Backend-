@@ -5,6 +5,7 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
 const { pool, initDb } = require('./db');
+const { sendPasswordResetEmail, sendVerificationEmail } = require('./services/emailService');
 require('dotenv').config();
 
 const logger = require('./utils/logger');
@@ -19,6 +20,29 @@ const createIpLogEntry = (req) => ({
     block_status: req.ipInfo?.block || 0,
     user_agent: req.headers['user-agent'] || 'Unknown'
 });
+
+const VERIFICATION_CODE_TTL_MINUTES = 15;
+
+const generateOtpCode = () => Math.floor(100000 + Math.random() * 900000).toString();
+const hashOtp = (otp) => crypto.createHash('sha256').update(otp).digest('hex');
+
+const issueVerificationCode = async (user, client = pool) => {
+    const otp = generateOtpCode();
+    const otpHash = hashOtp(otp);
+    const expiresAt = new Date(Date.now() + VERIFICATION_CODE_TTL_MINUTES * 60 * 1000);
+
+    await client.query('DELETE FROM email_verification_tokens WHERE user_id = $1 OR expires_at < NOW()', [user.id]);
+    await client.query(
+        'INSERT INTO email_verification_tokens (user_id, otp_hash, expires_at) VALUES ($1, $2, $3)',
+        [user.id, otpHash, expiresAt]
+    );
+
+    try {
+        await sendVerificationEmail(user.email, user.username, otp);
+    } catch (error) {
+        console.error('Error sending verification email:', error);
+    }
+};
 
 const app = express();
 const port = process.env.PORT || 3001;
@@ -109,21 +133,21 @@ app.post('/api/auth/signup', checkIpWithIPHub({ blockImmediately: true, blockOnF
         const ipLog = createIpLogEntry(req);
 
         const newUserQuery = await client.query(
-            `INSERT INTO users (username, email, password_hash, avatar_url, earn_id, ip_logs) 
-             VALUES ($1, $2, $3, $4, $5, $6) 
-             RETURNING id, username, email, avatar_url, created_at AS joined_date, total_earned, balance, last_30_days_earned, completed_tasks, total_wagered, total_profit, total_withdrawn, total_referrals, referral_earnings, xp, rank, earn_id`,
-            [username, email, password_hash, `https://api.dicebear.com/8.x/initials/png?seed=${username}`, earn_id, JSON.stringify([ipLog])]
+            `INSERT INTO users (username, email, password_hash, avatar_url, earn_id, ip_logs, is_verified)
+             VALUES ($1, $2, $3, $4, $5, $6, $7)
+             RETURNING id, username, email, avatar_url, created_at AS joined_date, total_earned, balance, last_30_days_earned, completed_tasks, total_wagered, total_profit, total_withdrawn, total_referrals, referral_earnings, xp, rank, earn_id, is_verified`,
+            [username, email, password_hash, `https://api.dicebear.com/8.x/initials/png?seed=${username}`, earn_id, JSON.stringify([ipLog]), false]
         );
 
         const user = newUserQuery.rows[0];
         const countryName = req.ipInfo?.countryName || 'Unknown';
         logger.info(`New signup from ${user.username} (IP: ${req.ip}, Country: ${countryName})`);
 
+        await issueVerificationCode(user, client);
+
         await client.query('COMMIT');
-        
-        const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET, { expiresIn: '7d' });
-        
-        res.status(201).json({ token, user: snakeToCamel(user) });
+
+        res.status(201).json({ message: 'Verification code sent to your email. Enter it to activate your account.', requiresVerification: true, email: user.email });
     } catch (error) {
         await client.query('ROLLBACK');
         console.error(error);
@@ -140,8 +164,8 @@ app.post('/api/auth/signin', checkIpWithIPHub({ blockImmediately: true, blockOnF
     const { email, password } = req.body;
     try {
         const result = await pool.query(
-            `SELECT id, username, email, password_hash, avatar_url, created_at AS joined_date, total_earned, balance, last_30_days_earned, completed_tasks, total_wagered, total_profit, total_withdrawn, total_referrals, referral_earnings, xp, rank, earn_id 
-             FROM users WHERE email = $1`, 
+            `SELECT id, username, email, password_hash, avatar_url, created_at AS joined_date, total_earned, balance, last_30_days_earned, completed_tasks, total_wagered, total_profit, total_withdrawn, total_referrals, referral_earnings, xp, rank, earn_id, is_verified
+             FROM users WHERE email = $1`,
             [email]
         );
         if (result.rows.length === 0) {
@@ -151,6 +175,11 @@ app.post('/api/auth/signin', checkIpWithIPHub({ blockImmediately: true, blockOnF
         const isMatch = await bcrypt.compare(password, user.password_hash);
         if (!isMatch) {
             return res.status(400).json({ message: 'Invalid credentials' });
+        }
+
+        if (!user.is_verified) {
+            await issueVerificationCode(user);
+            return res.status(403).json({ message: 'Please verify your email using the code we sent to you.', requiresVerification: true, email: user.email });
         }
         const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET, { expiresIn: '7d' });
 
@@ -171,11 +200,193 @@ app.post('/api/auth/signin', checkIpWithIPHub({ blockImmediately: true, blockOnF
     }
 });
 
+app.post('/api/auth/forgot-password', async (req, res) => {
+    const { email } = req.body;
+
+    if (!email) {
+        return res.status(400).json({ message: 'Email is required.' });
+    }
+
+    try {
+        const userResult = await pool.query('SELECT id, username, email FROM users WHERE email = $1', [email]);
+
+        if (userResult.rows.length > 0) {
+            const user = userResult.rows[0];
+            const token = crypto.randomBytes(32).toString('hex');
+            const tokenHash = crypto.createHash('sha256').update(token).digest('hex');
+            const expiresAt = new Date(Date.now() + 60 * 60 * 1000); // 60 minutes
+
+            await pool.query('DELETE FROM password_reset_tokens WHERE user_id = $1 OR expires_at < NOW()', [user.id]);
+            await pool.query(
+                'INSERT INTO password_reset_tokens (user_id, token_hash, expires_at) VALUES ($1, $2, $3)',
+                [user.id, tokenHash, expiresAt]
+            );
+
+            const baseUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+            const resetLink = `${baseUrl}?resetToken=${token}`;
+
+            try {
+                await sendPasswordResetEmail(user.email, user.username, resetLink);
+            } catch (err) {
+                console.error('Error sending reset email:', err);
+            }
+        }
+
+        res.status(200).json({ message: 'If an account exists for this email, a reset link has been sent.' });
+    } catch (error) {
+        console.error('Error handling forgot password:', error);
+        res.status(500).json({ message: 'Unable to process password reset request.' });
+    }
+});
+
+app.post('/api/auth/resend-verification', async (req, res) => {
+    const { email } = req.body;
+
+    if (!email) {
+        return res.status(400).json({ message: 'Email is required.' });
+    }
+
+    try {
+        const userResult = await pool.query('SELECT id, username, email, is_verified FROM users WHERE email = $1', [email]);
+
+        if (userResult.rows.length === 0) {
+            return res.status(200).json({ message: 'If this email is registered, a verification code has been sent.' });
+        }
+
+        const user = userResult.rows[0];
+
+        if (user.is_verified) {
+            return res.status(200).json({ message: 'Account is already verified.' });
+        }
+
+        await issueVerificationCode(user);
+
+        res.status(200).json({ message: 'Verification code resent successfully.' });
+    } catch (error) {
+        console.error('Error resending verification code:', error);
+        res.status(500).json({ message: 'Unable to resend verification code at this time.' });
+    }
+});
+
+app.post('/api/auth/verify-email', async (req, res) => {
+    const { email, otp } = req.body;
+
+    if (!email || !otp) {
+        return res.status(400).json({ message: 'Email and verification code are required.' });
+    }
+
+    const client = await pool.connect();
+    const otpHash = hashOtp(otp);
+
+    try {
+        await client.query('BEGIN');
+
+        const userResult = await client.query('SELECT id, username, email, is_verified FROM users WHERE email = $1', [email]);
+
+        if (userResult.rows.length === 0) {
+            throw new Error('Invalid or expired verification code.');
+        }
+
+        const user = userResult.rows[0];
+
+        if (user.is_verified) {
+            const existingToken = jwt.sign({ id: user.id }, process.env.JWT_SECRET, { expiresIn: '7d' });
+            await client.query('COMMIT');
+            return res.status(200).json({ message: 'Account already verified.', token: existingToken });
+        }
+
+        const tokenResult = await client.query(
+            `SELECT id, expires_at, used FROM email_verification_tokens
+             WHERE user_id = $1 AND otp_hash = $2
+             ORDER BY created_at DESC
+             LIMIT 1`,
+            [user.id, otpHash]
+        );
+
+        if (tokenResult.rows.length === 0) {
+            throw new Error('Invalid or expired verification code.');
+        }
+
+        const verificationToken = tokenResult.rows[0];
+        const isExpired = new Date(verificationToken.expires_at) < new Date();
+
+        if (verificationToken.used || isExpired) {
+            throw new Error('Invalid or expired verification code.');
+        }
+
+        await client.query('UPDATE users SET is_verified = TRUE WHERE id = $1', [user.id]);
+        await client.query('UPDATE email_verification_tokens SET used = TRUE WHERE id = $1', [verificationToken.id]);
+
+        await client.query('COMMIT');
+
+        const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET, { expiresIn: '7d' });
+
+        res.status(200).json({ message: 'Email verified successfully.', token });
+    } catch (error) {
+        await client.query('ROLLBACK');
+        console.error('Error verifying email:', error);
+        res.status(400).json({ message: 'Invalid or expired verification code.' });
+    } finally {
+        client.release();
+    }
+});
+
+app.post('/api/auth/reset-password', async (req, res) => {
+    const { token, password } = req.body;
+
+    if (!token || !password) {
+        return res.status(400).json({ message: 'Token and new password are required.' });
+    }
+
+    const tokenHash = crypto.createHash('sha256').update(token).digest('hex');
+    const client = await pool.connect();
+
+    try {
+        await client.query('BEGIN');
+        const tokenResult = await client.query(
+            `SELECT prt.id, prt.user_id, prt.expires_at, prt.used
+             FROM password_reset_tokens prt
+             WHERE prt.token_hash = $1
+             ORDER BY prt.created_at DESC
+             LIMIT 1`,
+            [tokenHash]
+        );
+
+        if (tokenResult.rows.length === 0) {
+            throw new Error('Invalid or expired reset token.');
+        }
+
+        const resetToken = tokenResult.rows[0];
+        const isExpired = new Date(resetToken.expires_at) < new Date();
+        if (resetToken.used || isExpired) {
+            throw new Error('Invalid or expired reset token.');
+        }
+
+        const salt = await bcrypt.genSalt(10);
+        const password_hash = await bcrypt.hash(password, salt);
+
+        await client.query('UPDATE users SET password_hash = $1 WHERE id = $2', [password_hash, resetToken.user_id]);
+        await client.query('UPDATE password_reset_tokens SET used = true WHERE id = $1', [resetToken.id]);
+
+        await client.query('COMMIT');
+        res.status(200).json({ message: 'Password updated successfully.' });
+    } catch (error) {
+        await client.query('ROLLBACK');
+        if (error.message.includes('Invalid or expired reset token')) {
+            return res.status(400).json({ message: 'Invalid or expired reset token.' });
+        }
+        console.error('Error resetting password:', error);
+        res.status(500).json({ message: 'Unable to reset password.' });
+    } finally {
+        client.release();
+    }
+});
+
 app.get('/api/auth/me', authMiddleware, async (req, res) => {
     try {
         const result = await pool.query(
-            `SELECT id, username, email, avatar_url, created_at AS joined_date, total_earned, balance, last_30_days_earned, completed_tasks, total_wagered, total_profit, total_withdrawn, total_referrals, referral_earnings, xp, rank, earn_id 
-             FROM users WHERE id = $1`, 
+            `SELECT id, username, email, avatar_url, created_at AS joined_date, total_earned, balance, last_30_days_earned, completed_tasks, total_wagered, total_profit, total_withdrawn, total_referrals, referral_earnings, xp, rank, earn_id, is_verified
+             FROM users WHERE id = $1`,
             [req.user.id]
         );
         if (result.rows.length === 0) {
@@ -244,7 +455,7 @@ app.patch('/api/user/profile', authMiddleware, async (req, res) => {
 
         values.push(id);
 
-        const updateUserQuery = `UPDATE users SET ${fields.join(', ')} WHERE id = $${queryIndex} RETURNING id, username, email, avatar_url, created_at AS joined_date, total_earned, balance, last_30_days_earned, completed_tasks, total_wagered, total_profit, total_withdrawn, total_referrals, referral_earnings, xp, rank, earn_id`;
+        const updateUserQuery = `UPDATE users SET ${fields.join(', ')} WHERE id = $${queryIndex} RETURNING id, username, email, avatar_url, created_at AS joined_date, total_earned, balance, last_30_days_earned, completed_tasks, total_wagered, total_profit, total_withdrawn, total_referrals, referral_earnings, xp, rank, earn_id, is_verified`;
         
         const result = await client.query(updateUserQuery, values);
 

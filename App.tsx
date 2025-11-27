@@ -10,6 +10,9 @@ import LoggedOutSidebar from './components/LoggedOutSidebar';
 import SigninModal from './components/SigninModal';
 import SignupModal from './components/SignupModal';
 import SupportChatModal from './components/SupportChatModal';
+import ForgotPasswordModal from './components/ForgotPasswordModal';
+import ResetPasswordModal from './components/ResetPasswordModal';
+import EmailVerificationModal from './components/EmailVerificationModal';
 import { API_URL } from './constants';
 import WithdrawalSuccessModal from './components/WithdrawalSuccessModal';
 import ProfileEditModal from './components/ProfileEditModal';
@@ -242,6 +245,8 @@ const getPageFromPath = (pathname: string): string => {
 
 
 
+const PENDING_VERIFICATION_KEY = 'pendingVerificationEmail';
+
 const App: React.FC = () => {
   const [isAdmin, setIsAdmin] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -253,7 +258,12 @@ const App: React.FC = () => {
   const [isSupportChatModalOpen, setIsSupportChatModalOpen] = useState(false);
   const [isSigninModalOpen, setIsSigninModalOpen] = useState(false);
   const [isSignupModalOpen, setIsSignupModalOpen] = useState(false);
+  const [isForgotPasswordOpen, setIsForgotPasswordOpen] = useState(false);
+  const [isResetPasswordOpen, setIsResetPasswordOpen] = useState(false);
+  const [isVerificationModalOpen, setIsVerificationModalOpen] = useState(false);
+  const [verificationEmail, setVerificationEmail] = useState('');
   const [signupInitialEmail, setSignupInitialEmail] = useState('');
+  const [resetTokenFromUrl, setResetTokenFromUrl] = useState('');
   const [page, setPage] = useState('Home');
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
@@ -265,6 +275,14 @@ const App: React.FC = () => {
   });
   const [redirectAfterLogin, setRedirectAfterLogin] = useState<string | null>(null);
   const [isLoadingAuth, setIsLoadingAuth] = useState(true);
+
+  useEffect(() => {
+      const pendingEmail = localStorage.getItem(PENDING_VERIFICATION_KEY);
+      if (pendingEmail && !isLoggedIn) {
+          setVerificationEmail(pendingEmail);
+          setIsVerificationModalOpen(true);
+      }
+  }, [isLoggedIn]);
 
   const navigate = useCallback((pageName: string) => {
   // "CPX Research" → "/CPXResearch"
@@ -287,6 +305,7 @@ const App: React.FC = () => {
   const handleLogout = useCallback(() => {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
+    localStorage.removeItem(PENDING_VERIFICATION_KEY);
     setUser(null);
     setIsLoggedIn(false);
     setIsAdmin(false);
@@ -352,9 +371,14 @@ const App: React.FC = () => {
         navigate(redirectAfterLogin);
         setRedirectAfterLogin(null);
     }
-    
+
     setIsSigninModalOpen(false);
     setIsSignupModalOpen(false);
+    setIsForgotPasswordOpen(false);
+    setIsResetPasswordOpen(false);
+    setIsVerificationModalOpen(false);
+    setVerificationEmail('');
+    localStorage.removeItem(PENDING_VERIFICATION_KEY);
   }, [fetchAndSetUserData, redirectAfterLogin, navigate]);
 
   // Effect for initial auth check from localStorage.
@@ -392,14 +416,26 @@ useEffect(() => {
 
   const handleLocationChange = () => {
     const { pathname, search } = window.location;
+    const params = new URLSearchParams(search);
 
     // query string থেকে referral code পড়া (?ref=...)
-    if (search) {
-      const params = new URLSearchParams(search);
-      const ref = params.get('ref');
-      if (ref) {
-        localStorage.setItem('referralCode', ref);
-      }
+    const ref = params.get('ref');
+    if (ref) {
+      localStorage.setItem('referralCode', ref);
+    }
+
+    const resetTokenParam = params.get('resetToken');
+    if (resetTokenParam) {
+      setResetTokenFromUrl(resetTokenParam);
+      setIsResetPasswordOpen(true);
+      setIsSigninModalOpen(false);
+      setIsSignupModalOpen(false);
+      setIsForgotPasswordOpen(false);
+
+      params.delete('resetToken');
+      const newSearch = params.toString();
+      const newUrl = `${pathname}${newSearch ? `?${newSearch}` : ''}`;
+      window.history.replaceState({}, '', newUrl);
     }
 
     const pageFromPath = getPageFromPath(pathname);
@@ -448,10 +484,57 @@ useEffect(() => {
     };
   }, [fetchAndSetUserData]);
 
-  const openSignupModal = (email = '') => {
+  const closeAuthModals = useCallback(() => {
+      setIsSigninModalOpen(false);
+      setIsSignupModalOpen(false);
+      setIsForgotPasswordOpen(false);
+      setIsResetPasswordOpen(false);
+      setIsVerificationModalOpen(false);
+  }, []);
+
+  const openSignupModal = useCallback((email = '') => {
       setSignupInitialEmail(email);
+      closeAuthModals();
       setIsSignupModalOpen(true);
-  };
+  }, [closeAuthModals]);
+
+  const openForgotPassword = useCallback(() => {
+      closeAuthModals();
+      setIsForgotPasswordOpen(true);
+  }, [closeAuthModals]);
+
+  const openResetPassword = useCallback((token = '') => {
+      if (token) {
+          setResetTokenFromUrl(token);
+      }
+      closeAuthModals();
+      setIsResetPasswordOpen(true);
+  }, [closeAuthModals]);
+
+  const handleResetSuccess = useCallback(() => {
+      setIsResetPasswordOpen(false);
+      setIsSigninModalOpen(true);
+  }, []);
+
+  const openVerificationModal = useCallback((email = '') => {
+      setVerificationEmail(email);
+      localStorage.setItem(PENDING_VERIFICATION_KEY, email);
+      closeAuthModals();
+      setIsVerificationModalOpen(true);
+  }, [closeAuthModals]);
+
+  useEffect(() => {
+      if (!isLoggedIn && verificationEmail) {
+          setIsVerificationModalOpen(true);
+      }
+  }, [isLoggedIn, verificationEmail]);
+
+  const handleVerificationSuccess = useCallback(async (token: string) => {
+      await handleLogin(token);
+      setIsVerificationModalOpen(false);
+      setVerificationEmail('');
+      localStorage.removeItem(PENDING_VERIFICATION_KEY);
+  }, [handleLogin]);
 
   const appContextValue = { 
       isLoggedIn, user, setUser, balance, setBalance, transactions, setTransactions,
@@ -512,12 +595,12 @@ useEffect(() => {
   const isDedicatedView = dedicatedPageNames.has(page);
   
   const switchToSignup = () => {
-      setIsSigninModalOpen(false);
+      closeAuthModals();
       setIsSignupModalOpen(true);
   };
 
   const switchToSignin = () => {
-      setIsSignupModalOpen(false);
+      closeAuthModals();
       setIsSigninModalOpen(true);
   };
 
@@ -596,12 +679,34 @@ useEffect(() => {
                     isOpen={isSigninModalOpen}
                     onClose={() => setIsSigninModalOpen(false)}
                     onSwitchToSignup={switchToSignup}
+                    onForgotPassword={openForgotPassword}
+                    onRequireVerification={openVerificationModal}
                 />
                 <SignupModal
                     isOpen={isSignupModalOpen}
                     onClose={() => setIsSignupModalOpen(false)}
                     initialEmail={signupInitialEmail}
                     onSwitchToSignin={switchToSignin}
+                    onRequireVerification={openVerificationModal}
+                />
+                <ForgotPasswordModal
+                    isOpen={isForgotPasswordOpen}
+                    onClose={() => setIsForgotPasswordOpen(false)}
+                    onSwitchToSignin={switchToSignin}
+                    onSwitchToReset={() => openResetPassword(resetTokenFromUrl)}
+                />
+                <ResetPasswordModal
+                    isOpen={isResetPasswordOpen}
+                    initialToken={resetTokenFromUrl}
+                    onClose={() => { setIsResetPasswordOpen(false); setResetTokenFromUrl(''); }}
+                    onSuccess={handleResetSuccess}
+                    onSwitchToSignin={switchToSignin}
+                />
+                <EmailVerificationModal
+                    isOpen={isVerificationModalOpen}
+                    email={verificationEmail}
+                    onClose={() => setIsVerificationModalOpen(false)}
+                    onVerified={handleVerificationSuccess}
                 />
             </>
         )}

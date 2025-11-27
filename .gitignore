@@ -11,6 +11,12 @@ node_modules
 dist
 dist-ssr
 *.local
+.env
+.env.*
+!.env.example
+earnlab-backend/.env*
+!earnlab-backend/.env.example
+earnlab-backend/env.txt
 
 # Editor directories and files
 .vscode/*
