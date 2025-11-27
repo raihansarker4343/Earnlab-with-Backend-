@@ -7,19 +7,48 @@ const SIDEBAR_MENU_ITEMS: SidebarMenuItem[] = [
   { name: 'Home', icon: <HomeIcon /> },
   { name: 'Blog', icon: <BlogIcon /> },
   { name: 'Guides', icon: <GuideIcon /> },
-  { name: 'Live Support', icon: <SupportIcon /> },
+  { name: 'Live Support', icon: <SupportIcon />, action: 'openSupportChat' },
 ];
 
 const LoggedOutSidebar: React.FC = () => {
-    const { currentPage, isSidebarCollapsed, setIsSidebarCollapsed, isMobileSidebarOpen, setIsMobileSidebarOpen } = useContext(AppContext);
+    // include setCurrentPage and setIsSupportChatModalOpen from context
+    const {
+      currentPage,
+      isSidebarCollapsed,
+      setIsSidebarCollapsed,
+      isMobileSidebarOpen,
+      setIsMobileSidebarOpen,
+      setCurrentPage,
+      setIsSupportChatModalOpen,
+    } = useContext(AppContext as any);
 
     const handleClose = () => {
         setIsSidebarCollapsed(true);
         setIsMobileSidebarOpen(false);
     };
 
-    const handleLinkClick = () => {
-        // Logged out links don't change pages in this context
+    const handleLinkClick = (pageName?: string, action?: string) => {
+        // special actions (e.g., open support chat)
+        if (action === 'openSupportChat') {
+            if (typeof setIsSupportChatModalOpen === 'function') {
+                setIsSupportChatModalOpen(true);
+            }
+        } else if (pageName) {
+            // change current page via app context
+            if (typeof setCurrentPage === 'function') {
+                setCurrentPage(pageName);
+            } else {
+                // fallback: change URL to trigger App's popstate handler
+                const path = pageName === 'Home' ? '/' : `/${pageName.replace(/[^a-zA-Z0-9]/g, '')}`;
+                if (window.location.pathname !== path) {
+                    const { search } = window.location;
+                    window.history.pushState({}, '', path + search);
+                    window.dispatchEvent(new PopStateEvent('popstate'));
+                }
+            }
+        }
+
+        // always close mobile sidebar on click
         setIsMobileSidebarOpen(false);
     };
 
@@ -33,7 +62,7 @@ const LoggedOutSidebar: React.FC = () => {
         return (
             <li key={item.name}>
                 <button
-                    onClick={handleLinkClick}
+                    onClick={() => handleLinkClick(item.name, (item as any).action)}
                     className={`${baseClasses} ${stateClasses}`}
                 >
                     <div className="flex items-center space-x-3">
