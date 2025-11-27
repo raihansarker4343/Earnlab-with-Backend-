@@ -516,6 +516,21 @@ useEffect(() => {
       setVerificationEmail('');
   }, [handleLogin]);
 
+  const openVerificationModal = (email = '') => {
+      setVerificationEmail(email);
+      setIsVerificationModalOpen(true);
+      setIsSigninModalOpen(false);
+      setIsSignupModalOpen(false);
+      setIsForgotPasswordOpen(false);
+      setIsResetPasswordOpen(false);
+  };
+
+  const handleVerificationSuccess = useCallback(async (token: string) => {
+      await handleLogin(token);
+      setIsVerificationModalOpen(false);
+      setVerificationEmail('');
+  }, [handleLogin]);
+
   const appContextValue = { 
       isLoggedIn, user, setUser, balance, setBalance, transactions, setTransactions,
       notifications, setNotifications,
