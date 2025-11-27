@@ -295,11 +295,24 @@ const siteBenefits = [
   },
 ];
 
+// Carousel items for the "Play games" section
+const CAROUSEL_GAMES = [
+    { name: 'Bubble Pop Shooter', payout: 236.25, image: 'https://i.imgur.com/r6355M8.png' },
+    { name: 'Water Color Sorting', payout: 242.25, image: 'https://i.imgur.com/lO7qD52.png' },
+    { name: 'The Grand Mafia', payout: 355.80, image: 'https://i.imgur.com/wZ68tB3.png' },
+    { name: 'Pocket Styler', payout: 198.00, image: 'https://i.imgur.com/Y8H4yT6.png' },
+    { name: 'Rock N\' Cash', payout: 681.20, image: 'https://i.imgur.com/U16jVoT.png' },
+    { name: 'Sea Block 1010', payout: 274.30, image: 'https://i.imgur.com/SkxpAOW.png' },
+    { name: 'Love Water', payout: 186.66, image: 'https://i.imgur.com/sUwOUgD.png' },
+    { name: 'Zombie Survivor', payout: 210.50, image: 'https://i.imgur.com/kP4dmA8.png' },
+];
+
 const HomePageContent: React.FC = () => {
   const [mounted, setMounted] = useState(false);
   const { openSignupModal } = useContext(AppContext);
   const [email, setEmail] = useState('');
   const [currentTestimonialIndex, setCurrentTestimonialIndex] = useState(0);
+  const [isPaused, setIsPaused] = useState(false);
 
   const handleStartEarning = (e: React.FormEvent) => {
     e.preventDefault();
@@ -321,6 +334,43 @@ const HomePageContent: React.FC = () => {
   const [testimonialsRef, isTestimonialsInView] = useInView({ threshold: 0.15 });
   const [statsRef, isStatsInView] = useInView({ threshold: 0.15 });
   const [faqRef, isFaqInView] = useInView({ threshold: 0.15 });
+  
+  // Ref for the games carousel
+  const gamesCarouselRef = useRef<HTMLDivElement>(null);
+  const [gamesSectionRef, isGamesSectionInView] = useInView({ threshold: 0.1 });
+
+  // Auto-slide effect for Games Carousel
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+    if (isGamesSectionInView && !isPaused) {
+        interval = setInterval(() => {
+            if (gamesCarouselRef.current) {
+                const carousel = gamesCarouselRef.current;
+                const maxScrollLeft = carousel.scrollWidth - carousel.clientWidth;
+                // If close to end, scroll to start
+                if (carousel.scrollLeft >= maxScrollLeft - 10) {
+                    carousel.scrollTo({ left: 0, behavior: 'smooth' });
+                } else {
+                    // Scroll right by approx one card width + gap (min-w-220px + 24px gap)
+                    carousel.scrollBy({ left: 300, behavior: 'smooth' });
+                }
+            }
+        }, 3000);
+    }
+    return () => clearInterval(interval);
+  }, [isGamesSectionInView, isPaused]);
+
+  const scrollGamesLeft = () => {
+      if (gamesCarouselRef.current) {
+          gamesCarouselRef.current.scrollBy({ left: -300, behavior: 'smooth' });
+      }
+  };
+
+  const scrollGamesRight = () => {
+      if (gamesCarouselRef.current) {
+          gamesCarouselRef.current.scrollBy({ left: 300, behavior: 'smooth' });
+      }
+  };
 
   const handleNextTestimonial = () => {
     setCurrentTestimonialIndex((prev) => (prev + 1) % TESTIMONIALS.length);
@@ -593,6 +643,75 @@ const HomePageContent: React.FC = () => {
               </div>
             ))}
           </div>
+        </section>
+
+        {/* New Games & Surveys Carousel Section */}
+        <section 
+            ref={gamesSectionRef}
+            className={`py-20 bg-white dark:bg-[#0b111e] relative transition-opacity duration-1000 ${
+                isGamesSectionInView ? 'opacity-100' : 'opacity-0'
+            }`}
+        >
+            <div className="container mx-auto px-4 sm:px-8">
+                <div className="text-center max-w-3xl mx-auto mb-12">
+                    <h2 className="text-3xl md:text-4xl font-bold text-slate-900 dark:text-white mb-4">
+                        Play games & take surveys to earn money
+                    </h2>
+                    <p className="text-slate-600 dark:text-slate-400 text-lg">
+                        Download mobile games, complete exciting levels, share your opinions on products, and earn real cash! Join thousands of users making money today.
+                    </p>
+                </div>
+
+                <div className="relative group">
+                    {/* Left Button */}
+                    <button
+                        onClick={scrollGamesLeft}
+                        className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-4 z-20 w-12 h-12 bg-white dark:bg-slate-800 rounded-full shadow-lg border border-slate-200 dark:border-slate-700 flex items-center justify-center text-slate-700 dark:text-slate-300 hover:scale-110 transition-transform hidden md:flex opacity-0 group-hover:opacity-100 duration-300"
+                        aria-label="Scroll left"
+                    >
+                        <i className="fas fa-chevron-left"></i>
+                    </button>
+
+                    {/* Carousel Container */}
+                    <div
+                        ref={gamesCarouselRef}
+                        onMouseEnter={() => setIsPaused(true)}
+                        onMouseLeave={() => setIsPaused(false)}
+                        onTouchStart={() => setIsPaused(true)}
+                        onTouchEnd={() => setIsPaused(false)}
+                        className="flex overflow-x-auto gap-6 pb-8 snap-x snap-mandatory scroll-smooth [&::-webkit-scrollbar]:hidden"
+                        style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+                    >
+                        {CAROUSEL_GAMES.map((item, index) => (
+                            <div
+                                key={index}
+                                className="min-w-[200px] md:min-w-[220px] bg-white dark:bg-[#1e293b] rounded-2xl p-4 border border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-md transition-shadow snap-start flex flex-col items-center text-center cursor-pointer"
+                            >
+                                <img
+                                    src={item.image}
+                                    alt={item.name}
+                                    className="w-full aspect-square object-cover rounded-xl mb-4 bg-slate-100 dark:bg-slate-800"
+                                />
+                                <h3 className="font-bold text-slate-900 dark:text-white mb-3 line-clamp-1 text-sm md:text-base">
+                                    {item.name}
+                                </h3>
+                                <div className="mt-auto bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 px-4 py-1.5 rounded-full text-xs md:text-sm font-bold">
+                                    Up to ${item.payout.toFixed(2)}
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+
+                    {/* Right Button */}
+                    <button
+                        onClick={scrollGamesRight}
+                        className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-4 z-20 w-12 h-12 bg-white dark:bg-slate-800 rounded-full shadow-lg border border-slate-200 dark:border-slate-700 flex items-center justify-center text-slate-700 dark:text-slate-300 hover:scale-110 transition-transform hidden md:flex opacity-0 group-hover:opacity-100 duration-300"
+                        aria-label="Scroll right"
+                    >
+                        <i className="fas fa-chevron-right"></i>
+                    </button>
+                </div>
+            </div>
         </section>
 
         {/* Rewards Section */}

@@ -20,7 +20,7 @@ const LoggedOutSidebar: React.FC = () => {
       setIsMobileSidebarOpen,
       setCurrentPage,
       setIsSupportChatModalOpen,
-    } = useContext(AppContext as any);
+    } = useContext(AppContext);
 
     const handleClose = () => {
         setIsSidebarCollapsed(true);
@@ -62,7 +62,7 @@ const LoggedOutSidebar: React.FC = () => {
         return (
             <li key={item.name}>
                 <button
-                    onClick={() => handleLinkClick(item.name, (item as any).action)}
+                    onClick={() => handleLinkClick(item.name, item.action)}
                     className={`${baseClasses} ${stateClasses}`}
                 >
                     <div className="flex items-center space-x-3">
