@@ -7,9 +7,10 @@ interface SigninModalProps {
     onClose: () => void;
     onSwitchToSignup: () => void;
     onForgotPassword: () => void;
+    onRequireVerification: (email: string) => void;
 }
 
-const SigninModal: React.FC<SigninModalProps> = ({ isOpen, onClose, onSwitchToSignup, onForgotPassword }) => {
+const SigninModal: React.FC<SigninModalProps> = ({ isOpen, onClose, onSwitchToSignup, onForgotPassword, onRequireVerification }) => {
     const { handleLogin } = useContext(AppContext);
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
@@ -46,6 +47,12 @@ const SigninModal: React.FC<SigninModalProps> = ({ isOpen, onClose, onSwitchToSi
                 handleLogin(data.token);
             } else {
                 const errorMessage = data.message || 'Failed to sign in.';
+                if (data.requiresVerification) {
+                    onRequireVerification(email);
+                    setError(errorMessage || 'Please verify your email to continue.');
+                    onClose();
+                    return;
+                }
                 if (errorMessage.includes('Verification failed')) {
                     setError('Connection verification failed. This can happen if you are using a VPN/proxy, or due to a temporary network issue. Please disable any VPN/proxy and try again in a few moments.');
                 } else if (errorMessage.includes('VPN/Proxy')) {

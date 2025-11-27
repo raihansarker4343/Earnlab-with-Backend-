@@ -12,6 +12,7 @@ import SignupModal from './components/SignupModal';
 import SupportChatModal from './components/SupportChatModal';
 import ForgotPasswordModal from './components/ForgotPasswordModal';
 import ResetPasswordModal from './components/ResetPasswordModal';
+import EmailVerificationModal from './components/EmailVerificationModal';
 import { API_URL } from './constants';
 import WithdrawalSuccessModal from './components/WithdrawalSuccessModal';
 import ProfileEditModal from './components/ProfileEditModal';
@@ -257,6 +258,8 @@ const App: React.FC = () => {
   const [isSignupModalOpen, setIsSignupModalOpen] = useState(false);
   const [isForgotPasswordOpen, setIsForgotPasswordOpen] = useState(false);
   const [isResetPasswordOpen, setIsResetPasswordOpen] = useState(false);
+  const [isVerificationModalOpen, setIsVerificationModalOpen] = useState(false);
+  const [verificationEmail, setVerificationEmail] = useState('');
   const [signupInitialEmail, setSignupInitialEmail] = useState('');
   const [resetTokenFromUrl, setResetTokenFromUrl] = useState('');
   const [page, setPage] = useState('Home');
@@ -362,6 +365,8 @@ const App: React.FC = () => {
     setIsSignupModalOpen(false);
     setIsForgotPasswordOpen(false);
     setIsResetPasswordOpen(false);
+    setIsVerificationModalOpen(false);
+    setVerificationEmail('');
   }, [fetchAndSetUserData, redirectAfterLogin, navigate]);
 
   // Effect for initial auth check from localStorage.
@@ -495,6 +500,36 @@ useEffect(() => {
       setIsResetPasswordOpen(false);
       setIsSigninModalOpen(true);
   };
+
+  const openResetPassword = (token = '') => {
+      if (token) {
+          setResetTokenFromUrl(token);
+      }
+      setIsSigninModalOpen(false);
+      setIsSignupModalOpen(false);
+      setIsForgotPasswordOpen(false);
+      setIsResetPasswordOpen(true);
+  };
+
+  const handleResetSuccess = () => {
+      setIsResetPasswordOpen(false);
+      setIsSigninModalOpen(true);
+  };
+
+  const openVerificationModal = (email = '') => {
+      setVerificationEmail(email);
+      setIsVerificationModalOpen(true);
+      setIsSigninModalOpen(false);
+      setIsSignupModalOpen(false);
+      setIsForgotPasswordOpen(false);
+      setIsResetPasswordOpen(false);
+  };
+
+  const handleVerificationSuccess = useCallback(async (token: string) => {
+      await handleLogin(token);
+      setIsVerificationModalOpen(false);
+      setVerificationEmail('');
+  }, [handleLogin]);
 
   const appContextValue = { 
       isLoggedIn, user, setUser, balance, setBalance, transactions, setTransactions,
@@ -644,12 +679,33 @@ useEffect(() => {
                     onClose={() => setIsSigninModalOpen(false)}
                     onSwitchToSignup={switchToSignup}
                     onForgotPassword={openForgotPassword}
+                    onRequireVerification={openVerificationModal}
                 />
                 <SignupModal
                     isOpen={isSignupModalOpen}
                     onClose={() => setIsSignupModalOpen(false)}
                     initialEmail={signupInitialEmail}
                     onSwitchToSignin={switchToSignin}
+                    onRequireVerification={openVerificationModal}
+                />
+                <ForgotPasswordModal
+                    isOpen={isForgotPasswordOpen}
+                    onClose={() => setIsForgotPasswordOpen(false)}
+                    onSwitchToSignin={switchToSignin}
+                    onSwitchToReset={() => openResetPassword(resetTokenFromUrl)}
+                />
+                <ResetPasswordModal
+                    isOpen={isResetPasswordOpen}
+                    initialToken={resetTokenFromUrl}
+                    onClose={() => { setIsResetPasswordOpen(false); setResetTokenFromUrl(''); }}
+                    onSuccess={handleResetSuccess}
+                    onSwitchToSignin={switchToSignin}
+                />
+                <EmailVerificationModal
+                    isOpen={isVerificationModalOpen}
+                    email={verificationEmail}
+                    onClose={() => setIsVerificationModalOpen(false)}
+                    onVerified={handleVerificationSuccess}
                 />
                 <ForgotPasswordModal
                     isOpen={isForgotPasswordOpen}
