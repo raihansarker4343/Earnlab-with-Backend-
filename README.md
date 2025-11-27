@@ -21,11 +21,10 @@ View your app in AI Studio: https://ai.studio/apps/drive/1Bl1S8plPbf92couVOkJZ7q
 
 ## Backend password reset email setup
 
-The Express backend can send password reset links via email. Configure the following environment variables in `earnlab-backend/.env` (or your deployment environment) so the new `/api/auth/forgot-password` endpoint can send reset links:
+The Express backend can send password reset links via email. Configure the following environment variables in `earnlab-backend/.env` (or your deployment environment) so the new `/api/auth/forgot-password` endpoint can send reset links through Esend/Resend:
 
-- `SMTP_HOST` / `SMTP_PORT` (+ optional `SMTP_SECURE`) for your SMTP provider
-- `SMTP_USER` / `SMTP_PASS` for authentication
-- `EMAIL_FROM` for the "from" address (defaults to `SMTP_USER` if omitted)
+- `ESEND_API_KEY` (or `RESEND_API_KEY`) containing your Esend API token
+- `EMAIL_FROM` for the "from" address registered in Esend
 - `FRONTEND_URL` pointing to your deployed frontend (used to build the reset link)
 
-If SMTP is not configured in a local environment, the backend will log the reset link to the console so you can test the flow without sending an email.
+If the API key is not configured in a local environment, the backend will log the reset link to the console so you can test the flow without sending an email.

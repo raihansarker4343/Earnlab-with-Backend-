@@ -1,33 +1,18 @@
-const nodemailer = require('nodemailer');
-
-const isSmtpConfigured = () => Boolean(process.env.SMTP_HOST && process.env.SMTP_PORT);
-
-const buildTransporter = () => {
-  const port = Number(process.env.SMTP_PORT);
-  const isSecure = process.env.SMTP_SECURE === 'true' || port === 465;
-
-  return nodemailer.createTransport({
-    host: process.env.SMTP_HOST,
-    port,
-    secure: isSecure,
-    auth:
-      process.env.SMTP_USER && process.env.SMTP_PASS
-        ? { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS }
-        : undefined,
-  });
-};
+const getApiKey = () =>
+  process.env.ESEND_API_KEY || process.env.RESEND_API_KEY || process.env.ESEND_API_TOKEN;
 
 const sendPasswordResetEmail = async (to, username, resetUrl) => {
-  if (!isSmtpConfigured()) {
-    console.warn('[email] SMTP is not configured. Logging reset link instead:', resetUrl);
+  const apiKey = getApiKey();
+
+  if (!apiKey) {
+    console.warn('[email] Email provider API key is not configured. Logging reset link instead:', resetUrl);
     return;
   }
 
-  const transporter = buildTransporter();
-  const from = process.env.EMAIL_FROM || process.env.SMTP_USER;
+  const from = process.env.EMAIL_FROM;
 
   if (!from) {
-    throw new Error('EMAIL_FROM or SMTP_USER must be set to send emails.');
+    throw new Error('EMAIL_FROM must be set to send emails.');
   }
 
   const message = {
@@ -45,7 +30,19 @@ const sendPasswordResetEmail = async (to, username, resetUrl) => {
     `,
   };
 
-  await transporter.sendMail(message);
+  const response = await fetch('https://api.resend.com/emails', {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${apiKey}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(message),
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(`Email send failed: ${response.status} ${errorText}`);
+  }
 };
 
 module.exports = { sendPasswordResetEmail };
