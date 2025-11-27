@@ -17,7 +17,6 @@ import { API_URL } from './constants';
 import WithdrawalSuccessModal from './components/WithdrawalSuccessModal';
 import ProfileEditModal from './components/ProfileEditModal';
 
-
 // Lazy load page components
 const HomePageContent = React.lazy(() => import('./components/pages/HomePage'));
 const LoggedInHomePage = React.lazy(() => import('./components/pages/LoggedInHomePage'));
@@ -73,7 +72,6 @@ const FairnessPage = React.lazy(() => import('./components/help/FairnessPage'));
 // Lazy load admin panel
 const AdminLayout = React.lazy(() => import('./components/admin/AdminLayout'));
 const AdminLoginPage = React.lazy(() => import('./components/admin/AdminLoginPage'));
-
 
 export const AppContext = React.createContext<{
   isLoggedIn: boolean;
@@ -146,82 +144,81 @@ export const AppContext = React.createContext<{
 });
 
 const PageLoader: React.FC = () => (
-    <div className="flex items-center justify-center h-full w-full p-8">
-        <div className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
-    </div>
+  <div className="flex items-center justify-center h-full w-full p-8">
+    <div className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+  </div>
 );
 
 // Storing the static page components outside the App component prevents them from being recreated on every render.
 const pageComponentsMap: { [key: string]: React.ReactNode } = {
-    'Profile': <DashboardPage />,
-    'Offer': <OfferPage />,
-    'Tasks': <TasksPage />,
-    'Surveys': <SurveysPage />,
-    'Prime Surveys': <PrimeSurveysPage />,
-    'CPX Research': <CPXResearchPage />,
-    'Adscend Media Surveys': <AdscendMediaSurveysPage />,
-    'BitLabs': <BitLabsSurveysPage />,
-    'inBrain': <InBrainPage />,
-    'Pollfish': <PollfishSurveysPage />,
-    'TheoremReach': <TheoremReachPage />,
-    'Your-Surveys': <YourSurveysPage />,
-    'Torox': <ToroxPage />,
-    'Adscend Media': <AdscendMediaPage />,
-    'AdToWall': <AdToWallPage />,
-    'RevU': <RevUPage />,
-    'AdGate Media': <AdGateMediaPage />,
-    'MyChips': <MyChipsPage />,
-    'MM Wall': <MMWallPage />,
-    'Aye-T Studios': <AyeTStudiosPage />,
-    'Monlix': <MonlixPage />,
-    'Hang My Ads': <HangMyAdsPage />,
-    'Lootably': <LootablyPage />,
-    'Time Wall': <TimeWallPage />,
-    'AdGem': <AdGemPage />,
-    'Referrals': <ReferralsPage />,
-    'Leaderboard': <LeaderboardPage />,
-    'Daily Bonus': <DailyBonusPage />,
-    'Achievements': <AchievementsPage />,
-    'Chat': <ChatPage />,
-    'Blog': <BlogPage />,
-    'Guides': <GuidesPage />,
-    'Terms of Service': <TermsOfServicePage />,
-    'Privacy Policy': <PrivacyPolicyPage />,
-    'Cookie Policy': <CookiePolicyPage />,
-    'AML & KYC Policy': <AmlKycPolicyPage />,
-    'Frequently Asked': <FrequentlyAskedPage />,
-    'Help Desk': <HelpDeskPage />,
-    'Support': <SupportPage />,
-    'Fairness': <FairnessPage />,
-    'Boxes': <div className="text-slate-900 dark:text-white text-3xl font-bold">Boxes Page</div>,
-    'Battles': <div className="text-slate-900 dark:text-white text-3xl font-bold">Battles Page</div>,
+  'Profile': <DashboardPage />,
+  'Offer': <OfferPage />,
+  'Tasks': <TasksPage />,
+  'Surveys': <SurveysPage />,
+  'Prime Surveys': <PrimeSurveysPage />,
+  'CPX Research': <CPXResearchPage />,
+  'Adscend Media Surveys': <AdscendMediaSurveysPage />,
+  'BitLabs': <BitLabsSurveysPage />,
+  'inBrain': <InBrainPage />,
+  'Pollfish': <PollfishSurveysPage />,
+  'TheoremReach': <TheoremReachPage />,
+  'Your-Surveys': <YourSurveysPage />,
+  'Torox': <ToroxPage />,
+  'Adscend Media': <AdscendMediaPage />,
+  'AdToWall': <AdToWallPage />,
+  'RevU': <RevUPage />,
+  'AdGate Media': <AdGateMediaPage />,
+  'MyChips': <MyChipsPage />,
+  'MM Wall': <MMWallPage />,
+  'Aye-T Studios': <AyeTStudiosPage />,
+  'Monlix': <MonlixPage />,
+  'Hang My Ads': <HangMyAdsPage />,
+  'Lootably': <LootablyPage />,
+  'Time Wall': <TimeWallPage />,
+  'AdGem': <AdGemPage />,
+  'Referrals': <ReferralsPage />,
+  'Leaderboard': <LeaderboardPage />,
+  'Daily Bonus': <DailyBonusPage />,
+  'Achievements': <AchievementsPage />,
+  'Chat': <ChatPage />,
+  'Blog': <BlogPage />,
+  'Guides': <GuidesPage />,
+  'Terms of Service': <TermsOfServicePage />,
+  'Privacy Policy': <PrivacyPolicyPage />,
+  'Cookie Policy': <CookiePolicyPage />,
+  'AML & KYC Policy': <AmlKycPolicyPage />,
+  'Frequently Asked': <FrequentlyAskedPage />,
+  'Help Desk': <HelpDeskPage />,
+  'Support': <SupportPage />,
+  'Fairness': <FairnessPage />,
+  'Boxes': <div className="text-slate-900 dark:text-white text-3xl font-bold">Boxes Page</div>,
+  'Battles': <div className="text-slate-900 dark:text-white text-3xl font-bold">Battles Page</div>,
 };
 
 // Helper function to ensure numeric fields from the API/localStorage are numbers
 const sanitizeUser = (rawUser: User): User => {
-    const user = { ...rawUser };
-    const numericKeys: (keyof User)[] = [
-        'xp', 'xpToNextLevel', 'totalEarned', 'balance', 'last30DaysEarned',
-        'completedTasks', 'totalWagered', 'totalProfit', 'totalWithdrawn',
-        'totalReferrals', 'referralEarnings'
-    ];
+  const user = { ...rawUser };
+  const numericKeys: (keyof User)[] = [
+    'xp', 'xpToNextLevel', 'totalEarned', 'balance', 'last30DaysEarned',
+    'completedTasks', 'totalWagered', 'totalProfit', 'totalWithdrawn',
+    'totalReferrals', 'referralEarnings'
+  ];
 
-    for (const key of numericKeys) {
-        if (user[key] !== undefined && user[key] !== null) {
-            // @ts-ignore - TS has trouble with dynamic keys on interfaces
-            user[key] = Number(user[key]);
-        }
+  for (const key of numericKeys) {
+    if (user[key] !== undefined && user[key] !== null) {
+      // @ts-ignore - TS has trouble with dynamic keys on interfaces
+      user[key] = Number(user[key]);
     }
-    return user;
+  }
+  return user;
 };
 
 const getPageFromPath = (pathname: string): string => {
   // Home route
   if (!pathname || pathname === '/' || pathname === '') return 'Home';
 
-  // "/CPXResearch" → ["", "CPXResearch"] → "CPXResearch"
   const segments = pathname.split('/').filter(Boolean);
-  const pageSegment = segments[0]; // আমরা শুধু প্রথম অংশ ব্যবহার করছি
+  const pageSegment = segments[0];
 
   const cleanPageKeyWithCase = pageSegment;
   const cleanPageKeyLower = cleanPageKeyWithCase
@@ -233,7 +230,6 @@ const getPageFromPath = (pathname: string): string => {
     return cleanPageKeyWithCase;
   }
 
-  // আমাদের pageComponentsMap এর key–গুলোর সাথে ম্যাচ করা
   const pageNames = Object.keys(pageComponentsMap);
   const foundPageName = pageNames.find(
     (name) =>
@@ -242,8 +238,6 @@ const getPageFromPath = (pathname: string): string => {
 
   return foundPageName || 'Home';
 };
-
-
 
 const App: React.FC = () => {
   const [isAdmin, setIsAdmin] = useState(false);
@@ -275,23 +269,18 @@ const App: React.FC = () => {
   const [isLoadingAuth, setIsLoadingAuth] = useState(true);
 
   const navigate = useCallback((pageName: string) => {
-  // "CPX Research" → "/CPXResearch"
-  const path =
-    pageName === 'Home'
-      ? '/'
-      : `/${pageName.replace(/[^a-zA-Z0-9]/g, '')}`;
+    const path =
+      pageName === 'Home'
+        ? '/'
+        : `/${pageName.replace(/[^a-zA-Z0-9]/g, '')}`;
 
-  if (window.location.pathname !== path) {
-    // URL পরিবর্তন করো (hash ছাড়া)
-    const { search } = window.location; // ?ref=... থাকলে রেখে দেই
-    window.history.pushState({}, '', path + search);
+    if (window.location.pathname !== path) {
+      const { search } = window.location;
+      window.history.pushState({}, '', path + search);
+      window.dispatchEvent(new PopStateEvent('popstate'));
+    }
+  }, []);
 
-    // আমাদের route handler কে notify করি
-    window.dispatchEvent(new PopStateEvent('popstate'));
-  }
-}, []);
-
-  
   const handleLogout = useCallback(() => {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
@@ -308,57 +297,57 @@ const App: React.FC = () => {
   const fetchAndSetUserData = useCallback(async () => {
     const token = localStorage.getItem('token');
     if (!token) {
-        if (isLoggedIn) handleLogout();
-        return;
+      if (isLoggedIn) handleLogout();
+      return;
     }
 
     try {
-        const [userRes, transactionsRes, notificationsRes] = await Promise.all([
-            fetch(`${API_URL}/api/auth/me`, { headers: { 'Authorization': `Bearer ${token}` } }),
-            fetch(`${API_URL}/api/transactions`, { headers: { 'Authorization': `Bearer ${token}` } }),
-            fetch(`${API_URL}/api/notifications`, { headers: { 'Authorization': `Bearer ${token}` } })
-        ]);
+      const [userRes, transactionsRes, notificationsRes] = await Promise.all([
+        fetch(`${API_URL}/api/auth/me`, { headers: { 'Authorization': `Bearer ${token}` } }),
+        fetch(`${API_URL}/api/transactions`, { headers: { 'Authorization': `Bearer ${token}` } }),
+        fetch(`${API_URL}/api/notifications`, { headers: { 'Authorization': `Bearer ${token}` } })
+      ]);
 
-        if (!userRes.ok || !transactionsRes.ok) {
-            throw new Error('Authentication failed or server error.');
-        }
+      if (!userRes.ok || !transactionsRes.ok) {
+        throw new Error('Authentication failed or server error.');
+      }
 
-        const userData: User = await userRes.json();
-        const userTransactions: Transaction[] = await transactionsRes.json();
-        
-        const sanitizedUser = sanitizeUser(userData);
-        localStorage.setItem('user', JSON.stringify(sanitizedUser));
+      const userData: User = await userRes.json();
+      const userTransactions: Transaction[] = await transactionsRes.json();
 
-        const parsedTransactions = userTransactions.map(tx => ({
-            ...tx,
-            amount: Number(tx.amount)
-        }));
-        
-        setUser(sanitizedUser);
-        setBalance(sanitizedUser.balance || 0);
-        setTransactions(parsedTransactions);
-        setIsLoggedIn(true);
+      const sanitizedUser = sanitizeUser(userData);
+      localStorage.setItem('user', JSON.stringify(sanitizedUser));
 
-        if (notificationsRes.ok) {
-            const notificationsData: Notification[] = await notificationsRes.json();
-            setNotifications(notificationsData);
-        } else {
-            console.error('Failed to fetch notifications');
-        }
+      const parsedTransactions = userTransactions.map(tx => ({
+        ...tx,
+        amount: Number(tx.amount)
+      }));
+
+      setUser(sanitizedUser);
+      setBalance(sanitizedUser.balance || 0);
+      setTransactions(parsedTransactions);
+      setIsLoggedIn(true);
+
+      if (notificationsRes.ok) {
+        const notificationsData: Notification[] = await notificationsRes.json();
+        setNotifications(notificationsData);
+      } else {
+        console.error('Failed to fetch notifications');
+      }
 
     } catch (error) {
-        console.error("Failed to fetch user data:", error);
-        handleLogout();
+      console.error("Failed to fetch user data:", error);
+      handleLogout();
     }
   }, [isLoggedIn, handleLogout]);
 
   const handleLogin = useCallback(async (token: string) => {
     localStorage.setItem('token', token);
     await fetchAndSetUserData();
-    
+
     if (redirectAfterLogin) {
-        navigate(redirectAfterLogin);
-        setRedirectAfterLogin(null);
+      navigate(redirectAfterLogin);
+      setRedirectAfterLogin(null);
     }
 
     setIsSigninModalOpen(false);
@@ -371,94 +360,91 @@ const App: React.FC = () => {
 
   // Effect for initial auth check from localStorage.
   useEffect(() => {
-      const checkAuth = async () => {
-        setIsLoadingAuth(true);
-        const token = localStorage.getItem('token');
-        if (token) {
-            try {
-                const parts = token.split('.');
-                if (parts.length !== 3) throw new Error('Invalid JWT structure');
+    const checkAuth = async () => {
+      setIsLoadingAuth(true);
+      const token = localStorage.getItem('token');
+      if (token) {
+        try {
+          const parts = token.split('.');
+          if (parts.length !== 3) throw new Error('Invalid JWT structure');
 
-                const payload = JSON.parse(atob(parts[1]));
-                if (payload.role === 'admin') {
-                    setIsAdmin(true);
-                } else if (payload.id) {
-                    await fetchAndSetUserData();
-                } else {
-                    throw new Error('Invalid token payload');
-                }
-            } catch(e) {
-                console.error("Token validation failed, logging out.", e);
-                handleLogout();
-            }
+          const payload = JSON.parse(atob(parts[1]));
+          if (payload.role === 'admin') {
+            setIsAdmin(true);
+          } else if (payload.id) {
+            await fetchAndSetUserData();
+          } else {
+            throw new Error('Invalid token payload');
+          }
+        } catch (e) {
+          console.error("Token validation failed, logging out.", e);
+          handleLogout();
         }
-        setIsLoadingAuth(false);
-      };
-      checkAuth();
+      }
+      setIsLoadingAuth(false);
+    };
+    checkAuth();
   }, [fetchAndSetUserData, handleLogout]);
 
-  // Effect to handle routing via hash changes.
   // Effect to handle routing via path changes (no hash)
-useEffect(() => {
-  if (isLoadingAuth) return;
+  useEffect(() => {
+    if (isLoadingAuth) return;
 
-  const handleLocationChange = () => {
-    const { pathname, search } = window.location;
-    const params = new URLSearchParams(search);
+    const handleLocationChange = () => {
+      const { pathname, search } = window.location;
+      const params = new URLSearchParams(search);
 
-    // query string থেকে referral code পড়া (?ref=...)
-    const ref = params.get('ref');
-    if (ref) {
-      localStorage.setItem('referralCode', ref);
-    }
+      const ref = params.get('ref');
+      if (ref) {
+        localStorage.setItem('referralCode', ref);
+      }
 
-    const resetTokenParam = params.get('resetToken');
-    if (resetTokenParam) {
-      setResetTokenFromUrl(resetTokenParam);
-      setIsResetPasswordOpen(true);
-      setIsSigninModalOpen(false);
-      setIsSignupModalOpen(false);
-      setIsForgotPasswordOpen(false);
+      const resetTokenParam = params.get('resetToken');
+      if (resetTokenParam) {
+        setResetTokenFromUrl(resetTokenParam);
+        setIsResetPasswordOpen(true);
+        setIsSigninModalOpen(false);
+        setIsSignupModalOpen(false);
+        setIsForgotPasswordOpen(false);
 
-      params.delete('resetToken');
-      const newSearch = params.toString();
-      const newUrl = `${pathname}${newSearch ? `?${newSearch}` : ''}`;
-      window.history.replaceState({}, '', newUrl);
-    }
+        params.delete('resetToken');
+        const newSearch = params.toString();
+        const newUrl = `${pathname}${newSearch ? `?${newSearch}` : ''}`;
+        window.history.replaceState({}, '', newUrl);
+      }
 
-    const pageFromPath = getPageFromPath(pathname);
+      const pageFromPath = getPageFromPath(pathname);
 
-    // Admin routes
-    if (pageFromPath.toLowerCase().startsWith('admin')) {
-      setPage(pageFromPath);
-      return;
-    }
+      // Admin routes
+      if (pageFromPath.toLowerCase().startsWith('admin')) {
+        setPage(pageFromPath);
+        return;
+      }
 
-    const token = localStorage.getItem('token');
-    const publicPages = [
+      const token = localStorage.getItem('token');
+      const publicPages = [
         'Blog', 'Guides', 'Terms of Service', 'Privacy Policy', 'Cookie Policy', 'AML & KYC Policy',
         'Frequently Asked', 'Help Desk', 'Support', 'Fairness'
-    ];
-    const isProtectedRoute = pageFromPath !== 'Home' && !publicPages.includes(pageFromPath);
+      ];
+      const isProtectedRoute = pageFromPath !== 'Home' && !publicPages.includes(pageFromPath);
 
-    if (isProtectedRoute && !token) {
-      setRedirectAfterLogin(pageFromPath);
-      navigate('Home');
-      setIsSigninModalOpen(true);
-    } else {
-      setPage(pageFromPath);
-    }
-  };
+      if (isProtectedRoute && !token) {
+        setRedirectAfterLogin(pageFromPath);
+        navigate('Home');
+        setIsSigninModalOpen(true);
+      } else {
+        setPage(pageFromPath);
+      }
+    };
 
-  window.addEventListener('popstate', handleLocationChange);
-  handleLocationChange(); // first load এও handle করি
+    window.addEventListener('popstate', handleLocationChange);
+    handleLocationChange();
 
-  return () => {
-    window.removeEventListener('popstate', handleLocationChange);
-  };
-}, [isLoadingAuth, navigate]);
+    return () => {
+      window.removeEventListener('popstate', handleLocationChange);
+    };
+  }, [isLoadingAuth, navigate]);
 
-  
   // Effect to refetch data when tab becomes visible/focused
   useEffect(() => {
     const handleFocus = () => {
@@ -472,108 +458,67 @@ useEffect(() => {
     };
   }, [fetchAndSetUserData]);
 
+  // =======================
+  // AUTH MODAL HANDLERS (CLEAN)
+  // =======================
+
   const closeAuthModals = useCallback(() => {
-      setIsSigninModalOpen(false);
-      setIsSignupModalOpen(false);
-      setIsForgotPasswordOpen(false);
-      setIsResetPasswordOpen(false);
-      setIsVerificationModalOpen(false);
+    setIsSigninModalOpen(false);
+    setIsSignupModalOpen(false);
+    setIsForgotPasswordOpen(false);
+    setIsResetPasswordOpen(false);
+    setIsVerificationModalOpen(false);
   }, []);
 
   const openSignupModal = useCallback((email = '') => {
-      setSignupInitialEmail(email);
-      closeAuthModals();
-      setIsSignupModalOpen(true);
+    setSignupInitialEmail(email);
+    closeAuthModals();
+    setIsSignupModalOpen(true);
   }, [closeAuthModals]);
 
   const openForgotPassword = useCallback(() => {
-      closeAuthModals();
-      setIsForgotPasswordOpen(true);
+    closeAuthModals();
+    setIsForgotPasswordOpen(true);
   }, [closeAuthModals]);
 
   const openResetPassword = useCallback((token = '') => {
-      if (token) {
-          setResetTokenFromUrl(token);
-      }
-      closeAuthModals();
-      setIsResetPasswordOpen(true);
+    if (token) {
+      setResetTokenFromUrl(token);
+    }
+    closeAuthModals();
+    setIsResetPasswordOpen(true);
   }, [closeAuthModals]);
 
   const handleResetSuccess = useCallback(() => {
-      setIsResetPasswordOpen(false);
-      setIsSigninModalOpen(true);
+    setIsResetPasswordOpen(false);
+    setIsSigninModalOpen(true);
   }, []);
 
   const openVerificationModal = useCallback((email = '') => {
-      setVerificationEmail(email);
-      closeAuthModals();
-      setIsVerificationModalOpen(true);
+    setVerificationEmail(email);
+    closeAuthModals();
+    setIsVerificationModalOpen(true);
   }, [closeAuthModals]);
 
   const handleVerificationSuccess = useCallback(async (token: string) => {
-      await handleLogin(token);
-      setIsVerificationModalOpen(false);
-      setVerificationEmail('');
+    await handleLogin(token);
+    setIsVerificationModalOpen(false);
+    setVerificationEmail('');
   }, [handleLogin]);
 
-  const openResetPassword = (token = '') => {
-      if (token) {
-          setResetTokenFromUrl(token);
-      }
-      setIsSigninModalOpen(false);
-      setIsSignupModalOpen(false);
-      setIsForgotPasswordOpen(false);
-      setIsResetPasswordOpen(true);
-  };
-
-  const handleResetSuccess = () => {
-      setIsResetPasswordOpen(false);
-      setIsSigninModalOpen(true);
-  };
-
-  const openResetPassword = (token = '') => {
-      if (token) {
-          setResetTokenFromUrl(token);
-      }
-      setIsSigninModalOpen(false);
-      setIsSignupModalOpen(false);
-      setIsForgotPasswordOpen(false);
-      setIsResetPasswordOpen(true);
-  };
-
-  const handleResetSuccess = () => {
-      setIsResetPasswordOpen(false);
-      setIsSigninModalOpen(true);
-  };
-
-  const openVerificationModal = (email = '') => {
-      setVerificationEmail(email);
-      setIsVerificationModalOpen(true);
-      setIsSigninModalOpen(false);
-      setIsSignupModalOpen(false);
-      setIsForgotPasswordOpen(false);
-      setIsResetPasswordOpen(false);
-  };
-
-  const handleVerificationSuccess = useCallback(async (token: string) => {
-      await handleLogin(token);
-      setIsVerificationModalOpen(false);
-      setVerificationEmail('');
-  }, [handleLogin]);
-
-  const appContextValue = { 
-      isLoggedIn, user, setUser, balance, setBalance, transactions, setTransactions,
-      notifications, setNotifications,
-      handleLogin, handleLogout,
-      isWalletModalOpen, setIsWalletModalOpen, isSigninModalOpen, 
-      setIsSigninModalOpen, isSignupModalOpen, openSignupModal, 
-      currentPage: page,
-      setCurrentPage: navigate,
-      isSidebarCollapsed, setIsSidebarCollapsed, isMobileSidebarOpen, 
-      setIsMobileSidebarOpen, theme, setTheme, isSupportChatModalOpen, 
-      setIsSupportChatModalOpen, isWithdrawSuccessModalOpen, setIsWithdrawSuccessModalOpen,
-      isProfileEditModalOpen, setIsProfileEditModalOpen,
-      isAdmin, setIsAdmin
+  const appContextValue = {
+    isLoggedIn, user, setUser, balance, setBalance, transactions, setTransactions,
+    notifications, setNotifications,
+    handleLogin, handleLogout,
+    isWalletModalOpen, setIsWalletModalOpen, isSigninModalOpen,
+    setIsSigninModalOpen, isSignupModalOpen, openSignupModal,
+    currentPage: page,
+    setCurrentPage: navigate,
+    isSidebarCollapsed, setIsSidebarCollapsed, isMobileSidebarOpen,
+    setIsMobileSidebarOpen, theme, setTheme, isSupportChatModalOpen,
+    setIsSupportChatModalOpen, isWithdrawSuccessModalOpen, setIsWithdrawSuccessModalOpen,
+    isProfileEditModalOpen, setIsProfileEditModalOpen,
+    isAdmin, setIsAdmin
   };
 
   useEffect(() => {
@@ -584,76 +529,72 @@ useEffect(() => {
     }
     localStorage.setItem('theme', theme);
   }, [theme]);
-  
+
   if (isLoadingAuth) {
     return (
-        <div className="flex h-screen w-screen items-center justify-center bg-slate-100 dark:bg-[#0f172a]">
-            <PageLoader />
-        </div>
+      <div className="flex h-screen w-screen items-center justify-center bg-slate-100 dark:bg-[#0f172a]">
+        <PageLoader />
+      </div>
     );
   }
 
   // Admin panel routing
   if (page.toLowerCase().startsWith('admin')) {
-      if (!isAdmin) {
-          return (
-              <Suspense fallback={<PageLoader />}>
-                  <AdminLoginPage onLoginSuccess={() => setIsAdmin(true)} />
-              </Suspense>
-          );
-      }
+    if (!isAdmin) {
       return (
-          <AppContext.Provider value={appContextValue}>
-            <Suspense fallback={<PageLoader />}>
-                <AdminLayout />
-            </Suspense>
-          </AppContext.Provider>
+        <Suspense fallback={<PageLoader />}>
+          <AdminLoginPage onLoginSuccess={() => setIsAdmin(true)} />
+        </Suspense>
       );
+    }
+    return (
+      <AppContext.Provider value={appContextValue}>
+        <Suspense fallback={<PageLoader />}>
+          <AdminLayout />
+        </Suspense>
+      </AppContext.Provider>
+    );
   }
-  
+
   const dedicatedPageNames = new Set([
     'Prime Surveys', 'CPX Research', 'Adscend Media Surveys', 'BitLabs', 'inBrain', 'Pollfish', 'TheoremReach', 'Your-Surveys',
     'Torox', 'Adscend Media', 'AdToWall', 'RevU', 'AdGate Media', 'MyChips', 'MM Wall', 'Aye-T Studios',
     'Monlix', 'Hang My Ads', 'Lootably', 'Time Wall', 'AdGem'
   ]);
-  
+
   const isDedicatedView = dedicatedPageNames.has(page);
-  
+
   const switchToSignup = () => {
-      setIsSigninModalOpen(false);
-      setIsForgotPasswordOpen(false);
-      setIsResetPasswordOpen(false);
-      setIsSignupModalOpen(true);
+    closeAuthModals();
+    setIsSignupModalOpen(true);
   };
 
   const switchToSignin = () => {
-      setIsSignupModalOpen(false);
-      setIsForgotPasswordOpen(false);
-      setIsResetPasswordOpen(false);
-      setIsSigninModalOpen(true);
+    closeAuthModals();
+    setIsSigninModalOpen(true);
   };
 
   if (isDedicatedView) {
-      const ComponentToRender = pageComponentsMap[page];
-      if (!ComponentToRender) {
-          return (
-              <div className="bg-slate-100 dark:bg-[#0f172a] text-slate-800 dark:text-slate-300 min-h-screen flex items-center justify-center">
-                  <h1 className="text-3xl font-bold">Page Not Found</h1>
-              </div>
-          );
-      }
-
+    const ComponentToRender = pageComponentsMap[page];
+    if (!ComponentToRender) {
       return (
-        <AppContext.Provider value={appContextValue}>
-          <div className="bg-slate-100 dark:bg-[#0f172a] text-slate-800 dark:text-slate-300 min-h-screen">
-              <Suspense fallback={<PageLoader />}>
-                  <div className="p-4 sm:p-6 lg:p-8">
-                      {ComponentToRender}
-                  </div>
-              </Suspense>
-          </div>
-        </AppContext.Provider>
+        <div className="bg-slate-100 dark:bg-[#0f172a] text-slate-800 dark:text-slate-300 min-h-screen flex items-center justify-center">
+          <h1 className="text-3xl font-bold">Page Not Found</h1>
+        </div>
       );
+    }
+
+    return (
+      <AppContext.Provider value={appContextValue}>
+        <div className="bg-slate-100 dark:bg-[#0f172a] text-slate-800 dark:text-slate-300 min-h-screen">
+          <Suspense fallback={<PageLoader />}>
+            <div className="p-4 sm:p-6 lg:p-8">
+              {ComponentToRender}
+            </div>
+          </Suspense>
+        </div>
+      </AppContext.Provider>
+    );
   }
 
   const renderPage = () => {
@@ -661,19 +602,18 @@ useEffect(() => {
     let componentToRender;
 
     if (page === 'Home') {
-        componentToRender = isLoggedIn ? <LoggedInHomePage /> : <HomePageContent />;
+      componentToRender = isLoggedIn ? <LoggedInHomePage /> : <HomePageContent />;
     } else {
-        componentToRender = pageComponentsMap[page];
+      componentToRender = pageComponentsMap[page];
     }
-    
-    // Fallback to the homepage if the page is not found
+
     if (!componentToRender) {
-        componentToRender = isLoggedIn ? <LoggedInHomePage /> : <HomePageContent />;
+      componentToRender = isLoggedIn ? <LoggedInHomePage /> : <HomePageContent />;
     }
 
     return <div className={pagePadding}>{componentToRender}</div>;
   };
-  
+
   const headerContent = isLoggedIn ? <Header onLogout={handleLogout} /> : <LoggedOutHeader />;
   const mainContent = renderPage();
 
@@ -682,62 +622,69 @@ useEffect(() => {
       <div className="flex h-screen bg-slate-100 dark:bg-[#0f172a] text-slate-800 dark:text-slate-300">
         {isLoggedIn ? <Sidebar /> : <LoggedOutSidebar />}
         <div className="flex-1 flex flex-col min-w-0 overflow-y-auto">
-            <header className="sticky top-0 z-20 shrink-0">
-                {headerContent}
-                <LiveEarningFeed />
-            </header>
-            <div className="flex-1 flex flex-col">
-              <main className="flex-1">
-                  <Suspense fallback={<PageLoader />}>
-                    {mainContent}
-                  </Suspense>
-              </main>
-              <Footer />
-            </div>
+          <header className="sticky top-0 z-20 shrink-0">
+            {headerContent}
+            <LiveEarningFeed />
+          </header>
+          <div className="flex-1 flex flex-col">
+            <main className="flex-1">
+              <Suspense fallback={<PageLoader />}>
+                {mainContent}
+              </Suspense>
+            </main>
+            <Footer />
+          </div>
         </div>
+
         {isLoggedIn && <WalletModal />}
-        {isLoggedIn && <SupportChatModal isOpen={isSupportChatModalOpen} onClose={() => setIsSupportChatModalOpen(false)} />}
+        {isLoggedIn && (
+          <SupportChatModal
+            isOpen={isSupportChatModalOpen}
+            onClose={() => setIsSupportChatModalOpen(false)}
+          />
+        )}
         {isLoggedIn && <ProfileEditModal />}
-        <WithdrawalSuccessModal 
-            isOpen={isWithdrawSuccessModalOpen} 
-            onClose={() => setIsWithdrawSuccessModalOpen(false)} 
+        <WithdrawalSuccessModal
+          isOpen={isWithdrawSuccessModalOpen}
+          onClose={() => setIsWithdrawSuccessModalOpen(false)}
         />
+
         {!isLoggedIn && (
-            <>
-                <SigninModal
-                    isOpen={isSigninModalOpen}
-                    onClose={() => setIsSigninModalOpen(false)}
-                    onSwitchToSignup={switchToSignup}
-                    onForgotPassword={openForgotPassword}
-                    onRequireVerification={openVerificationModal}
-                />
-                <SignupModal
-                    isOpen={isSignupModalOpen}
-                    onClose={() => setIsSignupModalOpen(false)}
-                    initialEmail={signupInitialEmail}
-                    onSwitchToSignin={switchToSignin}
-                    onRequireVerification={openVerificationModal}
-                />
-                <ForgotPasswordModal
-                    isOpen={isForgotPasswordOpen}
-                    onClose={() => setIsForgotPasswordOpen(false)}
-                    onSwitchToSignin={switchToSignin}
-                    onSwitchToReset={() => openResetPassword(resetTokenFromUrl)}
-                />
-                <ResetPasswordModal
-                    isOpen={isResetPasswordOpen}
-                    initialToken={resetTokenFromUrl}
-                    onClose={() => { setIsResetPasswordOpen(false); setResetTokenFromUrl(''); }}
-                    onSuccess={handleResetSuccess}
-                    onSwitchToSignin={switchToSignin}
-                />
-                <EmailVerificationModal
-                    isOpen={isVerificationModalOpen}
-                    email={verificationEmail}
-                    onClose={() => setIsVerificationModalOpen(false)}
-                    onVerified={handleVerificationSuccess}
-                />
-            </>
+          <>
+            <SigninModal
+              isOpen={isSigninModalOpen}
+              onClose={() => setIsSigninModalOpen(false)}
+              onSwitchToSignup={switchToSignup}
+              onForgotPassword={openForgotPassword}
+              onRequireVerification={openVerificationModal}
+            />
+            <SignupModal
+              isOpen={isSignupModalOpen}
+              onClose={() => setIsSignupModalOpen(false)}
+              initialEmail={signupInitialEmail}
+              onSwitchToSignin={switchToSignin}
+              onRequireVerification={openVerificationModal}
+            />
+            <ForgotPasswordModal
+              isOpen={isForgotPasswordOpen}
+              onClose={() => setIsForgotPasswordOpen(false)}
+              onSwitchToSignin={switchToSignin}
+              onSwitchToReset={() => openResetPassword(resetTokenFromUrl)}
+            />
+            <ResetPasswordModal
+              isOpen={isResetPasswordOpen}
+              initialToken={resetTokenFromUrl}
+              onClose={() => { setIsResetPasswordOpen(false); setResetTokenFromUrl(''); }}
+              onSuccess={handleResetSuccess}
+              onSwitchToSignin={switchToSignin}
+            />
+            <EmailVerificationModal
+              isOpen={isVerificationModalOpen}
+              email={verificationEmail}
+              onClose={() => setIsVerificationModalOpen(false)}
+              onVerified={handleVerificationSuccess}
+            />
+          </>
         )}
       </div>
     </AppContext.Provider>
