@@ -297,8 +297,8 @@ const siteBenefits = [
 
 // Carousel items for the "Play games" section
 const CAROUSEL_GAMES = [
-    { name: 'Bubble Pop Shooter', payout: 236.25, image: 'https://i.imgur.com/r6355M8.png' },
-    { name: 'Water Color Sorting', payout: 242.25, image: 'https://i.imgur.com/lO7qD52.png' },
+    { name: 'Bubble Pop Shooter', payout: 236.25, image: 'https://shorturl.at/C13pw' },
+    { name: 'Water Color Sorting', payout: 242.25, image: 'https://shorturl.at/vQjfV' },
     { name: 'The Grand Mafia', payout: 355.80, image: 'https://i.imgur.com/wZ68tB3.png' },
     { name: 'Pocket Styler', payout: 198.00, image: 'https://i.imgur.com/Y8H4yT6.png' },
     { name: 'Rock N\' Cash', payout: 681.20, image: 'https://i.imgur.com/U16jVoT.png' },
