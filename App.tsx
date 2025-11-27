@@ -516,6 +516,51 @@ useEffect(() => {
       setVerificationEmail('');
   }, [handleLogin]);
 
+  const openResetPassword = (token = '') => {
+      if (token) {
+          setResetTokenFromUrl(token);
+      }
+      setIsSigninModalOpen(false);
+      setIsSignupModalOpen(false);
+      setIsForgotPasswordOpen(false);
+      setIsResetPasswordOpen(true);
+  };
+
+  const handleResetSuccess = () => {
+      setIsResetPasswordOpen(false);
+      setIsSigninModalOpen(true);
+  };
+
+  const openResetPassword = (token = '') => {
+      if (token) {
+          setResetTokenFromUrl(token);
+      }
+      setIsSigninModalOpen(false);
+      setIsSignupModalOpen(false);
+      setIsForgotPasswordOpen(false);
+      setIsResetPasswordOpen(true);
+  };
+
+  const handleResetSuccess = () => {
+      setIsResetPasswordOpen(false);
+      setIsSigninModalOpen(true);
+  };
+
+  const openVerificationModal = (email = '') => {
+      setVerificationEmail(email);
+      setIsVerificationModalOpen(true);
+      setIsSigninModalOpen(false);
+      setIsSignupModalOpen(false);
+      setIsForgotPasswordOpen(false);
+      setIsResetPasswordOpen(false);
+  };
+
+  const handleVerificationSuccess = useCallback(async (token: string) => {
+      await handleLogin(token);
+      setIsVerificationModalOpen(false);
+      setVerificationEmail('');
+  }, [handleLogin]);
+
   const appContextValue = { 
       isLoggedIn, user, setUser, balance, setBalance, transactions, setTransactions,
       notifications, setNotifications,
