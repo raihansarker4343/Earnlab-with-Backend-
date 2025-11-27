@@ -501,6 +501,21 @@ useEffect(() => {
       setIsSigninModalOpen(true);
   };
 
+  const openResetPassword = (token = '') => {
+      if (token) {
+          setResetTokenFromUrl(token);
+      }
+      setIsSigninModalOpen(false);
+      setIsSignupModalOpen(false);
+      setIsForgotPasswordOpen(false);
+      setIsResetPasswordOpen(true);
+  };
+
+  const handleResetSuccess = () => {
+      setIsResetPasswordOpen(false);
+      setIsSigninModalOpen(true);
+  };
+
   const openVerificationModal = (email = '') => {
       setVerificationEmail(email);
       setIsVerificationModalOpen(true);
@@ -691,6 +706,19 @@ useEffect(() => {
                     email={verificationEmail}
                     onClose={() => setIsVerificationModalOpen(false)}
                     onVerified={handleVerificationSuccess}
+                />
+                <ForgotPasswordModal
+                    isOpen={isForgotPasswordOpen}
+                    onClose={() => setIsForgotPasswordOpen(false)}
+                    onSwitchToSignin={switchToSignin}
+                    onSwitchToReset={() => openResetPassword(resetTokenFromUrl)}
+                />
+                <ResetPasswordModal
+                    isOpen={isResetPasswordOpen}
+                    initialToken={resetTokenFromUrl}
+                    onClose={() => { setIsResetPasswordOpen(false); setResetTokenFromUrl(''); }}
+                    onSuccess={handleResetSuccess}
+                    onSwitchToSignin={switchToSignin}
                 />
             </>
         )}
