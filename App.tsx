@@ -472,19 +472,49 @@ useEffect(() => {
     };
   }, [fetchAndSetUserData]);
 
-  const openSignupModal = (email = '') => {
-      setSignupInitialEmail(email);
-      setIsSignupModalOpen(true);
-      setIsSigninModalOpen(false);
-      setIsForgotPasswordOpen(false);
-      setIsResetPasswordOpen(false);
-  };
-
-  const openForgotPassword = () => {
+  const closeAuthModals = useCallback(() => {
       setIsSigninModalOpen(false);
       setIsSignupModalOpen(false);
+      setIsForgotPasswordOpen(false);
+      setIsResetPasswordOpen(false);
+      setIsVerificationModalOpen(false);
+  }, []);
+
+  const openSignupModal = useCallback((email = '') => {
+      setSignupInitialEmail(email);
+      closeAuthModals();
+      setIsSignupModalOpen(true);
+  }, [closeAuthModals]);
+
+  const openForgotPassword = useCallback(() => {
+      closeAuthModals();
       setIsForgotPasswordOpen(true);
-  };
+  }, [closeAuthModals]);
+
+  const openResetPassword = useCallback((token = '') => {
+      if (token) {
+          setResetTokenFromUrl(token);
+      }
+      closeAuthModals();
+      setIsResetPasswordOpen(true);
+  }, [closeAuthModals]);
+
+  const handleResetSuccess = useCallback(() => {
+      setIsResetPasswordOpen(false);
+      setIsSigninModalOpen(true);
+  }, []);
+
+  const openVerificationModal = useCallback((email = '') => {
+      setVerificationEmail(email);
+      closeAuthModals();
+      setIsVerificationModalOpen(true);
+  }, [closeAuthModals]);
+
+  const handleVerificationSuccess = useCallback(async (token: string) => {
+      await handleLogin(token);
+      setIsVerificationModalOpen(false);
+      setVerificationEmail('');
+  }, [handleLogin]);
 
   const openResetPassword = (token = '') => {
       if (token) {
@@ -706,19 +736,6 @@ useEffect(() => {
                     email={verificationEmail}
                     onClose={() => setIsVerificationModalOpen(false)}
                     onVerified={handleVerificationSuccess}
-                />
-                <ForgotPasswordModal
-                    isOpen={isForgotPasswordOpen}
-                    onClose={() => setIsForgotPasswordOpen(false)}
-                    onSwitchToSignin={switchToSignin}
-                    onSwitchToReset={() => openResetPassword(resetTokenFromUrl)}
-                />
-                <ResetPasswordModal
-                    isOpen={isResetPasswordOpen}
-                    initialToken={resetTokenFromUrl}
-                    onClose={() => { setIsResetPasswordOpen(false); setResetTokenFromUrl(''); }}
-                    onSuccess={handleResetSuccess}
-                    onSwitchToSignin={switchToSignin}
                 />
             </>
         )}

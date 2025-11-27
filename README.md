@@ -32,3 +32,7 @@ d-reset emails. If the optional `resend` SDK is installed, the backend will send
 he Resend HTTP API.
 
 If the API key is not configured in a local environment, the backend will log the reset link to the console so you can test the flow without sending an email.
+
+### Environment setup
+
+Copy `earnlab-backend/.env.example` to `earnlab-backend/.env` and fill in the secrets for your database, JWT, postback, and email keys. The example file is tracked while the real `.env` (and legacy `env.txt`) is gitignored to keep credentials out of the repository.
