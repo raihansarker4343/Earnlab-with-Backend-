@@ -7,14 +7,16 @@ interface SignupModalProps {
     onClose: () => void;
     initialEmail: string;
     onSwitchToSignin: () => void;
+    onRequireVerification: (email: string) => void;
 }
 
-const SignupModal: React.FC<SignupModalProps> = ({ isOpen, onClose, initialEmail, onSwitchToSignin }) => {
+const SignupModal: React.FC<SignupModalProps> = ({ isOpen, onClose, initialEmail, onSwitchToSignin, onRequireVerification }) => {
     const { handleLogin } = useContext(AppContext);
     const [email, setEmail] = useState(initialEmail);
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
+    const [info, setInfo] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
     const [isRendered, setIsRendered] = useState(false);
@@ -23,6 +25,7 @@ const SignupModal: React.FC<SignupModalProps> = ({ isOpen, onClose, initialEmail
         if (isOpen) {
             setIsRendered(true);
             setError(''); // Reset error on open
+            setInfo('');
         }
     }, [isOpen]);
 
@@ -41,11 +44,12 @@ const SignupModal: React.FC<SignupModalProps> = ({ isOpen, onClose, initialEmail
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (password.length < 6) { 
+        if (password.length < 6) {
             setError('Password must be at least 6 characters long.');
             return;
         }
         setError('');
+        setInfo('');
         setIsLoading(true);
 
         const referralCode = localStorage.getItem('referralCode');
@@ -58,7 +62,16 @@ const SignupModal: React.FC<SignupModalProps> = ({ isOpen, onClose, initialEmail
             });
             const data = await response.json();
             if (response.ok) {
-                handleLogin(data.token);
+                if (data.requiresVerification) {
+                    onRequireVerification(email);
+                    setInfo(data.message || 'Verification code sent. Please check your email.');
+                    onClose();
+                } else if (data.token) {
+                    handleLogin(data.token);
+                    localStorage.removeItem('referralCode'); // Clear after successful use
+                } else {
+                    setInfo(data.message || 'Account created.');
+                }
                 localStorage.removeItem('referralCode'); // Clear after successful use
             } else {
                 const errorMessage = data.message || 'Failed to sign up.';
@@ -113,6 +126,12 @@ const SignupModal: React.FC<SignupModalProps> = ({ isOpen, onClose, initialEmail
                         <div className="bg-red-500/10 border-l-4 border-red-500 text-red-200 p-4 text-sm flex items-start gap-3" role="alert">
                             <i className="fas fa-exclamation-circle flex-shrink-0 text-red-400 mt-0.5"></i>
                             <span className="text-left">{error}</span>
+                        </div>
+                    )}
+                    {info && !error && (
+                        <div className="bg-green-500/10 border-l-4 border-green-500 text-green-200 p-4 text-sm flex items-start gap-3" role="status">
+                            <i className="fas fa-check-circle flex-shrink-0 text-green-400 mt-0.5"></i>
+                            <span className="text-left">{info}</span>
                         </div>
                     )}
                     <div>

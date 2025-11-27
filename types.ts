@@ -20,6 +20,7 @@ export interface User {
   totalWithdrawn?: number;
   totalReferrals?: number;
   referralEarnings?: number;
+  isVerified?: boolean;
 }
 
 export interface EarningFeedItem {

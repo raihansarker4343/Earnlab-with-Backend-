@@ -22,6 +22,7 @@ const initDb = async () => {
         password_hash VARCHAR(255) NOT NULL,
         earn_id VARCHAR(50),
         avatar_url VARCHAR(255),
+        is_verified BOOLEAN DEFAULT TRUE,
         created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
         total_earned NUMERIC(10, 2) DEFAULT 0,
         balance NUMERIC(10, 2) DEFAULT 0,
@@ -103,13 +104,34 @@ const initDb = async () => {
         first_seen TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
         last_seen TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
       );
+
+      CREATE TABLE IF NOT EXISTS password_reset_tokens (
+        id SERIAL PRIMARY KEY,
+        user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        token_hash VARCHAR(255) NOT NULL,
+        expires_at TIMESTAMPTZ NOT NULL,
+        used BOOLEAN DEFAULT FALSE,
+        created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+      );
+      CREATE INDEX IF NOT EXISTS idx_password_reset_token_hash ON password_reset_tokens(token_hash);
+
+      CREATE TABLE IF NOT EXISTS email_verification_tokens (
+        id SERIAL PRIMARY KEY,
+        user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        otp_hash VARCHAR(255) NOT NULL,
+        expires_at TIMESTAMPTZ NOT NULL,
+        used BOOLEAN DEFAULT FALSE,
+        created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+      );
+      CREATE INDEX IF NOT EXISTS idx_email_verification_user_id ON email_verification_tokens(user_id);
     `);
 
     // Add 'balance' column to 'users' table if it doesn't exist.
     // This serves as a migration for older database schemas.
     await client.query('ALTER TABLE users ADD COLUMN IF NOT EXISTS balance NUMERIC(10, 2) DEFAULT 0');
     await client.query('ALTER TABLE users ADD COLUMN IF NOT EXISTS earn_id VARCHAR(50)');
-    
+    await client.query('ALTER TABLE users ADD COLUMN IF NOT EXISTS is_verified BOOLEAN DEFAULT TRUE');
+
     // Add 'ip_logs' column to 'users' table to store user IP history
     await client.query("ALTER TABLE users ADD COLUMN IF NOT EXISTS ip_logs JSONB DEFAULT '[]'");
 
