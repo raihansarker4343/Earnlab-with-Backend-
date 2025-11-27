@@ -75,8 +75,8 @@ const AdminLoginPage = React.lazy(() => import('./components/admin/AdminLoginPag
 
 export const AppContext = React.createContext<{
   isLoggedIn: boolean;
-  user: User | null;
-  setUser: React.Dispatch<React.SetStateAction<User | null>>;
+  user: any | null;
+  setUser: React.Dispatch<React.SetStateAction<any | null>>;
   balance: number;
   setBalance: React.Dispatch<React.SetStateAction<number>>;
   transactions: Transaction[];
@@ -206,7 +206,7 @@ const sanitizeUser = (rawUser: User): User => {
 
   for (const key of numericKeys) {
     if (user[key] !== undefined && user[key] !== null) {
-      // @ts-ignore - TS has trouble with dynamic keys on interfaces
+      // @ts-ignore
       user[key] = Number(user[key]);
     }
   }
@@ -214,7 +214,6 @@ const sanitizeUser = (rawUser: User): User => {
 };
 
 const getPageFromPath = (pathname: string): string => {
-  // Home route
   if (!pathname || pathname === '/' || pathname === '') return 'Home';
 
   const segments = pathname.split('/').filter(Boolean);
@@ -225,7 +224,6 @@ const getPageFromPath = (pathname: string): string => {
     .replace(/[^a-zA-Z0-9]/g, '')
     .toLowerCase();
 
-  // Admin route
   if (cleanPageKeyLower.startsWith('admin')) {
     return cleanPageKeyWithCase;
   }
@@ -238,8 +236,6 @@ const getPageFromPath = (pathname: string): string => {
 
   return foundPageName || 'Home';
 };
-
-
 
 const PENDING_VERIFICATION_KEY = 'pendingVerificationEmail';
 
@@ -272,12 +268,13 @@ const App: React.FC = () => {
   const [redirectAfterLogin, setRedirectAfterLogin] = useState<string | null>(null);
   const [isLoadingAuth, setIsLoadingAuth] = useState(true);
 
+  // If a user was asked to verify email, keep modal open after refresh.
   useEffect(() => {
-      const pendingEmail = localStorage.getItem(PENDING_VERIFICATION_KEY);
-      if (pendingEmail && !isLoggedIn) {
-          setVerificationEmail(pendingEmail);
-          setIsVerificationModalOpen(true);
-      }
+    const pendingEmail = localStorage.getItem(PENDING_VERIFICATION_KEY);
+    if (pendingEmail && !isLoggedIn) {
+      setVerificationEmail(pendingEmail);
+      setIsVerificationModalOpen(true);
+    }
   }, [isLoggedIn]);
 
   const navigate = useCallback((pageName: string) => {
@@ -347,7 +344,6 @@ const App: React.FC = () => {
       } else {
         console.error('Failed to fetch notifications');
       }
-
     } catch (error) {
       console.error("Failed to fetch user data:", error);
       handleLogout();
@@ -401,33 +397,20 @@ const App: React.FC = () => {
   }, [fetchAndSetUserData, handleLogout]);
 
   // Effect to handle routing via path changes (no hash)
-useEffect(() => {
-  if (isLoadingAuth) return;
+  useEffect(() => {
+    if (isLoadingAuth) return;
 
-  const handleLocationChange = () => {
-    const { pathname, search } = window.location;
-    const params = new URLSearchParams(search);
+    const handleLocationChange = () => {
+      const { pathname, search } = window.location;
+      const params = new URLSearchParams(search);
 
-    // query string থেকে referral code পড়া (?ref=...)
-    const ref = params.get('ref');
-    if (ref) {
-      localStorage.setItem('referralCode', ref);
-    }
+      // referral code (?ref=...)
+      const ref = params.get('ref');
+      if (ref) {
+        localStorage.setItem('referralCode', ref);
+      }
 
-    const resetTokenParam = params.get('resetToken');
-    if (resetTokenParam) {
-      setResetTokenFromUrl(resetTokenParam);
-      setIsResetPasswordOpen(true);
-      setIsSigninModalOpen(false);
-      setIsSignupModalOpen(false);
-      setIsForgotPasswordOpen(false);
-
-      params.delete('resetToken');
-      const newSearch = params.toString();
-      const newUrl = `${pathname}${newSearch ? `?${newSearch}` : ''}`;
-      window.history.replaceState({}, '', newUrl);
-    }
-
+      // reset token (?resetToken=...)
       const resetTokenParam = params.get('resetToken');
       if (resetTokenParam) {
         setResetTokenFromUrl(resetTokenParam);
@@ -487,58 +470,9 @@ useEffect(() => {
     };
   }, [fetchAndSetUserData]);
 
-  const closeAuthModals = useCallback(() => {
-      setIsSigninModalOpen(false);
-      setIsSignupModalOpen(false);
-      setIsForgotPasswordOpen(false);
-      setIsResetPasswordOpen(false);
-      setIsVerificationModalOpen(false);
-  }, []);
-
-  const openSignupModal = useCallback((email = '') => {
-      setSignupInitialEmail(email);
-      closeAuthModals();
-      setIsSignupModalOpen(true);
-  }, [closeAuthModals]);
-
-  const openForgotPassword = useCallback(() => {
-      closeAuthModals();
-      setIsForgotPasswordOpen(true);
-  }, [closeAuthModals]);
-
-  const openResetPassword = useCallback((token = '') => {
-      if (token) {
-          setResetTokenFromUrl(token);
-      }
-      closeAuthModals();
-      setIsResetPasswordOpen(true);
-  }, [closeAuthModals]);
-
-  const handleResetSuccess = useCallback(() => {
-      setIsResetPasswordOpen(false);
-      setIsSigninModalOpen(true);
-  }, []);
-
-  const openVerificationModal = useCallback((email = '') => {
-      setVerificationEmail(email);
-      localStorage.setItem(PENDING_VERIFICATION_KEY, email);
-      closeAuthModals();
-      setIsVerificationModalOpen(true);
-  }, [closeAuthModals]);
-
-  useEffect(() => {
-      if (!isLoggedIn && verificationEmail) {
-          setIsVerificationModalOpen(true);
-      }
-  }, [isLoggedIn, verificationEmail]);
-
-  const handleVerificationSuccess = useCallback(async (token: string) => {
-      await handleLogin(token);
-      setIsVerificationModalOpen(false);
-      setVerificationEmail('');
-      localStorage.removeItem(PENDING_VERIFICATION_KEY);
-  }, [handleLogin]);
-
+  // =======================
+  // AUTH MODAL HANDLERS (CLEAN)
+  // =======================
   const closeAuthModals = useCallback(() => {
     setIsSigninModalOpen(false);
     setIsSignupModalOpen(false);
@@ -573,6 +507,9 @@ useEffect(() => {
 
   const openVerificationModal = useCallback((email = '') => {
     setVerificationEmail(email);
+    if (email) {
+      localStorage.setItem(PENDING_VERIFICATION_KEY, email);
+    }
     closeAuthModals();
     setIsVerificationModalOpen(true);
   }, [closeAuthModals]);
@@ -581,6 +518,7 @@ useEffect(() => {
     await handleLogin(token);
     setIsVerificationModalOpen(false);
     setVerificationEmail('');
+    localStorage.removeItem(PENDING_VERIFICATION_KEY);
   }, [handleLogin]);
 
   const appContextValue = {
@@ -642,13 +580,13 @@ useEffect(() => {
   const isDedicatedView = dedicatedPageNames.has(page);
 
   const switchToSignup = () => {
-      closeAuthModals();
-      setIsSignupModalOpen(true);
+    closeAuthModals();
+    setIsSignupModalOpen(true);
   };
 
   const switchToSignin = () => {
-      closeAuthModals();
-      setIsSigninModalOpen(true);
+    closeAuthModals();
+    setIsSigninModalOpen(true);
   };
 
   if (isDedicatedView) {
@@ -698,11 +636,13 @@ useEffect(() => {
     <AppContext.Provider value={appContextValue}>
       <div className="flex h-screen bg-slate-100 dark:bg-[#0f172a] text-slate-800 dark:text-slate-300">
         {isLoggedIn ? <Sidebar /> : <LoggedOutSidebar />}
+
         <div className="flex-1 flex flex-col min-w-0 overflow-y-auto">
           <header className="sticky top-0 z-20 shrink-0">
             {headerContent}
             <LiveEarningFeed />
           </header>
+
           <div className="flex-1 flex flex-col">
             <main className="flex-1">
               <Suspense fallback={<PageLoader />}>
@@ -721,47 +661,55 @@ useEffect(() => {
           />
         )}
         {isLoggedIn && <ProfileEditModal />}
+
         <WithdrawalSuccessModal
           isOpen={isWithdrawSuccessModalOpen}
           onClose={() => setIsWithdrawSuccessModalOpen(false)}
         />
 
         {!isLoggedIn && (
-            <>
-                <SigninModal
-                    isOpen={isSigninModalOpen}
-                    onClose={() => setIsSigninModalOpen(false)}
-                    onSwitchToSignup={switchToSignup}
-                    onForgotPassword={openForgotPassword}
-                    onRequireVerification={openVerificationModal}
-                />
-                <SignupModal
-                    isOpen={isSignupModalOpen}
-                    onClose={() => setIsSignupModalOpen(false)}
-                    initialEmail={signupInitialEmail}
-                    onSwitchToSignin={switchToSignin}
-                    onRequireVerification={openVerificationModal}
-                />
-                <ForgotPasswordModal
-                    isOpen={isForgotPasswordOpen}
-                    onClose={() => setIsForgotPasswordOpen(false)}
-                    onSwitchToSignin={switchToSignin}
-                    onSwitchToReset={() => openResetPassword(resetTokenFromUrl)}
-                />
-                <ResetPasswordModal
-                    isOpen={isResetPasswordOpen}
-                    initialToken={resetTokenFromUrl}
-                    onClose={() => { setIsResetPasswordOpen(false); setResetTokenFromUrl(''); }}
-                    onSuccess={handleResetSuccess}
-                    onSwitchToSignin={switchToSignin}
-                />
-                <EmailVerificationModal
-                    isOpen={isVerificationModalOpen}
-                    email={verificationEmail}
-                    onClose={() => setIsVerificationModalOpen(false)}
-                    onVerified={handleVerificationSuccess}
-                />
-            </>
+          <>
+            <SigninModal
+              isOpen={isSigninModalOpen}
+              onClose={() => setIsSigninModalOpen(false)}
+              onSwitchToSignup={switchToSignup}
+              onForgotPassword={openForgotPassword}
+              onRequireVerification={openVerificationModal}
+            />
+
+            <SignupModal
+              isOpen={isSignupModalOpen}
+              onClose={() => setIsSignupModalOpen(false)}
+              initialEmail={signupInitialEmail}
+              onSwitchToSignin={switchToSignin}
+              onRequireVerification={openVerificationModal}
+            />
+
+            <ForgotPasswordModal
+              isOpen={isForgotPasswordOpen}
+              onClose={() => setIsForgotPasswordOpen(false)}
+              onSwitchToSignin={switchToSignin}
+              onSwitchToReset={() => openResetPassword(resetTokenFromUrl)}
+            />
+
+            <ResetPasswordModal
+              isOpen={isResetPasswordOpen}
+              initialToken={resetTokenFromUrl}
+              onClose={() => {
+                setIsResetPasswordOpen(false);
+                setResetTokenFromUrl('');
+              }}
+              onSuccess={handleResetSuccess}
+              onSwitchToSignin={switchToSignin}
+            />
+
+            <EmailVerificationModal
+              isOpen={isVerificationModalOpen}
+              email={verificationEmail}
+              onClose={() => setIsVerificationModalOpen(false)}
+              onVerified={handleVerificationSuccess}
+            />
+          </>
         )}
       </div>
     </AppContext.Provider>
