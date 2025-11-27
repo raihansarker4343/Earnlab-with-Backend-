@@ -21,7 +21,10 @@ const OfferWallCard: React.FC<{ wall: OfferWall }> = ({ wall }) => {
     };
     const gradient = gradients[wall.name] || 'from-slate-800/40 to-slate-900/10';
 
-    const href = `/#/${wall.name}`;
+    //const href = `/#/${wall.name}`;
+    // Clean and pretty URL → /CPXResearch
+    const slug = wall.name.replace(/[^a-zA-Z0-9]/g, '');
+    const href = `/${slug}`;
 
     const cardContent = (
         <>
