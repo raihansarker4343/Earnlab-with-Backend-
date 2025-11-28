@@ -222,8 +222,34 @@ app.post('/api/auth/forgot-password', async (req, res) => {
                 [user.id, tokenHash, expiresAt]
             );
 
-            const baseUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
-            const resetLink = `${baseUrl}?resetToken=${token}`;
+            // Dynamically determine baseUrl
+            let baseUrl = process.env.FRONTEND_URL;
+            
+            if (!baseUrl) {
+                // Try Origin header first (standard for API calls)
+                baseUrl = req.get('origin');
+                
+                // If no Origin, try Referer header
+                if (!baseUrl) {
+                    const referer = req.get('referer');
+                    if (referer) {
+                        try {
+                            const url = new URL(referer);
+                            baseUrl = url.origin;
+                        } catch (e) {
+                            // ignore invalid referer
+                        }
+                    }
+                }
+            }
+
+            // Fallback to localhost if all detection fails
+            if (!baseUrl) {
+                baseUrl = 'http://localhost:5173';
+            }
+
+            // Ensure valid URL construction
+            const resetLink = `${baseUrl.replace(/\/$/, '')}?resetToken=${token}`;
 
             try {
                 await sendPasswordResetEmail(user.email, user.username, resetLink);

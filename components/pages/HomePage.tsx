@@ -286,8 +286,8 @@ const earningMethods: EarningMethod[] = [
 
 
 const statHighlights = [
-  { label: 'Earners paid out', value: '$4,200,000', suffix: '+' },
-  { label: 'Tasks finished', value: '9,800,000', suffix: '+' },
+  { label: 'Earners paid out', value: '$5000', suffix: '+' },
+  { label: 'Tasks finished', value: '6000', suffix: '+' },
   { label: 'Avg. daily payout', value: '$38', suffix: '' },
 ];
 
