@@ -29,7 +29,7 @@ const LoggedOutHeader: React.FC = () => {
                         <MenuIcon />
                     </button>
                 )}
-                 <h1 className="text-2xl font-bold text-slate-900 dark:text-white">EarnLab</h1>
+                 <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Earnello.com</h1>
             </div>
              <div className="flex items-center gap-2">
                 <button 

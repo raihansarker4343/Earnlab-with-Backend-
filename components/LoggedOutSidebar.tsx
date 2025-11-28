@@ -104,7 +104,7 @@ const LoggedOutSidebar: React.FC = () => {
         <div className="flex items-center justify-between mb-6">
             <div className="space-y-1">
                 <div className="inline-flex items-center px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide rounded-full bg-gradient-to-r from-indigo-500/15 via-purple-500/15 to-cyan-500/20 text-indigo-600 dark:text-indigo-200 border border-white/50 dark:border-white/10">Explore & Earn</div>
-                <h1 className="text-2xl font-bold text-slate-900 dark:text-white">EarnLab</h1>
+                <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Earnello.com</h1>
                 <p className="text-sm text-slate-500 dark:text-slate-400">Navigate offers, guides, and live support with a polished, gradient-lit sidebar.</p>
             </div>
             <button onClick={handleClose} className="p-2 rounded-lg bg-white/70 text-slate-500 hover:text-slate-900 hover:bg-white shadow-sm border border-white/60 dark:bg-slate-900/60 dark:text-slate-300 dark:hover:text-white dark:border-slate-800">

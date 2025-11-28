@@ -29,11 +29,11 @@ const SupportChatModal: React.FC<SupportChatModalProps> = ({ isOpen, onClose }) 
                 chatRef.current = ai.chats.create({
                     model: 'gemini-2.5-flash',
                     config: {
-                      systemInstruction: "You are a friendly and helpful customer support agent for a website called EarnLab. Users earn money by completing tasks, surveys, and offers. Your goal is to assist users with their questions about the platform. Be concise and helpful. Start the conversation by greeting the user and asking how you can help.",
+                      systemInstruction: "You are a friendly and helpful customer support agent for a website called Earnello.com. Users earn money by completing tasks, surveys, and offers. Your goal is to assist users with their questions about the platform. Be concise and helpful. Start the conversation by greeting the user and asking how you can help.",
                     },
                 });
                 // Start with a welcome message from the model
-                setHistory([{ role: 'model', text: 'Hello! I am the EarnLab AI assistant. How can I help you today?' }]);
+                setHistory([{ role: 'model', text: 'Hello! I am the Earnello.com AI assistant. How can I help you today?' }]);
             }
         }
     }, [isOpen]);

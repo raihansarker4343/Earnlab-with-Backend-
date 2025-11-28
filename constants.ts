@@ -39,7 +39,7 @@ export const SURVEY_PROVIDERS: SurveyProvider[] = [
 ];
 
 export const FAQ_ITEMS: FaqItem[] = [
-    { question: 'What is EarnLab?', answer: 'EarnLab is a platform that allows you to earn money online by completing simple, engaging tasks tailored to your schedule. Become a website and game tester, share your opinions in surveys, and earn cashback on your online shopping.' },
+    { question: 'What is Earnello.com?', answer: 'Earnello.com is a platform that allows you to earn money online by completing simple, engaging tasks tailored to your schedule. Become a website and game tester, share your opinions in surveys, and earn cashback on your online shopping.' },
     { question: 'How do I get started?', answer: 'Getting started is easy! Simply sign up for a free account using your email, Google, Facebook, or Steam account. Once registered, you can start browsing available tasks and earn money right away.' },
     { question: 'How do I withdraw Coins?', answer: 'You can withdraw your earnings through a wide range of options, including PayPal, gift cards (like Amazon, Visa, Walmart), and cryptocurrencies. Just go to the "Withdraw" section, select your preferred method, and follow the instructions.' },
     { question: 'How long do withdrawals take?', answer: 'Withdrawal times can vary depending on the method chosen. E-wallets like PayPal are typically fast, while other methods might take a few business days. We strive to process all withdrawals as quickly as possible.' },
@@ -136,7 +136,7 @@ export const TESTIMONIALS: Testimonial[] = [
     rating: 5,
   },
   {
-    text: "I Love EarnLab. They have new surveys every day and they pay you instantly. Its easily one of the best services out there!",
+    text: "I Love Earnello.com. They have new surveys every day and they pay you instantly. Its easily one of the best services out there!",
     author: 'And B.',
     rating: 5,
   },

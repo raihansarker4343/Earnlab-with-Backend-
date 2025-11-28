@@ -53,11 +53,11 @@ const sendPasswordResetEmail = async (to, username, resetUrl) => {
   const message = {
     from,
     to,
-    subject: 'Reset your EarnLab password',
-    text: `Hi ${username || 'there'},\n\nWe received a request to reset your EarnLab password.\nUse the link below to choose a new password:\n${resetUrl}\n\nIf you did not request this change, you can safely ignore this email. The link will expire in 60 minutes.`,
+    subject: 'Reset your Earnello.com password',
+    text: `Hi ${username || 'there'},\n\nWe received a request to reset your Earnello.com password.\nUse the link below to choose a new password:\n${resetUrl}\n\nIf you did not request this change, you can safely ignore this email. The link will expire in 60 minutes.`,
     html: `
       <p>Hi ${username || 'there'},</p>
-      <p>We received a request to reset your EarnLab password.</p>
+      <p>We received a request to reset your Earnello.com password.</p>
       <p><a href="${resetUrl}" style="color:#16a34a;font-weight:bold;">Reset your password</a></p>
       <p>If the button above does not work, copy and paste this URL into your browser:</p>
       <p>${resetUrl}</p>
@@ -97,15 +97,15 @@ const sendVerificationEmail = async (to, username, otpCode) => {
  const message = {
     from,
     to,
-    subject: 'Verify your EarnLab account',
-    text: `Hi ${username || 'there'},\n\nWelcome to EarnLab!\n\nYour verification code is ${otpCode}. It expires in 15 minutes.\n\nIf you did not request this, you can ignore this email.`,
+    subject: 'Verify your Earnello.com account',
+    text: `Hi ${username || 'there'},\n\nWelcome to Earnello.com!\n\nYour verification code is ${otpCode}. It expires in 15 minutes.\n\nIf you did not request this, you can ignore this email.`,
     html: `
       <!doctype html>
 <html>
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Verify your EarnLab account</title>
+    <title>Verify your Earnello.com account</title>
   </head>
 
   <body style="margin:0; padding:0; background:#f5f7fb; font-family: Arial, sans-serif;">
@@ -118,7 +118,7 @@ const sendVerificationEmail = async (to, username, otpCode) => {
             <!-- Header -->
             <tr>
               <td style="padding:24px 28px; background:#0f172a; color:#ffffff;">
-                <div style="font-size:20px; font-weight:700;">EarnLab</div>
+                <div style="font-size:20px; font-weight:700;">Earnello.com</div>
                 <div style="font-size:13px; opacity:0.8; margin-top:4px;">Email Verification</div>
               </td>
             </tr>
@@ -127,7 +127,7 @@ const sendVerificationEmail = async (to, username, otpCode) => {
             <tr>
               <td style="padding:28px;">
                 <h2 style="margin:0 0 10px; font-size:20px; color:#0f172a;">
-                  Welcome to EarnLab, ${username || "there"}!
+                  Welcome to Earnello.com, ${username || "there"}!
                 </h2>
 
                 <p style="margin:0 0 16px; font-size:15px; color:#334155; line-height:1.6;">
@@ -154,10 +154,10 @@ const sendVerificationEmail = async (to, username, otpCode) => {
             <!-- Footer -->
             <tr>
               <td style="padding:18px 28px; background:#f8fafc; font-size:12px; color:#64748b; text-align:center;">
-                © ${new Date().getFullYear()} EarnLab. All rights reserved. <br />
+                © ${new Date().getFullYear()} Earnello.com. All rights reserved. <br />
                 Need help? Contact us at
-                <a href="mailto:support@earnlab.com" style="color:#0f172a; text-decoration:none;">
-                  support@earnlab.com
+                <a href="mailto:support@earnello.com" style="color:#0f172a; text-decoration:none;">
+                  support@earnello.com
                 </a>
               </td>
             </tr>

@@ -6,7 +6,7 @@ const CookiePolicyPage: React.FC = () => {
             <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-6">Cookie Policy</h1>
             
             <div className="space-y-6 text-slate-600 dark:text-slate-300 leading-relaxed">
-                <p>This Cookie Policy explains how EarnLab uses cookies and similar technologies to recognize you when you visit our website.</p>
+                <p>This Cookie Policy explains how Earnello.com uses cookies and similar technologies to recognize you when you visit our website.</p>
 
                 <section>
                     <h2 className="text-xl font-semibold text-slate-900 dark:text-white mb-2">What are cookies?</h2>

@@ -6,7 +6,7 @@ const AmlKycPolicyPage: React.FC = () => {
             <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-6">AML & KYC Policy</h1>
             
             <div className="space-y-6 text-slate-600 dark:text-slate-300 leading-relaxed">
-                <p>EarnLab is committed to the highest standards of Anti-Money Laundering (AML) and Know Your Customer (KYC) compliance.</p>
+                <p>Earnello.com is committed to the highest standards of Anti-Money Laundering (AML) and Know Your Customer (KYC) compliance.</p>
 
                 <section>
                     <h2 className="text-xl font-semibold text-slate-900 dark:text-white mb-2">1. Policy Statement</h2>

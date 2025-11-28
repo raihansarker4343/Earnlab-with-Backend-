@@ -14,7 +14,7 @@ const Footer: React.FC = () => {
             <div className="container mx-auto px-8">
                 <div className="flex flex-wrap justify-between items-start gap-8">
                     <div className="space-y-4">
-                        <h3 className="font-bold text-xl text-slate-900 dark:text-white">EarnLab</h3>
+                        <h3 className="font-bold text-xl text-slate-900 dark:text-white">Earnello.com</h3>
                          <div className="flex items-center space-x-2">
                             <button className="px-3 py-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 flex items-center space-x-2 hover:bg-slate-200 dark:hover:bg-slate-700">
                                 <span className="font-serif text-lg">A</span>
@@ -72,7 +72,7 @@ const Footer: React.FC = () => {
                 </div>
 
                 <div className="mt-8 pt-8 border-t border-slate-200 dark:border-slate-700 flex flex-col sm:flex-row justify-between items-center text-slate-500 dark:text-slate-400 text-sm">
-                    <p className="mb-4 sm:mb-0">&copy; {new Date().getFullYear()} EarnLab &bull; All rights reserved. &bull; <a href="/#/admin" className="hover:underline"></a></p>
+                    <p className="mb-4 sm:mb-0">&copy; {new Date().getFullYear()} Earnello.com &bull; All rights reserved. &bull; <a href="/#/admin" className="hover:underline"></a></p>
                     <div className="flex space-x-4 text-lg">
                         <a href="#" aria-label="Discord" className="hover:text-slate-900 dark:hover:text-white"><i className="fab fa-discord"></i></a>
                         <a href="#" aria-label="Twitter" className="hover:text-slate-900 dark:hover:text-white"><i className="fab fa-twitter"></i></a>

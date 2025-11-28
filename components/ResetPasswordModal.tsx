@@ -18,7 +18,7 @@ const ResetPasswordModal: React.FC<ResetPasswordModalProps> = ({ isOpen, initial
     const [isLoading, setIsLoading] = useState(false);
     const [showPasswords, setShowPasswords] = useState(false);
     const [isRendered, setIsRendered] = useState(false);
-    const [successTimer, setSuccessTimer] = useState<NodeJS.Timeout | null>(null);
+    const [successTimer, setSuccessTimer] = useState<ReturnType<typeof setTimeout> | null>(null);
 
     useEffect(() => {
         if (isOpen) {

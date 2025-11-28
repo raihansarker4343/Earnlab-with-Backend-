@@ -33,7 +33,7 @@ const SupportPage: React.FC = () => {
                         <p className="text-slate-600 dark:text-slate-400 text-sm mb-4">
                             For complex inquiries, send us an email. We typically respond within 24 hours.
                         </p>
-                        <a href="mailto:support@earnlab.com" className="text-blue-600 dark:text-blue-400 font-semibold hover:underline">support@earnlab.com</a>
+                        <a href="mailto:support@earnello.com" className="text-blue-600 dark:text-blue-400 font-semibold hover:underline">support@earnello.com</a>
                     </div>
                 </div>
 

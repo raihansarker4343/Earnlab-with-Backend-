@@ -91,7 +91,7 @@ const Sidebar: React.FC = () => {
             <div className="flex items-center justify-between mb-8">
                 <div className="space-y-1">
                     <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-widest bg-gradient-to-r from-sky-500/15 via-indigo-500/15 to-purple-500/15 text-sky-700 dark:text-sky-200 border border-sky-500/30">Navigation</span>
-                    <h1 className="text-2xl font-bold text-slate-900 dark:text-white">EarnLab</h1>
+                    <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Earnello.com</h1>
                     <p className="text-sm text-slate-500 dark:text-slate-400">Glide through offers and rewards with a focused hub.</p>
                 </div>
                 <button onClick={handleClose} className="p-2 rounded-lg bg-white/70 text-slate-500 hover:bg-white dark:bg-white/10 dark:text-slate-300 dark:hover:bg-white/20 border border-slate-200/70 dark:border-white/10 shadow-sm backdrop-blur">

@@ -110,7 +110,7 @@ const Header: React.FC<HeaderProps> = ({ onLogout }) => {
                     <MenuIcon />
                 </button>
             )}
-            <h1 className="text-2xl font-bold text-slate-900 dark:text-white hidden lg:block">EarnLab</h1>
+            <h1 className="text-2xl font-bold text-slate-900 dark:text-white hidden lg:block">Earnello.com</h1>
         </div>
         <div className="flex items-center gap-2 sm:gap-4">
             <div className="flex items-center gap-2 text-green-500 dark:text-green-400 font-bold">

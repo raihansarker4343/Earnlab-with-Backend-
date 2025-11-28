@@ -69,7 +69,7 @@ const ChatPage: React.FC = () => {
         <div className="space-y-8">
             <div>
                 <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-2">Community Chat</h1>
-                <p className="text-slate-500 dark:text-slate-400">Talk with other EarnLab users in real-time.</p>
+                <p className="text-slate-500 dark:text-slate-400">Talk with other Earnello.com users in real-time.</p>
             </div>
             
             <div className="bg-white dark:bg-[#1e293b] h-[60vh] flex flex-col rounded-lg border border-slate-200 dark:border-slate-800">

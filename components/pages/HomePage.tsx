@@ -215,8 +215,17 @@ const GLOBAL_FLOATING_ICONS = [
   { src: "https://cryptologos.cc/logos/litecoin-ltc-logo.png?v=002", className: "global-floating-4" }, // Gamepad Neon
 ];
 
+interface EarningMethod {
+  title: string;
+  description: string;
+  earnLabel: string;
+  earnAmount: string;
+  baseImage: string;
+  overlays: { src: string; className: string }[];
+  featured?: boolean;
+}
 
-const earningMethods = [
+const earningMethods: EarningMethod[] = [
   {
     title: 'Play games & get paid',
     description:
@@ -235,6 +244,7 @@ const earningMethods = [
         className: 'earn-floating-2',
       },
     ],
+    featured: true,
   },
   {
     title: 'Try new apps & offers',
@@ -366,7 +376,7 @@ const HomePageContent: React.FC = () => {
 
   // Auto-slide effect for Games Carousel
   useEffect(() => {
-    let interval: NodeJS.Timeout;
+    let interval: ReturnType<typeof setInterval>;
     if (isGamesSectionInView && !isPaused) {
         interval = setInterval(() => {
             if (gamesCarouselRef.current) {
@@ -1031,7 +1041,7 @@ const HomePageContent: React.FC = () => {
     </div>
 
     <h2 className="text-4xl font-bold text-slate-900 dark:text-white mt-4 mb-12">
-      Everybody loves EarnLab
+      Everybody loves Earnello.com
     </h2>
 
     {/* 3-up rotating grid */}
@@ -1150,7 +1160,7 @@ const HomePageContent: React.FC = () => {
       </div>
 
       <h2 className="text-4xl font-bold text-slate-900 dark:text-white mb-3">
-        Your EarnLab Questions Answered
+        Your Earnello.com Questions Answered
       </h2>
 
       <p className="text-center text-slate-600 dark:text-slate-300 max-w-2xl mx-auto">

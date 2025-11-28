@@ -6,7 +6,7 @@ const PrivacyPolicyPage: React.FC = () => {
             <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-6">Privacy Policy</h1>
             
             <div className="space-y-6 text-slate-600 dark:text-slate-300 leading-relaxed">
-                <p>Your privacy is important to us. It is EarnLab's policy to respect your privacy regarding any information we may collect from you across our website.</p>
+                <p>Your privacy is important to us. It is Earnello.com's policy to respect your privacy regarding any information we may collect from you across our website.</p>
 
                 <section>
                     <h2 className="text-xl font-semibold text-slate-900 dark:text-white mb-2">Information We Collect</h2>

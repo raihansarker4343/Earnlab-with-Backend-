@@ -6,7 +6,7 @@ const FairnessPage: React.FC = () => {
             <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-6">Provably Fair</h1>
             
             <div className="space-y-6 text-slate-600 dark:text-slate-300 leading-relaxed">
-                <p>At EarnLab, we believe in complete transparency. Our game systems (Boxes and Battles) utilize a Provably Fair system that allows you to verify every result.</p>
+                <p>At Earnello.com, we believe in complete transparency. Our game systems (Boxes and Battles) utilize a Provably Fair system that allows you to verify every result.</p>
 
                 <section>
                     <h2 className="text-xl font-semibold text-slate-900 dark:text-white mb-2">How it works</h2>

@@ -12,7 +12,7 @@ const FrequentlyAskedPage: React.FC = () => {
         <div className="max-w-4xl mx-auto bg-white dark:bg-[#1e293b] p-8 rounded-xl border border-slate-200 dark:border-slate-800">
             <div className="text-center mb-8">
                 <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-2">Frequently Asked Questions</h1>
-                <p className="text-slate-500 dark:text-slate-400">Find answers to common questions about EarnLab.</p>
+                <p className="text-slate-500 dark:text-slate-400">Find answers to common questions about Earnello.com.</p>
             </div>
             
             <div className="space-y-4">

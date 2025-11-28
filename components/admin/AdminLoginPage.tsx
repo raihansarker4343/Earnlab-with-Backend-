@@ -99,7 +99,7 @@ const AdminLoginPage: React.FC<AdminLoginPageProps> = ({ onLoginSuccess }) => {
                 </form>
             </div>
             <p className="mt-6 text-center text-sm text-slate-500">
-                &copy; {new Date().getFullYear()} EarnLab. All rights reserved.
+                &copy; {new Date().getFullYear()} Earnello.com. All rights reserved.
             </p>
         </div>
     );

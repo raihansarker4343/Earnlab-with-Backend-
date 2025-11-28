@@ -10,7 +10,7 @@ const TermsOfServicePage: React.FC = () => {
 
                 <section>
                     <h2 className="text-xl font-semibold text-slate-900 dark:text-white mb-2">1. Acceptance of Terms</h2>
-                    <p>By accessing and using EarnLab, you accept and agree to be bound by the terms and provision of this agreement. In addition, when using this websites particular services, you shall be subject to any posted guidelines or rules applicable to such services.</p>
+                    <p>By accessing and using Earnello.com, you accept and agree to be bound by the terms and provision of this agreement. In addition, when using this websites particular services, you shall be subject to any posted guidelines or rules applicable to such services.</p>
                 </section>
 
                 <section>
