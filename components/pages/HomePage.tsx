@@ -965,109 +965,164 @@ const HomePageContent: React.FC = () => {
 
 
         {/* Testimonials Section */}
-        <section
-          ref={testimonialsRef}
-          className="py-20 bg-slate-50 dark:bg-[#141c2f]"
-        >
-          <div className="container mx-auto px-8 text-center">
-            <span className="text-sm font-bold text-yellow-500 bg-yellow-500/10 px-3 py-1 rounded-full">
-              Customer Reviews
-            </span>
-            <h2 className="text-4xl font-bold text-slate-900 dark:text-white mt-4 mb-12">
-              Everybody loves EarnLab
-            </h2>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-left min-h-[300px]">
-              {[0, 1, 2].map((offset) => {
-                const index = (currentTestimonialIndex + offset) % TESTIMONIALS.length;
-                const testimonial = TESTIMONIALS[index];
-                return (
-                  <div
-                    key={`${testimonial.author}-${index}`}
-                    className={`bg-white dark:bg-[#1e293b] p-8 rounded-2xl shadow-lg border border-slate-200 dark:border-slate-800 relative flex flex-col transition-all duration-500 ease-out hover:-translate-y-2 ${
-                      isTestimonialsInView
-                        ? 'opacity-100 translate-y-0'
-                        : 'opacity-0 translate-y-8'
-                    }`}
-                    style={{ transitionDelay: `${offset * 150}ms` }}
-                  >
-                    <i className="fas fa-quote-left text-6xl text-teal-400 opacity-20 absolute top-6 left-6" />
-                    <div className="relative z-10 flex flex-col flex-grow">
-                      <p className="text-slate-600 dark:text-slate-400 mb-6 flex-grow">
-                        {testimonial.text}
-                      </p>
-                      <div className="mt-auto">
-                        <p className="font-bold text-slate-800 dark:text-white">
-                          {testimonial.author}
-                        </p>
-                        <div className="flex items-center mt-2">
-                          {[...Array(testimonial.rating)].map((_, starIndex) => (
-                            <i
-                              key={starIndex}
-                              className="fas fa-star text-green-400"
-                            />
-                          ))}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-            
-            {/* Pagination Controls */}
-            <div className="flex items-center justify-center gap-6 mt-12">
-                <button 
-                    onClick={handlePrevTestimonial}
-                    className="w-12 h-12 flex items-center justify-center rounded-xl bg-slate-200 dark:bg-[#1e2235] hover:bg-slate-300 dark:hover:bg-[#2a2f44] text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-all active:scale-95"
-                    aria-label="Previous testimonial"
-                >
-                    <i className="fas fa-chevron-left"></i>
-                </button>
+<section
+  ref={testimonialsRef}
+  className="relative py-20 bg-slate-50 dark:bg-[#0f1729] overflow-hidden"
+>
+  {/* background + glows */}
+  <div className="absolute inset-0 bg-gradient-to-b from-emerald-100/25 via-transparent to-emerald-100/15 dark:from-emerald-400/5 dark:via-emerald-500/0 dark:to-cyan-500/10" />
+  <div className="absolute -right-24 -top-24 w-64 h-64 bg-gradient-to-br from-emerald-300/25 via-teal-200/25 to-cyan-200/20 blur-3xl pointer-events-none" />
+  <div className="absolute -left-32 -bottom-24 w-72 h-72 bg-gradient-to-tr from-cyan-300/20 via-emerald-200/15 to-teal-200/20 blur-3xl pointer-events-none" />
 
-                <div className="flex items-center gap-2">
-                    {TESTIMONIALS.map((_, i) => (
-                        <button 
-                            key={i} 
-                            onClick={() => setCurrentTestimonialIndex(i)}
-                            className={`rounded-full transition-all duration-300 ${
-                                i === currentTestimonialIndex 
-                                ? 'w-3 h-3 bg-slate-800 dark:bg-white' 
-                                : 'w-2 h-2 bg-slate-300 dark:bg-slate-600 hover:bg-slate-400 dark:hover:bg-slate-500'
-                            }`}
-                            aria-label={`Go to testimonial ${i + 1}`}
-                        />
+  <div className="container relative mx-auto px-8 text-center">
+    {/* header */}
+    <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-emerald-500/15 via-cyan-500/10 to-green-500/15 border border-white/60 dark:border-emerald-500/20 shadow-[0_10px_40px_-18px_rgba(16,185,129,0.45)]">
+      <span className="h-2 w-2 rounded-full bg-emerald-400 animate-ping" />
+      <span className="text-sm font-semibold text-emerald-600 dark:text-emerald-200">
+        Customer reviews
+      </span>
+    </div>
+
+    <h2 className="text-4xl font-bold text-slate-900 dark:text-white mt-4 mb-12">
+      Everybody loves EarnLab
+    </h2>
+
+    {/* 3-up rotating grid */}
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-left min-h-[300px]">
+      {[0, 1, 2].map((offset) => {
+        const index =
+          (currentTestimonialIndex + offset) % TESTIMONIALS.length;
+        const testimonial = TESTIMONIALS[index];
+
+        return (
+          <div
+            key={`${testimonial.author}-${index}`}
+            className={`relative p-[1px] rounded-2xl bg-gradient-to-br from-white via-emerald-100/70 to-green-200/60 dark:from-emerald-500/10 dark:via-cyan-500/5 dark:to-emerald-500/15 shadow-[0_25px_65px_-25px_rgba(16,185,129,0.5)] transition-all duration-500 ease-out hover:-translate-y-2 hover:shadow-[0_30px_70px_-22px_rgba(16,185,129,0.65)] ${
+              isTestimonialsInView
+                ? "opacity-100 translate-y-0"
+                : "opacity-0 translate-y-8"
+            }`}
+            style={{ transitionDelay: `${offset * 150}ms` }}
+          >
+            <div className="relative h-full w-full rounded-2xl bg-white/95 dark:bg-[#111827]/85 backdrop-blur-lg border border-white/60 dark:border-emerald-500/15 p-8 flex flex-col overflow-hidden">
+              {/* inner glows */}
+              <div className="absolute -top-10 -right-10 w-32 h-32 rounded-full bg-gradient-to-br from-emerald-300/20 via-cyan-200/20 to-green-200/20 blur-3xl pointer-events-none" />
+              <div className="absolute -bottom-12 -left-12 w-28 h-28 rounded-full bg-gradient-to-tr from-cyan-300/15 via-emerald-200/15 to-green-200/15 blur-3xl pointer-events-none" />
+
+              <i className="fas fa-quote-left text-5xl text-emerald-400/40 absolute top-6 left-6" />
+
+              <div className="relative z-10 flex flex-col flex-grow">
+                <p className="text-slate-600 dark:text-slate-300 mb-6 flex-grow leading-relaxed">
+                  {testimonial.text}
+                </p>
+
+                <div className="mt-auto">
+                  <p className="font-bold text-slate-900 dark:text-white text-lg">
+                    {testimonial.author}
+                  </p>
+
+                  <div className="flex items-center mt-2 gap-1">
+                    {[...Array(testimonial.rating)].map((_, starIndex) => (
+                      <span
+                        key={starIndex}
+                        className="h-2.5 w-2.5 rounded-full bg-gradient-to-br from-amber-300 to-amber-500 shadow-[0_6px_18px_-6px_rgba(251,191,36,0.8)]"
+                      />
                     ))}
-                </div>
 
-                <button 
-                    onClick={handleNextTestimonial}
-                    className="w-12 h-12 flex items-center justify-center rounded-xl bg-slate-200 dark:bg-[#1e2235] hover:bg-slate-300 dark:hover:bg-[#2a2f44] text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-all active:scale-95"
-                     aria-label="Next testimonial"
-                >
-                    <i className="fas fa-chevron-right"></i>
-                </button>
+                    <span className="ml-2 text-xs font-semibold text-emerald-600 dark:text-emerald-200 bg-emerald-500/10 px-2 py-1 rounded-full border border-emerald-400/20">
+                      Verified
+                    </span>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
-        </section>
+        );
+      })}
+    </div>
+
+    {/* pagination controls */}
+    <div className="flex items-center justify-center gap-6 mt-12">
+      <button
+        onClick={handlePrevTestimonial}
+        className="w-12 h-12 flex items-center justify-center rounded-xl bg-slate-200 dark:bg-[#1e2235] hover:bg-slate-300 dark:hover:bg-[#2a2f44] text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-all active:scale-95"
+        aria-label="Previous testimonial"
+      >
+        <i className="fas fa-chevron-left" />
+      </button>
+
+      <div className="flex items-center gap-2">
+        {TESTIMONIALS.map((_, i) => (
+          <button
+            key={i}
+            onClick={() => setCurrentTestimonialIndex(i)}
+            className={`rounded-full transition-all duration-300 ${
+              i === currentTestimonialIndex
+                ? "w-3 h-3 bg-slate-800 dark:bg-white"
+                : "w-2 h-2 bg-slate-300 dark:bg-slate-600 hover:bg-slate-400 dark:hover:bg-slate-500"
+            }`}
+            aria-label={`Go to testimonial ${i + 1}`}
+          />
+        ))}
+      </div>
+
+      <button
+        onClick={handleNextTestimonial}
+        className="w-12 h-12 flex items-center justify-center rounded-xl bg-slate-200 dark:bg-[#1e2235] hover:bg-slate-300 dark:hover:bg-[#2a2f44] text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-all active:scale-95"
+        aria-label="Next testimonial"
+      >
+        <i className="fas fa-chevron-right" />
+      </button>
+    </div>
+  </div>
+</section>
+
 
         {/* FAQ Section */}
-        <section
-          ref={faqRef}
-          className={`py-20 bg-slate-50 dark:bg-[#141c2f] transition-opacity duration-1000 ${
-            isFaqInView ? 'opacity-100' : 'opacity-0'
-          }`}
-        >
-          <div className="container mx-auto px-8 max-w-4xl">
-            <h2 className="text-4xl font-bold text-slate-900 dark:text-white text-center mb-12">
-              Your EarnLab Questions Answered
-            </h2>
-            <div className="bg-white dark:bg-[#1e293b] rounded-lg shadow-lg border border-slate-200 dark:border-slate-800">
-              {FAQ_ITEMS.map((item, i) => (
-                <FaqAccordionItem key={i} item={item} />
-              ))}
-            </div>
-          </div>
-        </section>
+<section
+  ref={faqRef}
+  className={`relative py-20 bg-slate-50 dark:bg-[#0f1729] overflow-hidden transition-opacity duration-1000 ${
+    isFaqInView ? "opacity-100" : "opacity-0"
+  }`}
+>
+  {/* background + glows */}
+  <div className="absolute inset-0 bg-gradient-to-b from-emerald-100/25 via-transparent to-emerald-200/20 dark:from-emerald-500/5 dark:via-transparent dark:to-cyan-500/10" />
+  <div className="absolute -left-24 top-10 w-56 h-56 bg-gradient-to-br from-emerald-300/25 via-teal-200/25 to-cyan-200/20 blur-3xl pointer-events-none" />
+  <div className="absolute -right-20 bottom-0 w-64 h-64 bg-gradient-to-tr from-cyan-300/20 via-emerald-200/15 to-green-200/20 blur-3xl pointer-events-none" />
+
+  <div className="container relative mx-auto px-8 max-w-4xl">
+    {/* header */}
+    <div className="text-center mb-10">
+      <div className="flex items-center justify-center gap-3 mb-4">
+        <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-gradient-to-r from-emerald-500/15 via-cyan-500/10 to-green-500/15 border border-white/60 dark:border-emerald-500/20">
+          <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
+          <span className="text-xs font-semibold text-emerald-700 dark:text-emerald-200 uppercase tracking-wide">
+            Support
+          </span>
+        </div>
+      </div>
+
+      <h2 className="text-4xl font-bold text-slate-900 dark:text-white mb-3">
+        Your EarnLab Questions Answered
+      </h2>
+
+      <p className="text-center text-slate-600 dark:text-slate-300 max-w-2xl mx-auto">
+        Quick answers about getting started, payouts, and staying secure. Our team keeps
+        this list fresh so you can focus on earning.
+      </p>
+    </div>
+
+    {/* accordion */}
+    <div className="p-[1px] rounded-2xl bg-gradient-to-br from-white via-emerald-100/70 to-green-200/60 dark:from-emerald-500/10 dark:via-cyan-500/5 dark:to-emerald-500/15 shadow-[0_25px_65px_-25px_rgba(16,185,129,0.5)]">
+      <div className="bg-white/95 dark:bg-[#111827]/85 backdrop-blur-lg rounded-2xl shadow-lg border border-white/60 dark:border-emerald-500/15 divide-y divide-slate-200/70 dark:divide-emerald-500/10">
+        {FAQ_ITEMS.map((item, i) => (
+          <FaqAccordionItem key={i} item={item} />
+        ))}
+      </div>
+    </div>
+  </div>
+</section>
+
       </div>
     </div>
   );
