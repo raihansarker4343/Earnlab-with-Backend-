@@ -701,36 +701,75 @@ const HomePageContent: React.FC = () => {
         {/* Why Us Section */}
         <section
           ref={whyUsRef}
-          className="py-20 text-center bg-white dark:bg-[#0b111e]"
+          className="relative py-20 overflow-hidden bg-gradient-to-b from-white via-slate-50 to-white dark:from-[#0b111e] dark:via-[#0f172a] dark:to-[#0b111e]"
         >
-          <h2
-            className={`text-4xl font-bold text-slate-900 dark:text-white mb-12 transition-opacity duration-700 ${
-              isWhyUsInView ? 'opacity-100' : 'opacity-0'
-            }`}
-          >
-            We're the #1 site to make money.{' '}
-            <span className="text-green-400">Here's why</span>
-          </h2>
-          <div className="container mx-auto grid grid-cols-1 md:grid-cols-3 gap-8 px-8">
-            {siteBenefits.map((benefit, i) => (
-              <div
-                key={i}
-                className={`bg-slate-50 dark:bg-[#141c2f] p-8 rounded-lg text-left transition-all duration-500 ease-out hover:-translate-y-2 ${
-                  isWhyUsInView
-                    ? 'opacity-100 translate-y-0'
-                    : 'opacity-0 translate-y-8'
-                }`}
-                style={{ transitionDelay: `${i * 150}ms` }}
+          {/* soft glow background */}
+          <div className="absolute inset-0 pointer-events-none">
+            <div className="absolute -left-20 -top-32 h-64 w-64 bg-gradient-to-br from-green-400/20 via-emerald-500/20 to-teal-400/10 blur-3xl" />
+            <div className="absolute -right-12 bottom-0 h-80 w-80 bg-gradient-to-tr from-emerald-500/15 via-green-400/10 to-cyan-300/10 blur-3xl" />
+          </div>
+
+          <div className="container mx-auto px-8 relative">
+            {/* header */}
+            <div className="text-center max-w-3xl mx-auto mb-14">
+              <span className="inline-flex items-center gap-2 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] rounded-full bg-green-500/10 text-green-500 border border-green-500/30">
+                Why us
+              </span>
+
+              <h2
+                className={`text-4xl font-bold text-slate-900 dark:text-white mt-4 mb-4 transition-opacity duration-700 ${isWhyUsInView ? "opacity-100" : "opacity-0"
+                  }`}
               >
-                {benefit.icon}
-                <h3 className="text-2xl font-bold text-slate-900 dark:text-white mt-4 mb-2">
-                  {benefit.title}
-                </h3>
-                <p className="text-slate-600 dark:text-slate-400">
-                  {benefit.description}
-                </p>
-              </div>
-            ))}
+                We&apos;re the #1 site to make money.{" "}
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-green-400 via-emerald-400 to-teal-400">
+                  Here&apos;s why
+                </span>
+              </h2>
+
+              <p className="text-slate-600 dark:text-slate-400 text-lg">
+                Earning should feel premium—our payouts, speed, and daily boosts are wrapped
+                in a platform built to look and feel trustworthy.
+              </p>
+            </div>
+
+            {/* cards */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {siteBenefits.map((benefit, i) => (
+                <div
+                  key={i}
+                  className={`group relative h-full transition-all duration-500 ease-out ${isWhyUsInView ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
+                    }`}
+                  style={{ transitionDelay: `${i * 150}ms` }}
+                >
+                  {/* outer glow */}
+                  <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-green-400/25 via-emerald-400/15 to-teal-400/25 opacity-50 blur-2xl transition-opacity duration-500 group-hover:opacity-80" />
+
+                  {/* card body */}
+                  <div className="relative h-full rounded-2xl border border-white/50 dark:border-white/5 bg-white/80 dark:bg-[#0f172a]/80 backdrop-blur shadow-xl hover:-translate-y-2 hover:shadow-2xl transition-all duration-300">
+                    <div className="p-8 flex flex-col gap-4 h-full">
+                      <div className="inline-flex items-center justify-center w-14 h-14 rounded-xl bg-gradient-to-br from-green-500/15 via-emerald-400/20 to-teal-400/20 text-green-400 shadow-inner">
+                        {benefit.icon}
+                      </div>
+
+                      <div className="h-px w-10 bg-gradient-to-r from-green-400 via-emerald-400 to-teal-400" />
+
+                      <h3 className="text-2xl font-bold text-slate-900 dark:text-white">
+                        {benefit.title}
+                      </h3>
+
+                      <p className="text-slate-600 dark:text-slate-400 leading-relaxed">
+                        {benefit.description}
+                      </p>
+
+                      <div className="mt-auto inline-flex items-center gap-2 text-sm font-semibold text-green-500">
+                        <span className="h-2 w-2 rounded-full bg-green-400 animate-pulse" />
+                        Trusted by top earners
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         </section>
 
