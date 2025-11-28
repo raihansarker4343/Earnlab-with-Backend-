@@ -594,77 +594,124 @@ const HomePageContent: React.FC = () => {
         </section>
 
         {/* Best ways to earn Section */}
-        <section
-          ref={bestWaysRef}
-          className="py-20 text-center bg-white dark:bg-[#0b111e]"
-        >
-          <h2
-            className={`text-4xl font-bold text-slate-900 dark:text-white mb-12 transition-opacity duration-700 ${
-              isBestWaysInView ? 'opacity-100' : 'opacity-0'
-            }`}
-          >
-            Easy ways to earn money
-          </h2>
+        {/* Best ways to earn Section */}
+<section
+  ref={bestWaysRef}
+  className="relative py-20 text-center overflow-hidden bg-gradient-to-b from-white via-slate-50 to-white dark:from-[#0b111e] dark:via-[#0f172a] dark:to-[#0b111e]"
+>
+  {/* soft glow background */}
+  <div className="absolute inset-0 pointer-events-none">
+    <div className="absolute -left-20 -top-24 h-72 w-72 bg-gradient-to-br from-green-400/20 via-emerald-500/20 to-teal-400/15 blur-3xl" />
+    <div className="absolute -right-16 bottom-0 h-80 w-80 bg-gradient-to-tr from-emerald-500/15 via-green-400/10 to-cyan-300/10 blur-3xl" />
+  </div>
 
-          <div className="container mx-auto grid grid-cols-1 md:grid-cols-3 gap-8 px-8">
-            {earningMethods.map((method, i) => (
-              <div
-                key={i}
-                className={`bg-slate-50 dark:bg-[#141c2f] p-8 rounded-lg text-left flex flex-col transition-all duration-500 ease-out hover:-translate-y-2 ${
-                  isBestWaysInView
-                    ? 'opacity-100 translate-y-0'
-                    : 'opacity-0 translate-y-8'
-                }`}
-                style={{ transitionDelay: `${i * 150}ms` }}
-              >
-                {/* Title */}
-                <h3 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">
+  <div className="container mx-auto px-8 relative">
+    {/* header */}
+    <div className="max-w-3xl mx-auto mb-12">
+      <span className="inline-flex items-center gap-2 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] rounded-full bg-green-500/10 text-green-500 border border-green-500/30">
+        Best ways to earn
+      </span>
+
+      <h2
+        className={`text-4xl font-bold text-slate-900 dark:text-white mt-4 mb-4 transition-opacity duration-700 ${
+          isBestWaysInView ? "opacity-100" : "opacity-0"
+        }`}
+      >
+        Easy ways to earn money
+      </h2>
+
+      <p className="text-slate-600 dark:text-slate-400">
+        Pick the earning path that suits you—each route comes with trusted partners,
+        clear payouts, and a polished experience that matches the rest of the brand.
+      </p>
+    </div>
+
+    {/* cards */}
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+      {earningMethods.map((method, i) => (
+        <div
+          key={i}
+          className={`group relative h-full text-left transition-all duration-500 ease-out ${
+            isBestWaysInView ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
+          }`}
+          style={{ transitionDelay: `${i * 150}ms` }}
+        >
+          {/* outer glow */}
+          <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-green-400/25 via-emerald-400/15 to-teal-400/25 opacity-50 blur-2xl transition-opacity duration-500 group-hover:opacity-80" />
+
+          {/* card */}
+          <div className="relative h-full rounded-2xl border border-white/50 dark:border-white/5 bg-white/80 dark:bg-[#0f172a]/80 backdrop-blur shadow-xl hover:-translate-y-2 hover:shadow-2xl transition-all duration-300">
+            <div className="p-8 flex flex-col gap-4 h-full">
+              {/* title + badge */}
+              <div className="flex items-center justify-between">
+                <h3 className="text-2xl font-bold text-slate-900 dark:text-white">
                   {method.title}
                 </h3>
 
-                {/* Description */}
-                <p className="text-slate-600 dark:text-slate-400 mb-6 flex-grow">
-                  {method.description}
-                </p>
+                {method.featured && (
+                  <span className="inline-flex items-center px-3 py-1 text-xs font-semibold rounded-full bg-gradient-to-r from-green-500/20 via-emerald-400/20 to-teal-400/20 text-green-600 dark:text-green-300 border border-green-400/30">
+                    Featured
+                  </span>
+                )}
+              </div>
 
-                {/* Divider */}
-                <div className="border-t border-slate-200 dark:border-slate-700 my-6" />
+              {/* description */}
+              <p className="text-slate-600 dark:text-slate-400 leading-relaxed flex-grow">
+                {method.description}
+              </p>
 
-                {/* Earn info */}
+              <div className="h-px w-full bg-gradient-to-r from-transparent via-green-400/60 to-transparent" />
+
+              {/* earn info row */}
+              <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-slate-500 dark:text-slate-400">
                     {method.earnLabel}
                   </p>
-                  <p className="text-3xl font-bold text-slate-900 text-green-400">
-                    {method.earnAmount}
+                  <p className="text-3xl font-bold text-slate-900 dark:text-white">
+                    <span className="text-transparent bg-clip-text bg-gradient-to-r from-green-400 via-emerald-400 to-teal-400">
+                      {method.earnAmount}
+                    </span>
                   </p>
                 </div>
 
-                {/* MAIN + FLOATING OVERLAY IMAGES */}
-                <div className="mt-auto pt-6">
-                  <div className="relative rounded-2xl overflow-hidden aspect-[16/9]">
-                    {/* Base image (full cover) */}
-                    <img
-                      src={method.baseImage}
-                      alt={method.title}
-                      className="w-full h-full object-cover rounded-xl"
-                    />
-
-                    {/* Floating overlay images */}
-                    {method.overlays?.map((icon, idx) => (
-                      <img
-                        key={idx}
-                        src={icon.src}
-                        alt={`icon-${idx}`}
-                        className={`earn-floating-icon ${icon.className}`}
-                      />
-                    ))}
-                  </div>
+                <div className="inline-flex items-center gap-2 px-3 py-2 rounded-full border border-green-400/30 bg-green-500/10 text-sm font-semibold text-green-600 dark:text-green-300">
+                  <span className="h-2 w-2 rounded-full bg-green-400 animate-pulse" />
+                  Fast payouts
                 </div>
               </div>
-            ))}
+
+              {/* base image + floating overlays */}
+              <div className="mt-auto pt-4">
+                <div className="relative rounded-2xl overflow-hidden aspect-[16/9] border border-white/30 dark:border-white/10 shadow-inner">
+                  <img
+                    src={method.baseImage}
+                    alt={method.title}
+                    className="w-full h-full object-cover"
+                    loading="lazy"
+                  />
+
+                  {method.overlays?.map((icon, idx) => (
+                    <img
+                      key={idx}
+                      src={icon.src}
+                      alt={`icon-${idx}`}
+                      className={`earn-floating-icon ${icon.className}`}
+                      loading="lazy"
+                    />
+                  ))}
+
+                  <div className="absolute inset-0 bg-gradient-to-t from-slate-950/20 via-transparent to-transparent pointer-events-none" />
+                </div>
+              </div>
+            </div>
           </div>
-        </section>
+        </div>
+      ))}
+    </div>
+  </div>
+</section>
+
 
          {/* How it works */}
         <section className="py-20 bg-gradient-to-b from-white via-slate-50 to-white dark:from-[#0b111e] dark:via-[#0d1527] dark:to-[#0b111e]">
