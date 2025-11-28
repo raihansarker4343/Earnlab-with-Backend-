@@ -1,10 +1,11 @@
+
 import React, { useContext } from 'react';
 import { AppContext } from '../App';
 import { MenuIcon } from './icons/HeaderIcons';
 import { MoonIcon, SunIcon } from './icons/FooterIcons';
 
 const LoggedOutHeader: React.FC = () => {
-    const { isSidebarCollapsed, setIsSidebarCollapsed, setIsMobileSidebarOpen, theme, setTheme, setIsSigninModalOpen, openSignupModal } = useContext(AppContext);
+    const { isSidebarCollapsed, setIsSidebarCollapsed, setIsMobileSidebarOpen, theme, setTheme, setIsSigninModalOpen, openSignupModal, setCurrentPage } = useContext(AppContext);
 
     const toggleTheme = () => {
         setTheme(prevTheme => prevTheme === 'light' ? 'dark' : 'light');
@@ -29,7 +30,12 @@ const LoggedOutHeader: React.FC = () => {
                         <MenuIcon />
                     </button>
                 )}
-                 <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Earnello.com</h1>
+                 <img 
+                    src="https://res.cloudinary.com/dsezfqke7/image/upload/v1764357781/freecash_so0zlc.jpg"
+                    alt="Earnello" 
+                    className="h-8 cursor-pointer object-contain"
+                    onClick={() => setCurrentPage('Home')}
+                />
             </div>
              <div className="flex items-center gap-2">
                 <button 

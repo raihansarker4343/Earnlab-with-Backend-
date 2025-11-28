@@ -1,3 +1,4 @@
+
 import React, { useContext, useState, useEffect, useRef } from 'react';
 import { AppContext } from '../App';
 import { BellIcon, ChevronDownIcon, WalletIcon, LogoutIcon, MenuIcon } from './icons/HeaderIcons';
@@ -112,9 +113,9 @@ const Header: React.FC<HeaderProps> = ({ onLogout }) => {
             )}
             
             <img 
-                src="https://upload.wikimedia.org/wikipedia/commons/thumb/8/8a/Freecash_Logo.svg/512px-Freecash_Logo.svg.png"
+                src="https://res.cloudinary.com/dsezfqke7/image/upload/v1764357781/freecash_so0zlc.jpg"
                 alt="Earnello" 
-                className="h-8 hidden lg:block cursor-pointer object-contain"
+                className="h-8 cursor-pointer object-contain"
                 onClick={() => setCurrentPage('Home')}
             />
         </div>
