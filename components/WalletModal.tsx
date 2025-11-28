@@ -16,58 +16,62 @@ const WithdrawalConfirmation: React.FC<{
   const totalDeducted = amount + fee;
 
   return (
-    <div className="text-slate-700 dark:text-slate-300">
-      <h2 className="text-xl font-bold mb-4 text-slate-900 dark:text-white">
-        Confirm Your Withdrawal
+    <div className="text-slate-700 dark:text-slate-300 animate-fade-in">
+      <h2 className="text-2xl font-bold mb-6 text-slate-900 dark:text-white text-center">
+        Confirm Withdrawal
       </h2>
-      <div className="bg-slate-100 dark:bg-[#1e293b] p-4 rounded-lg space-y-3 text-sm">
-        <div className="flex justify-between">
-          <span className="text-slate-500 dark:text-slate-400">Amount</span>
-          <span className="font-semibold text-slate-900 dark:text-white">
+      <div className="bg-slate-50 dark:bg-[#0f1523] p-6 rounded-2xl border border-slate-200 dark:border-slate-800 space-y-4 text-sm shadow-inner">
+        <div className="flex justify-between items-center">
+          <span className="text-slate-500 dark:text-slate-400 font-medium">Withdrawal Amount</span>
+          <span className="font-bold text-lg text-slate-900 dark:text-white">
             ${amount.toFixed(2)}
           </span>
         </div>
-        <div className="flex justify-between">
-          <span className="text-slate-500 dark:text-slate-400">
+        <div className="flex justify-between items-center">
+          <span className="text-slate-500 dark:text-slate-400 font-medium">
             Network Fee
           </span>
-          <span className="font-semibold text-slate-900 dark:text-white">
-            ${fee.toFixed(2)}
+          <span className="font-semibold text-green-500">
+            {fee === 0 ? 'Free' : `$${fee.toFixed(2)}`}
           </span>
         </div>
-        <div className="flex justify-between text-base font-bold border-t border-slate-200 dark:border-slate-700 pt-3">
-          <span className="text-slate-900 dark:text-white">
+        <div className="h-px bg-slate-200 dark:bg-slate-700/50 my-2"></div>
+        <div className="flex justify-between items-center text-base">
+          <span className="font-bold text-slate-900 dark:text-white">
             Total Deducted
           </span>
-          <span className="text-red-500 dark:text-red-400">
+          <span className="text-xl font-bold text-slate-900 dark:text-white">
             ${totalDeducted.toFixed(2)}
           </span>
         </div>
       </div>
 
-      <div className="mt-4 space-y-2 text-sm">
-        <p className="text-slate-500 dark:text-slate-400">
-          You are withdrawing to the following address:
+      <div className="mt-6 space-y-3">
+        <p className="text-slate-500 dark:text-slate-400 text-sm font-medium">
+          Destination Address ({details.cryptoName})
         </p>
-        <p className="font-mono bg-slate-100 dark:bg-[#1e293b] p-2 rounded break-all text-xs">
-          {details.address}
-        </p>
-        <p className="text-yellow-600 dark:text-yellow-400 text-xs font-semibold mt-2">
-          Please double-check the address. Crypto transactions are
-          irreversible.
-        </p>
+        <div className="bg-slate-100 dark:bg-[#0f1523] p-4 rounded-xl border border-slate-200 dark:border-slate-800 break-all font-mono text-xs text-slate-600 dark:text-slate-300 flex items-center gap-3">
+            <div className="w-8 h-8 rounded-full bg-blue-500/10 text-blue-500 flex items-center justify-center flex-shrink-0">
+                <i className="fas fa-wallet"></i>
+            </div>
+            {details.address}
+        </div>
+        <div className="flex items-start gap-2 bg-yellow-500/10 p-3 rounded-lg text-yellow-600 dark:text-yellow-500 text-xs">
+            <i className="fas fa-exclamation-triangle mt-0.5"></i>
+            <p>Please double-check the address. Blockchain transactions are irreversible and cannot be canceled once sent.</p>
+        </div>
       </div>
 
-      <div className="mt-8 flex items-center gap-3">
+      <div className="mt-8 flex items-center gap-4">
         <button
           onClick={onBack}
-          className="flex-1 p-3 bg-slate-200 dark:bg-[#1e293b] hover:bg-slate-300 dark:hover:bg-slate-700 rounded-lg font-semibold"
+          className="flex-1 py-3.5 px-4 bg-transparent border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300 rounded-xl font-bold transition-colors"
         >
           Back
         </button>
         <button
           onClick={onConfirm}
-          className="flex-1 bg-sky-500 hover:bg-sky-600 text-white font-bold py-3 px-4 rounded-lg"
+          className="flex-[2] bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold py-3.5 px-4 rounded-xl shadow-lg shadow-blue-500/25 transition-transform active:scale-95"
         >
           Confirm & Withdraw
         </button>
@@ -83,7 +87,7 @@ const WithdrawalForm: React.FC<{
 }> = ({ cryptoName, onBack, onProceed }) => {
   const { balance } = useContext(AppContext);
   const [address, setAddress] = useState('');
-  const [amount, setAmount] = useState('0');
+  const [amount, setAmount] = useState('');
 
   const handleCreateWithdrawal = () => {
     const withdrawalAmount = parseFloat(amount);
@@ -103,110 +107,79 @@ const WithdrawalForm: React.FC<{
   };
 
   return (
-    <div className="text-slate-700 dark:text-slate-300">
-      <h2 className="text-sm font-semibold mb-6">
-        <span className="text-slate-500 dark:text-slate-400">Crypto</span> &gt;{' '}
-        {cryptoName}
-      </h2>
+    <div className="text-slate-700 dark:text-slate-300 animate-fade-in">
+      <div className="flex items-center gap-3 mb-8">
+        <button onClick={onBack} className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors">
+            <i className="fas fa-arrow-left text-lg"></i>
+        </button>
+        <h2 className="text-xl font-bold text-slate-900 dark:text-white">
+          Withdraw {cryptoName}
+        </h2>
+      </div>
+
       <div className="space-y-6">
         <div>
           <label
-            htmlFor="chain"
-            className="block text-sm font-semibold text-slate-500 dark:text-slate-400 mb-2"
-          >
-            Chain
-          </label>
-          <div className="relative">
-            <select
-              id="chain"
-              className="w-full bg-slate-100 dark:bg-[#1e293b] border border-slate-300 dark:border-slate-700 rounded-lg px-4 py-3 appearance-none focus:outline-none focus:ring-2 focus:ring-blue-500"
-              defaultValue={cryptoName}
-            >
-              <option>{cryptoName}</option>
-            </select>
-            <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-slate-500 dark:text-slate-400">
-              <svg
-                className="w-5 h-5"
-                fill="currentColor"
-                viewBox="0 0 20 20"
-              >
-                <path
-                  fillRule="evenodd"
-                  d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
-                  clipRule="evenodd"
-                ></path>
-              </svg>
-            </div>
-          </div>
-        </div>
-
-        <div>
-          <label
             htmlFor="wallet-address"
-            className="block text-sm font-semibold text-slate-500 dark:text-slate-400 mb-2"
+            className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2 ml-1"
           >
             Wallet Address
           </label>
-          <div className="relative">
+          <div className="relative group">
             <input
               type="text"
               id="wallet-address"
               value={address}
               onChange={(e) => setAddress(e.target.value)}
-              placeholder="Enter your Wallet Address..."
-              className="w-full bg-slate-100 dark:bg-[#1e293b] border border-slate-300 dark:border-slate-700 rounded-lg pl-4 pr-12 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder={`Enter your ${cryptoName} Address`}
+              className="w-full bg-slate-50 dark:bg-[#0f1523] border border-slate-200 dark:border-slate-700/60 rounded-xl pl-4 pr-12 py-4 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all font-mono text-sm"
             />
-            <button className="absolute inset-y-0 right-0 flex items-center justify-center w-12 bg-sky-500 text-white rounded-r-lg hover:bg-sky-600">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-5 w-5"
-                viewBox="0 0 20 20"
-                fill="currentColor"
-              >
-                <path d="M7 3a1 1 0 000 2h6a1 1 0 100-2H7zM4 7a1 1 0 011-1h10a1 1 0 110 2H5a1 1 0 01-1-1zM2 11a2 2 0 012-2h12a2 2 0 012 2v4a2 2 0 01-2-2H4a2 2 0 01-2-2v-4z" />
-              </svg>
-            </button>
+            <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-slate-400 group-focus-within:text-blue-500">
+               <i className="fas fa-wallet"></i>
+            </div>
           </div>
         </div>
 
         <div>
-          <label
-            htmlFor="amount"
-            className="block text-sm font-semibold text-slate-500 dark:text-slate-400 mb-2"
-          >
-            Amount
-          </label>
-          <div className="relative flex items-center">
+          <div className="flex justify-between items-center mb-2 ml-1">
+            <label
+                htmlFor="amount"
+                className="block text-sm font-bold text-slate-700 dark:text-slate-300"
+            >
+                Amount (USD)
+            </label>
+            <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">Available: <span className="text-green-500 font-bold">${balance.toFixed(2)}</span></span>
+          </div>
+          
+          <div className="relative group">
+            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+              <span className="text-slate-400 font-bold">$</span>
+            </div>
             <input
               type="number"
               id="amount"
               value={amount}
               onChange={(e) => setAmount(e.target.value)}
-              placeholder="0"
-              className="w-full bg-slate-100 dark:bg-[#1e293b] border border-slate-300 dark:border-slate-700 rounded-lg pl-4 pr-32 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+              placeholder="0.00"
+              className="w-full bg-slate-50 dark:bg-[#0f1523] border border-slate-200 dark:border-slate-700/60 rounded-xl pl-8 pr-24 py-4 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all font-bold text-lg [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
             />
             <button
               onClick={() => setAmount(balance.toFixed(2))}
-              className="absolute right-2 bg-sky-500 text-white font-semibold py-1.5 px-4 rounded-md hover:bg-sky-600 text-sm"
+              className="absolute right-2 top-2 bottom-2 bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 font-bold px-4 rounded-lg text-xs uppercase tracking-wide transition-colors"
             >
-              Max Amount
+              Max
             </button>
           </div>
         </div>
       </div>
 
-      <div className="mt-8 flex items-center gap-3">
-        <button
-          onClick={onBack}
-          className="p-3 bg-slate-200 dark:bg-[#1e293b] hover:bg-slate-300 dark:hover:bg-slate-700 rounded-lg"
-        >
-          <i className="fas fa-undo"></i>
-        </button>
+      <div className="mt-10">
         <button
           onClick={handleCreateWithdrawal}
-          className="flex-1 bg-sky-500 hover:bg-sky-600 text-white font-bold py-3 px-4 rounded-lg"
+          disabled={!address || !amount || parseFloat(amount) <= 0 || parseFloat(amount) > balance}
+          className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 disabled:from-slate-400 disabled:to-slate-500 disabled:cursor-not-allowed text-white font-bold py-4 px-4 rounded-xl shadow-lg shadow-blue-500/25 transition-all active:scale-[0.98]"
         >
-          Create Withdrawal
+          Review Withdrawal
         </button>
       </div>
     </div>
@@ -217,45 +190,31 @@ const TransactionHistory: React.FC = () => {
   const { transactions } = useContext(AppContext);
 
   return (
-    <div className="overflow-x-auto">
+    <div className="overflow-x-auto -mx-6">
       {transactions.length > 0 ? (
         <table className="w-full text-sm text-left">
-          <thead className="text-xs text-slate-500 dark:text-slate-400 uppercase bg-slate-100 dark:bg-[#1e293b]">
+          <thead className="text-xs text-slate-500 dark:text-slate-400 uppercase bg-slate-50 dark:bg-[#0f1523] border-y border-slate-200 dark:border-slate-700/50">
             <tr>
-              <th scope="col" className="px-4 py-3">
-                ID
-              </th>
-              <th scope="col" className="px-4 py-3">
-                Type
-              </th>
-              <th scope="col" className="px-4 py-3">
-                Method
-              </th>
-              <th scope="col" className="px-4 py-3">
-                Amount
-              </th>
-              <th scope="col" className="px-4 py-3">
-                Status
-              </th>
-              <th scope="col" className="px-4 py-3">
-                Date
-              </th>
+              <th scope="col" className="px-6 py-3 font-semibold tracking-wider">Type</th>
+              <th scope="col" className="px-6 py-3 font-semibold tracking-wider">Method</th>
+              <th scope="col" className="px-6 py-3 font-semibold tracking-wider">Amount</th>
+              <th scope="col" className="px-6 py-3 font-semibold tracking-wider">Status</th>
+              <th scope="col" className="px-6 py-3 font-semibold tracking-wider">Date</th>
             </tr>
           </thead>
-          <tbody className="text-slate-700 dark:text-slate-300">
+          <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
             {transactions.map((tx) => (
               <tr
                 key={tx.id}
-                className="border-b border-slate-200 dark:border-slate-800 last:border-b-0"
+                className="hover:bg-slate-50 dark:hover:bg-[#1a2333] transition-colors"
               >
-                <td className="px-4 py-3 font-mono text-xs">{tx.id}</td>
-                <td className="px-4 py-3 whitespace-nowrap">
-                  <div className="flex items-center gap-2">
+                <td className="px-6 py-4 whitespace-nowrap">
+                  <div className="flex items-center gap-3">
                     <div
-                      className={`w-5 h-5 rounded-full flex items-center justify-center text-xs ${
+                      className={`w-8 h-8 rounded-full flex items-center justify-center text-sm shadow-sm ${
                         tx.type === 'Withdrawal'
-                          ? 'bg-red-500/20 text-red-500'
-                          : 'bg-green-500/20 text-green-500'
+                          ? 'bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400'
+                          : 'bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400'
                       }`}
                     >
                       <i
@@ -266,25 +225,25 @@ const TransactionHistory: React.FC = () => {
                         }`}
                       ></i>
                     </div>
-                    <span className="font-semibold text-slate-800 dark:text-slate-200">
+                    <span className="font-semibold text-slate-700 dark:text-slate-200">
                       {tx.type}
                     </span>
                   </div>
                 </td>
-                <td className="px-4 py-3 whitespace-nowrap">{tx.method}</td>
+                <td className="px-6 py-4 whitespace-nowrap text-slate-600 dark:text-slate-400">{tx.method}</td>
                 <td
-                  className={`px-4 py-3 font-semibold whitespace-nowrap ${
+                  className={`px-6 py-4 font-bold whitespace-nowrap ${
                     tx.type === 'Withdrawal'
-                      ? 'text-red-500'
-                      : 'text-green-500'
+                      ? 'text-slate-900 dark:text-white'
+                      : 'text-green-500 dark:text-green-400'
                   }`}
                 >
                   ${(Number(tx.amount) || 0).toFixed(2)}
                 </td>
-                <td className="px-4 py-3">
+                <td className="px-6 py-4">
                   <StatusBadge status={tx.status} />
                 </td>
-                <td className="px-4 py-3 text-xs whitespace-nowrap">
+                <td className="px-6 py-4 text-xs text-slate-500 dark:text-slate-500 whitespace-nowrap">
                   {new Date(tx.date).toLocaleDateString()}
                 </td>
               </tr>
@@ -292,11 +251,12 @@ const TransactionHistory: React.FC = () => {
           </tbody>
         </table>
       ) : (
-        <div className="text-center py-12">
-          <i className="fas fa-file-invoice-dollar text-4xl text-slate-400 dark:text-slate-500 mb-4"></i>
-          <p className="text-slate-500 dark:text-slate-400">
-            No transaction history found.
-          </p>
+        <div className="flex flex-col items-center justify-center py-16 text-center">
+          <div className="w-16 h-16 bg-slate-100 dark:bg-[#1e293b] rounded-full flex items-center justify-center mb-4">
+             <i className="fas fa-history text-2xl text-slate-400 dark:text-slate-500"></i>
+          </div>
+          <h3 className="text-slate-900 dark:text-white font-semibold mb-1">No transactions yet</h3>
+          <p className="text-slate-500 dark:text-slate-400 text-sm">Your withdrawal history will appear here.</p>
         </div>
       )}
     </div>
@@ -474,13 +434,16 @@ const WalletModal: React.FC = () => {
       default:
         if (isLoadingMethods) {
           return (
-            <div className="space-y-4 p-4">
-              <SkeletonLoader className="h-10 w-1/3" />
-              <SkeletonLoader className="h-16 w-full" />
-              <SkeletonLoader className="h-10 w-1/3 mt-4" />
-              <div className="grid grid-cols-4 gap-4">
-                {[...Array(4)].map((_, i) => (
-                  <SkeletonLoader key={i} className="h-24 w-full" />
+            <div className="space-y-6 p-2">
+              <SkeletonLoader className="h-8 w-32 rounded-lg" />
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                 <SkeletonLoader className="h-20 w-full rounded-xl" />
+                 <SkeletonLoader className="h-20 w-full rounded-xl" />
+              </div>
+              <SkeletonLoader className="h-8 w-32 rounded-lg mt-4" />
+              <div className="grid grid-cols-3 md:grid-cols-4 gap-4">
+                {[...Array(8)].map((_, i) => (
+                  <SkeletonLoader key={i} className="h-24 w-full rounded-xl" />
                 ))}
               </div>
             </div>
@@ -488,7 +451,11 @@ const WalletModal: React.FC = () => {
         }
         if (errorMethods) {
           return (
-            <p className="text-center text-red-500 p-8">{errorMethods}</p>
+            <div className="text-center py-12">
+                <i className="fas fa-exclamation-triangle text-4xl text-red-400 mb-4"></i>
+                <p className="text-red-500 mb-4">{errorMethods}</p>
+                <button onClick={closeModal} className="text-slate-500 hover:underline">Close</button>
+            </div>
           );
         }
 
@@ -498,98 +465,118 @@ const WalletModal: React.FC = () => {
         }, {} as { [key: string]: PaymentMethod[] });
 
         return (
-          <div className="space-y-6">
+          <div className="space-y-8 animate-fade-in">
             {groupedMethods.special && (
               <div>
-                <h3 className="text-sm font-semibold text-slate-500 dark:text-slate-400 mb-2">
-                  Special
+                <h3 className="flex items-center gap-2 text-sm font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-4 pl-1">
+                  <i className="fas fa-star text-yellow-500"></i> Featured Methods
                 </h3>
-                {groupedMethods.special.map((method) => (
-                  <button
-                    key={method.id}
-                    className="w-full bg-slate-100 dark:bg-[#1e293b] hover:bg-slate-200 dark:hover:bg-slate-700 p-4 rounded-lg flex justify-between items-center"
-                  >
-                    <div className="flex items-center gap-3">
-                      {method.iconClass.startsWith('http') ? (
-                        <img
-                          src={method.iconClass}
-                          alt={method.name}
-                          className="w-8 h-8 object-contain"
-                        />
-                      ) : (
-                        <i
-                          className={`${method.iconClass} text-green-400 text-xl`}
-                        ></i>
-                      )}
-                      <span className="font-semibold">{method.name}</span>
-                    </div>
-                    {method.specialBonus && (
-                      <span className="bg-green-500/20 text-green-400 text-xs font-bold px-2 py-1 rounded">
-                        {method.specialBonus}
-                      </span>
-                    )}
-                  </button>
-                ))}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {groupedMethods.special.map((method) => (
+                    <button
+                        key={method.id}
+                        className="group relative w-full flex items-center justify-between p-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#1e293b] hover:bg-slate-50 dark:hover:bg-[#263345] transition-all duration-300 hover:shadow-lg hover:shadow-green-500/10 hover:border-green-500/40 overflow-hidden"
+                    >
+                        {/* Gradient Glow */}
+                        <div className="absolute inset-0 bg-gradient-to-r from-green-500/10 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
+                        
+                        <div className="relative flex items-center gap-4">
+                            <div className="w-12 h-12 rounded-lg bg-slate-100 dark:bg-[#0f1523] flex items-center justify-center shadow-inner group-hover:scale-105 transition-transform duration-300">
+                                {method.iconClass.startsWith('http') ? (
+                                <img
+                                    src={method.iconClass}
+                                    alt={method.name}
+                                    className="w-7 h-7 object-contain"
+                                />
+                                ) : (
+                                <i
+                                    className={`${method.iconClass} text-green-500 text-2xl`}
+                                ></i>
+                                )}
+                            </div>
+                            <span className="font-bold text-lg text-slate-700 dark:text-slate-200 group-hover:text-slate-900 dark:group-hover:text-white transition-colors">{method.name}</span>
+                        </div>
+                        {method.specialBonus && (
+                            <span className="relative z-10 bg-gradient-to-r from-green-500 to-emerald-600 text-white text-xs font-bold px-3 py-1.5 rounded-full shadow-md shadow-green-500/20">
+                            {method.specialBonus}
+                            </span>
+                        )}
+                    </button>
+                    ))}
+                </div>
               </div>
             )}
+            
             {groupedMethods.cash && (
               <div>
-                <h3 className="text-sm font-semibold text-slate-500 dark:text-slate-400 mb-2">
-                  Cash
+                <h3 className="flex items-center gap-2 text-sm font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-4 pl-1">
+                  <i className="fas fa-money-bill-wave text-green-500"></i> Cash & Gift Cards
                 </h3>
-                {groupedMethods.cash.map((method) => (
-                  <button
-                    key={method.id}
-                    className="w-full bg-slate-100 dark:bg-[#1e293b] hover:bg-slate-200 dark:hover:bg-slate-700 p-4 rounded-lg flex items-center gap-3"
-                  >
-                    {method.iconClass.startsWith('http') ? (
-                      <img
-                        src={method.iconClass}
-                        alt={method.name}
-                        className="w-8 h-8 object-contain"
-                      />
-                    ) : (
-                      <i
-                        className={`${method.iconClass} text-blue-400 text-xl`}
-                      ></i>
-                    )}
-                    <span className="font-semibold">{method.name}</span>
-                  </button>
-                ))}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {groupedMethods.cash.map((method) => (
+                    <button
+                        key={method.id}
+                        className="group relative w-full flex items-center p-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#1e293b] hover:bg-slate-50 dark:hover:bg-[#263345] transition-all duration-300 hover:shadow-lg hover:shadow-blue-500/10 hover:border-blue-500/40 overflow-hidden"
+                    >
+                        <div className="absolute inset-0 bg-gradient-to-r from-blue-500/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
+                        
+                        <div className="relative w-12 h-12 rounded-lg bg-slate-100 dark:bg-[#0f1523] flex items-center justify-center shadow-inner mr-4 group-hover:scale-105 transition-transform duration-300">
+                            {method.iconClass.startsWith('http') ? (
+                            <img
+                                src={method.iconClass}
+                                alt={method.name}
+                                className="w-7 h-7 object-contain"
+                            />
+                            ) : (
+                            <i
+                                className={`${method.iconClass} text-blue-500 text-2xl`}
+                            ></i>
+                            )}
+                        </div>
+                        <span className="relative font-bold text-lg text-slate-700 dark:text-slate-200 group-hover:text-slate-900 dark:group-hover:text-white transition-colors">{method.name}</span>
+                    </button>
+                    ))}
+                </div>
               </div>
             )}
+
             {groupedMethods.crypto && (
               <div>
-                <h3 className="text-sm font-semibold text-slate-500 dark:text-slate-400 mb-2">
-                  Crypto
+                <h3 className="flex items-center gap-2 text-sm font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-4 pl-1">
+                  <i className="fab fa-bitcoin text-orange-500"></i> Crypto Withdrawals
                 </h3>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
                   {groupedMethods.crypto.map((crypto) => (
                     <button
                       key={crypto.id}
                       onClick={() => handleSelectCrypto(crypto.name)}
-                      className="bg-slate-100 dark:bg-[#1e293b] hover:bg-slate-200 dark:hover:bg-slate-700 p-4 rounded-lg text-center flex flex-col items-center justify-center gap-2 transition-transform active:scale-95"
+                      className="group relative flex flex-col items-center justify-center gap-3 p-5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#1e293b] hover:bg-slate-50 dark:hover:bg-[#263345] transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-blue-500/10 hover:border-blue-500/40 overflow-hidden"
                     >
-                      {crypto.iconClass.startsWith('http') ? (
-                        <img
-                          src={crypto.iconClass}
-                          alt={crypto.name}
-                          className="w-10 h-10 object-contain mb-2"
-                        />
-                      ) : (
-                        <i
-                          className={`${crypto.iconClass} text-3xl mb-2 text-blue-500 dark:text-blue-400`}
-                        ></i>
-                      )}
-                      <span className="block text-xs font-bold text-slate-700 dark:text-slate-200">
+                      {/* Gradient Hover BG */}
+                      <div className="absolute inset-0 bg-gradient-to-b from-transparent to-blue-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
+                      
+                      <div className="relative z-10 w-12 h-12 rounded-full bg-slate-100 dark:bg-[#0f1523] flex items-center justify-center shadow-sm group-hover:scale-110 transition-transform duration-300">
+                        {crypto.iconClass.startsWith('http') ? (
+                          <img
+                            src={crypto.iconClass}
+                            alt={crypto.name}
+                            className="w-7 h-7 object-contain"
+                          />
+                        ) : (
+                          <i
+                            className={`${crypto.iconClass} text-2xl text-blue-500 dark:text-blue-400`}
+                          ></i>
+                        )}
+                      </div>
+                      <span className="relative z-10 block text-xs font-bold text-slate-600 dark:text-slate-300 group-hover:text-blue-600 dark:group-hover:text-blue-300 transition-colors uppercase tracking-wide text-center">
                         {crypto.name}
                       </span>
                     </button>
                   ))}
                 </div>
-                <div className="text-center mt-4">
-                  <button className="text-blue-500 dark:text-blue-400 hover:text-blue-600 dark:hover:text-blue-300 font-semibold">
-                    Show All
+                <div className="text-center mt-6">
+                  <button className="text-sm font-semibold text-slate-500 hover:text-blue-500 dark:text-slate-400 dark:hover:text-blue-400 transition-colors flex items-center justify-center gap-2 mx-auto">
+                    View all methods <i className="fas fa-chevron-down text-xs"></i>
                   </button>
                 </div>
               </div>
@@ -602,50 +589,57 @@ const WalletModal: React.FC = () => {
   return (
     <>
       <div
-        className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50"
+        className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm transition-opacity"
         onClick={closeModal}
       >
         <div
-          className="bg-white dark:bg-[#141c2f] rounded-lg shadow-xl w-full max-w-2xl text-slate-8
-00 dark:text-slate-300"
+          className="relative w-full max-w-2xl bg-white dark:bg-[#141c2f] rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh] border border-slate-200 dark:border-slate-800"
           onClick={(e) => e.stopPropagation()}
         >
-          <div className="p-6">
-            <div className="flex justify-between items-center mb-6">
-              <div className="flex border-b border-slate-200 dark:border-slate-700">
+            {/* Header */}
+            <div className="flex items-center justify-between px-6 py-5 border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-[#141c2f] z-10">
+              <div className="flex gap-6">
                 <button
                   onClick={() => setActiveTab('withdraw')}
-                  className={`px-4 py-2 font-semibold ${
+                  className={`pb-1 text-lg font-bold transition-colors border-b-2 ${
                     activeTab === 'withdraw'
-                      ? 'text-slate-900 dark:text-white border-b-2 border-blue-500'
-                      : 'text-slate-500 dark:text-slate-400'
+                      ? 'text-slate-900 dark:text-white border-blue-500'
+                      : 'text-slate-400 dark:text-slate-500 border-transparent hover:text-slate-600 dark:hover:text-slate-300'
                   }`}
                 >
                   Withdraw
                 </button>
                 <button
                   onClick={() => setActiveTab('history')}
-                  className={`px-4 py-2 font-semibold ${
+                  className={`pb-1 text-lg font-bold transition-colors border-b-2 ${
                     activeTab === 'history'
-                      ? 'text-slate-900 dark:text-white border-b-2 border-blue-500'
-                      : 'text-slate-500 dark:text-slate-400'
+                      ? 'text-slate-900 dark:text-white border-blue-500'
+                      : 'text-slate-400 dark:text-slate-500 border-transparent hover:text-slate-600 dark:hover:text-slate-300'
                   }`}
                 >
                   History
                 </button>
               </div>
-              <button
-                onClick={closeModal}
-                className="text-3xl font-light text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
-              >
-                &times;
-              </button>
+              <div className="flex items-center gap-4">
+                  <div className="hidden sm:flex flex-col items-end mr-2">
+                      <span className="text-xs text-slate-500 font-semibold uppercase">Balance</span>
+                      <span className="text-green-500 font-bold">${balance.toFixed(2)}</span>
+                  </div>
+                  <button
+                    onClick={closeModal}
+                    className="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 flex items-center justify-center text-slate-500 dark:text-slate-400 transition-colors"
+                  >
+                    <i className="fas fa-times"></i>
+                  </button>
+              </div>
             </div>
 
-            {activeTab === 'withdraw'
-              ? renderWithdrawContent()
-              : <TransactionHistory />}
-          </div>
+            {/* Content Area */}
+            <div className="flex-1 overflow-y-auto p-6 scrollbar-thin scrollbar-thumb-slate-300 dark:scrollbar-thumb-slate-700">
+                {activeTab === 'withdraw'
+                ? renderWithdrawContent()
+                : <TransactionHistory />}
+            </div>
         </div>
       </div>
 
