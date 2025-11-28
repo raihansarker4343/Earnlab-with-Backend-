@@ -274,6 +274,31 @@ const earningMethods = [
   },
 ];
 
+
+const statHighlights = [
+  { label: 'Earners paid out', value: '$4,200,000', suffix: '+' },
+  { label: 'Tasks finished', value: '9,800,000', suffix: '+' },
+  { label: 'Avg. daily payout', value: '$38', suffix: '' },
+];
+
+const howItWorks = [
+  {
+    title: 'Create your account',
+    description: 'Join free with your email—no credit card, no hidden fees.',
+    icon: 'fa-user-plus',
+  },
+  {
+    title: 'Pick offers you like',
+    description: 'Choose games, apps, and surveys tailored to your interests.',
+    icon: 'fa-clipboard-list',
+  },
+  {
+    title: 'Cash out instantly',
+    description: 'Withdraw earnings to your favorite payout method without waiting.',
+    icon: 'fa-bolt',
+  },
+];
+
 const siteBenefits = [
   {
     icon: <HighestPayoutsIcon />,
@@ -536,6 +561,38 @@ const HomePageContent: React.FC = () => {
           </div>
         </section>
 
+          {/* Highlight metrics ribbon */}
+        <section
+          ref={statsRef}
+          className={`bg-gradient-to-r from-[#0b111e] via-[#0f172a] to-[#0b111e] py-10 transition-opacity duration-700 ${
+            isStatsInView ? 'opacity-100' : 'opacity-0'
+          }`}
+        >
+          <div className="container mx-auto px-6 grid grid-cols-1 md:grid-cols-3 gap-6">
+            {statHighlights.map((stat, index) => (
+              <div
+                key={stat.label}
+                className="relative overflow-hidden rounded-2xl border border-slate-800/60 bg-white/5 px-6 py-5 shadow-lg backdrop-blur"
+                style={{ boxShadow: '0 20px 60px rgba(0,0,0,0.25)' }}
+              >
+                <div className="absolute inset-x-4 top-0 h-px bg-gradient-to-r from-transparent via-green-400 to-transparent opacity-60" />
+                <div className="flex items-center gap-3">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-green-500/15 text-green-400">
+                    <i className={`fas ${index === 2 ? 'fa-wallet' : 'fa-fire'} text-xl`} />
+                  </div>
+                  <div>
+                    <div className="text-3xl font-bold text-white">
+                      <AnimatedCounter value={stat.value} />
+                      {stat.suffix}
+                    </div>
+                    <p className="text-slate-300 text-sm mt-1">{stat.label}</p>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+
         {/* Best ways to earn Section */}
         <section
           ref={bestWaysRef}
@@ -606,6 +663,38 @@ const HomePageContent: React.FC = () => {
                 </div>
               </div>
             ))}
+          </div>
+        </section>
+
+         {/* How it works */}
+        <section className="py-20 bg-gradient-to-b from-white via-slate-50 to-white dark:from-[#0b111e] dark:via-[#0d1527] dark:to-[#0b111e]">
+          <div className="container mx-auto px-8 text-center max-w-6xl">
+            <span className="text-xs font-semibold tracking-[0.15em] uppercase text-green-400">Step-by-step</span>
+            <h2 className="text-4xl font-bold text-slate-900 dark:text-white mt-3 mb-6">
+              Start earning in minutes
+            </h2>
+            <p className="text-slate-600 dark:text-slate-400 max-w-3xl mx-auto mb-12">
+              A streamlined flow built for speed: create your account, pick the offers you like, and cash out without waiting days for approvals.
+            </p>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+              {howItWorks.map((step, idx) => (
+                <div
+                  key={step.title}
+                  className="relative h-full rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#0f172a] p-8 text-left shadow-lg transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl"
+                >
+                  <div className="flex items-center justify-between mb-6">
+                    <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-green-500/15 text-green-400 text-xl">
+                      <i className={`fas ${step.icon}`} />
+                    </div>
+                    <span className="text-sm font-semibold text-slate-500 dark:text-slate-400">Step {idx + 1}</span>
+                  </div>
+                  <h3 className="text-2xl font-bold text-slate-900 dark:text-white mb-3">{step.title}</h3>
+                  <p className="text-slate-600 dark:text-slate-400 leading-relaxed">{step.description}</p>
+                  <div className="absolute inset-x-0 bottom-0 h-1 rounded-b-2xl bg-gradient-to-r from-green-400 via-emerald-400 to-teal-400" />
+                </div>
+              ))}
+            </div>
           </div>
         </section>
 
