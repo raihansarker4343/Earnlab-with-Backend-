@@ -774,74 +774,118 @@ const HomePageContent: React.FC = () => {
         </section>
 
         {/* New Games & Surveys Carousel Section */}
-        <section 
-            ref={gamesSectionRef}
-            className={`py-20 bg-white dark:bg-[#0b111e] relative transition-opacity duration-1000 ${
-                isGamesSectionInView ? 'opacity-100' : 'opacity-0'
+        <section
+          ref={gamesSectionRef}
+          className={`relative py-20 overflow-hidden transition-opacity duration-1000 ${isGamesSectionInView ? "opacity-100" : "opacity-0"
             }`}
         >
-            <div className="container mx-auto px-4 sm:px-8">
-                <div className="text-center max-w-3xl mx-auto mb-12">
-                    <h2 className="text-3xl md:text-4xl font-bold text-slate-900 dark:text-white mb-4">
-                        Play games & take surveys to earn money
-                    </h2>
-                    <p className="text-slate-600 dark:text-slate-400 text-lg">
-                        Download mobile games, complete exciting levels, share your opinions on products, and earn real cash! Join thousands of users making money today.
-                    </p>
-                </div>
+          {/* Background gradient + soft glows */}
+          <div className="absolute inset-0 bg-gradient-to-br from-green-50 via-white to-emerald-50 dark:from-[#0b111e] dark:via-[#0f172a] dark:to-[#0b111e]" />
+          <div className="absolute inset-0 opacity-40 blur-3xl pointer-events-none" aria-hidden>
+            <div className="absolute -top-10 -left-16 w-64 h-64 rounded-full bg-gradient-to-br from-green-400/25 via-emerald-300/20 to-teal-300/20" />
+            <div className="absolute bottom-0 -right-10 w-72 h-72 rounded-full bg-gradient-to-br from-emerald-400/20 via-green-300/15 to-teal-300/25" />
+          </div>
 
-                <div className="relative group">
-                    {/* Left Button */}
-                    <button
-                        onClick={scrollGamesLeft}
-                        className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-4 z-20 w-12 h-12 bg-white dark:bg-slate-800 rounded-full shadow-lg border border-slate-200 dark:border-slate-700 flex items-center justify-center text-slate-700 dark:text-slate-300 hover:scale-110 transition-transform hidden md:flex opacity-0 group-hover:opacity-100 duration-300"
-                        aria-label="Scroll left"
-                    >
-                        <i className="fas fa-chevron-left"></i>
-                    </button>
+          <div className="container mx-auto px-4 sm:px-8 relative">
+            {/* Header */}
+            <div className="text-center max-w-4xl mx-auto mb-14">
+              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-green-500/15 via-emerald-400/15 to-teal-400/15 text-green-600 dark:text-green-300 text-sm font-semibold border border-green-500/20 dark:border-green-400/15 shadow-inner">
+                <span className="h-2 w-2 rounded-full bg-green-400 animate-pulse" />
+                Fresh games & surveys — curated daily
+              </div>
 
-                    {/* Carousel Container */}
-                    <div
-                        ref={gamesCarouselRef}
-                        onMouseEnter={() => setIsPaused(true)}
-                        onMouseLeave={() => setIsPaused(false)}
-                        onTouchStart={() => setIsPaused(true)}
-                        onTouchEnd={() => setIsPaused(false)}
-                        className="flex overflow-x-auto gap-6 pb-8 snap-x snap-mandatory scroll-smooth [&::-webkit-scrollbar]:hidden"
-                        style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
-                    >
-                        {CAROUSEL_GAMES.map((item, index) => (
-                            <div
-                                key={index}
-                                className="min-w-[200px] md:min-w-[220px] bg-white dark:bg-[#1e293b] rounded-2xl p-4 border border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-md transition-shadow snap-start flex flex-col items-center text-center cursor-pointer"
-                            >
-                                <img
-                                    src={item.image}
-                                    alt={item.name}
-                                    className="w-full aspect-square object-cover rounded-xl mb-4 bg-slate-100 dark:bg-slate-800"
-                                />
-                                <h3 className="font-bold text-slate-900 dark:text-white mb-3 line-clamp-1 text-sm md:text-base">
-                                    {item.name}
-                                </h3>
-                                <div className="mt-auto bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 px-4 py-1.5 rounded-full text-xs md:text-sm font-bold">
-                                    Up to ${item.payout.toFixed(2)}
-                                </div>
-                            </div>
-                        ))}
+              <h2 className="text-3xl md:text-4xl font-extrabold text-slate-900 dark:text-white mt-4 mb-4">
+                Play games & take surveys to earn money
+              </h2>
+
+              <p className="text-slate-600 dark:text-slate-400 text-lg">
+                Download mobile games, finish exciting levels, share your opinions on products,
+                and cash out real rewards — all styled to match our premium vibe.
+              </p>
+            </div>
+
+            {/* Carousel */}
+            <div className="relative group">
+              {/* Left Button */}
+              <button
+                onClick={scrollGamesLeft}
+                className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-4 z-20 w-12 h-12 bg-white/90 dark:bg-slate-900/80 rounded-full shadow-xl border border-white/40 dark:border-slate-700 flex items-center justify-center text-slate-700 dark:text-slate-200 hover:scale-110 transition-transform hidden md:flex opacity-0 group-hover:opacity-100 duration-300 backdrop-blur"
+                aria-label="Scroll left"
+              >
+                <i className="fas fa-chevron-left" />
+              </button>
+
+              {/* Track */}
+              <div
+                ref={gamesCarouselRef}
+                onMouseEnter={() => setIsPaused(true)}
+                onMouseLeave={() => setIsPaused(false)}
+                onTouchStart={() => setIsPaused(true)}
+                onTouchEnd={() => setIsPaused(false)}
+                className="flex overflow-x-auto gap-6 pb-8 snap-x snap-mandatory scroll-smooth [&::-webkit-scrollbar]:hidden"
+                style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
+              >
+                {CAROUSEL_GAMES.map((item, index) => (
+                  <div
+                    key={index}
+                    className="group min-w-[220px] bg-white/80 dark:bg-[#111827]/80 backdrop-blur-lg rounded-2xl p-4 border border-white/40 dark:border-slate-800 shadow-lg hover:-translate-y-1 hover:shadow-2xl transition-all duration-300 snap-start flex flex-col text-left cursor-pointer relative overflow-hidden"
+                  >
+                    {/* hover glow */}
+                    <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
+                      <div className="absolute -top-10 -right-14 w-32 h-32 rounded-full bg-gradient-to-br from-green-300/30 via-emerald-200/25 to-teal-200/25 blur-3xl" />
                     </div>
 
-                    {/* Right Button */}
-                    <button
-                        onClick={scrollGamesRight}
-                        className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-4 z-20 w-12 h-12 bg-white dark:bg-slate-800 rounded-full shadow-lg border border-slate-200 dark:border-slate-700 flex items-center justify-center text-slate-700 dark:text-slate-300 hover:scale-110 transition-transform hidden md:flex opacity-0 group-hover:opacity-100 duration-300"
-                        aria-label="Scroll right"
-                    >
-                        <i className="fas fa-chevron-right"></i>
-                    </button>
-                </div>
-            </div>
-        </section>
+                    {/* top row */}
+                    <div className="relative flex items-start gap-3 mb-4">
+                      <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-green-500 via-emerald-500 to-teal-400 text-white flex items-center justify-center shadow-lg">
+                        <i className="fas fa-gamepad" />
+                      </div>
 
+                      <div className="flex-1">
+                        <h3 className="font-semibold text-slate-900 dark:text-white line-clamp-1 text-base md:text-lg">
+                          {item.name}
+                        </h3>
+                        <div className="text-xs text-slate-500 dark:text-slate-400">
+                          Games & Surveys
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* image */}
+                    <div className="relative rounded-xl overflow-hidden mb-4 border border-slate-100 dark:border-slate-800">
+                      <img
+                        src={item.image}
+                        alt={item.name}
+                        className="w-full aspect-[4/3] object-cover"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-slate-900/60 via-slate-900/10 to-transparent opacity-70" />
+                    </div>
+
+                    {/* footer row */}
+                    <div className="flex items-center justify-between text-sm text-slate-600 dark:text-slate-300">
+                      <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-gradient-to-r from-green-500/15 via-emerald-400/15 to-teal-400/15 text-green-600 dark:text-green-300 font-semibold">
+                        <span className="h-2 w-2 rounded-full bg-green-400 animate-pulse" />
+                        Up to ${item.payout.toFixed(2)}
+                      </div>
+                      <span className="font-semibold text-slate-900 dark:text-white">
+                        Start now
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Right Button */}
+              <button
+                onClick={scrollGamesRight}
+                className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-4 z-20 w-12 h-12 bg-white/90 dark:bg-slate-900/80 rounded-full shadow-xl border border-white/40 dark:border-slate-700 flex items-center justify-center text-slate-700 dark:text-slate-200 hover:scale-110 transition-transform hidden md:flex opacity-0 group-hover:opacity-100 duration-300 backdrop-blur"
+                aria-label="Scroll right"
+              >
+                <i className="fas fa-chevron-right" />
+              </button>
+            </div>
+          </div>
+        </section>
         {/* Rewards Section */}
         <section
           ref={rewardsRef}
