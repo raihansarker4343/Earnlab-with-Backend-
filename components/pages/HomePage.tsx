@@ -773,8 +773,7 @@ const HomePageContent: React.FC = () => {
           </div>
         </section>
 
-        {/* New Games & Surveys Carousel Section */}
-       {/* New Games & Surveys Carousel Section */}
+{/* New Games & Surveys Carousel Section */}
 <section
   ref={gamesSectionRef}
   className={`relative py-20 overflow-hidden transition-opacity duration-1000 ${
@@ -889,51 +888,81 @@ const HomePageContent: React.FC = () => {
   </div>
 </section>
 
-        
-        {/* Rewards Section */}
-        <section
-          ref={rewardsRef}
-          className="py-24 bg-slate-50 dark:bg-[#141c2f] text-center relative"
+
+      
+ {/* Rewards Section */}
+<section
+  ref={rewardsRef}
+  className="relative py-24 text-center overflow-hidden"
+>
+  {/* background */}
+  <div className="absolute inset-0 bg-gradient-to-b from-slate-50 via-white to-slate-100 dark:from-[#0f172a] dark:via-[#0b1223] dark:to-[#0f172a]" />
+  <div className="absolute inset-0 opacity-60 pointer-events-none" aria-hidden>
+    <div className="absolute -left-24 top-10 w-72 h-72 rounded-full bg-gradient-to-br from-green-500/25 via-emerald-400/10 to-teal-300/15 blur-3xl" />
+    <div className="absolute right-10 -bottom-10 w-80 h-80 rounded-full bg-gradient-to-tr from-emerald-500/15 via-green-400/10 to-teal-300/20 blur-3xl" />
+  </div>
+
+  <div className="container mx-auto px-6 relative z-10">
+    {/* header */}
+    <div className="max-w-3xl mx-auto mb-16">
+      <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-gradient-to-r from-green-500/15 via-emerald-400/20 to-teal-400/15 text-green-600 dark:text-green-300 text-xs font-semibold uppercase tracking-[0.2em] border border-green-200/40 dark:border-emerald-700/40 shadow-sm">
+        Rewards Library
+      </div>
+
+      <h2 className="text-4xl md:text-5xl font-extrabold text-slate-900 dark:text-white mt-4 mb-5">
+        Choose from{" "}
+        <span className="text-transparent bg-clip-text bg-gradient-to-r from-green-500 via-emerald-400 to-teal-400 font-bold">
+          100+ Rewards
+        </span>
+      </h2>
+
+      <p className="text-lg text-slate-600 dark:text-slate-400 leading-relaxed">
+        Withdraw cash or choose from hundreds of different gift cards.
+      </p>
+    </div>
+
+    {/* grid */}
+    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
+      {REWARD_OPTIONS.map((option, i) => (
+        <div
+          key={option.name}
+          className={`relative group h-32 rounded-2xl p-[1px] bg-gradient-to-br from-white via-emerald-100/60 to-green-200/70 dark:from-white/10 dark:via-emerald-500/10 dark:to-green-500/20 shadow-[0_20px_45px_-15px_rgba(16,185,129,0.35)] transition-all duration-300 ease-out hover:-translate-y-1 hover:shadow-[0_25px_60px_-15px_rgba(16,185,129,0.45)] ${
+            isRewardsInView ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10"
+          }`}
+          style={{ transitionDelay: `${i * 50}ms` }}
         >
-          <div className="container mx-auto px-6 relative z-10">
-            <div className="max-w-3xl mx-auto mb-16">
-              <h2 className="text-4xl md:text-5xl font-extrabold text-slate-900 dark:text-white mb-6">
-                Choose from{' '}
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-green-500 to-green-400 font-bold">
-                  100+ Rewards
-                </span>
-              </h2>
-              <p className="text-lg text-slate-600 dark:text-slate-400 leading-relaxed">
-                Withdraw cash or choose from hundreds of different gift cards.
-              </p>
+          <div className="relative h-full w-full rounded-2xl bg-white/95 dark:bg-[#111827]/80 backdrop-blur-lg border border-white/70 dark:border-emerald-500/10 flex items-center justify-center overflow-hidden">
+            {/* hover glow */}
+            <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
+              <div className="absolute -top-10 -right-14 w-28 h-28 rounded-full bg-gradient-to-br from-emerald-200/40 via-green-300/30 to-teal-200/30 blur-2xl" />
+              <div className="absolute -bottom-10 -left-14 w-24 h-24 rounded-full bg-gradient-to-tr from-green-300/30 via-emerald-200/25 to-teal-200/25 blur-2xl" />
             </div>
 
-            {/* Video Style Grid System */}
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
-              {REWARD_OPTIONS.map((option, i) => (
-                <div
-                  key={option.name}
-                  className={`group bg-white dark:bg-[#1e293b] rounded-xl p-4 flex items-center justify-center shadow-sm hover:shadow-lg border border-slate-100 dark:border-slate-800 transition-all duration-300 ease-out hover:-translate-y-1 cursor-pointer h-32 relative overflow-hidden ${
-                    isRewardsInView
-                      ? 'opacity-100 translate-y-0'
-                      : 'opacity-0 translate-y-10'
-                  }`}
-                  style={{ transitionDelay: `${i * 50}ms` }}
-                >
-                  {/* Image Container */}
-                  <div className="relative z-10 w-full h-full flex items-center justify-center p-2">
-                    <img
-                      src={option.imageUrl}
-                      alt={option.name}
-                      className="max-h-10 w-auto max-w-full object-contain transition-transform duration-300 group-hover:scale-110"
-                      loading="lazy"
-                    />
-                  </div>
-                </div>
-              ))}
+            {/* content */}
+            <div className="relative z-10 w-full h-full flex flex-col items-center justify-center gap-2 p-3">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-green-500/10 text-green-700 dark:text-green-300 text-xs font-semibold border border-green-200/50 dark:border-emerald-500/30">
+                <span className="h-2 w-2 rounded-full bg-green-400 animate-pulse" />
+                In stock
+              </div>
+
+              <img
+                src={option.imageUrl}
+                alt={option.name}
+                className="max-h-10 w-auto max-w-full object-contain transition-transform duration-300 group-hover:scale-110"
+                loading="lazy"
+              />
+
+              <div className="text-xs font-semibold text-slate-600 dark:text-slate-300 truncate w-full text-center">
+                {option.name}
+              </div>
             </div>
           </div>
-        </section>
+        </div>
+      ))}
+    </div>
+  </div>
+</section>
+
 
         {/* Testimonials Section */}
         <section
