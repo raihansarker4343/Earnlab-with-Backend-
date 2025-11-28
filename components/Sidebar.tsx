@@ -44,32 +44,32 @@ const Sidebar: React.FC = () => {
 
 
     const renderMenuItem = (item: SidebarMenuItem) => {
-        const isActive = currentPage === item.name;
-        const baseClasses = `w-full flex items-center justify-between text-left px-4 py-3 rounded-lg transition-colors duration-200 font-medium`;
-        
-        let stateClasses = 'text-slate-500 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-700 dark:hover:text-white';
+    const isActive = currentPage === item.name;
+    const baseClasses = `w-full group flex items-center justify-between text-left px-4 py-3 rounded-xl transition-all duration-200 font-medium border border-transparent bg-white/0 dark:bg-transparent`;
 
-        if (item.isSpecial) {
-            stateClasses = 'bg-yellow-400/10 text-yellow-400 border border-yellow-400/50 hover:bg-yellow-400/20';
-        } else if (isActive) {
-            stateClasses = 'bg-slate-100 text-slate-900 dark:bg-[#1e293b] dark:text-white font-semibold';
-        }
+    let stateClasses = 'text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white hover:bg-white/60 dark:hover:bg-white/5 hover:border-slate-200/60 dark:hover:border-white/10 shadow-[inset_0_1px_0_rgba(255,255,255,0.2)]';
 
-        return (
-            <li key={item.name}>
-                <button
-                    onClick={() => handleLinkClick(item.name, item.action)}
-                    className={`${baseClasses} ${stateClasses}`}
-                >
-                    <div className="flex items-center space-x-3">
-                        {item.icon}
-                        <span>{item.name}</span>
-                    </div>
-                    {item.isHot && <span className="text-xs bg-red-500 text-white font-bold px-2 py-0.5 rounded-full">Hot</span>}
-                </button>
-            </li>
-        );
-    };
+    if (item.isSpecial) {
+        stateClasses = 'text-amber-400 hover:text-amber-300 bg-gradient-to-r from-amber-500/10 via-orange-500/10 to-rose-500/10 border border-amber-400/40 shadow-[0_10px_30px_-15px_rgba(245,158,11,0.5)]';
+    } else if (isActive) {
+        stateClasses = 'text-slate-900 dark:text-white bg-gradient-to-r from-sky-500/20 via-indigo-500/20 to-purple-500/20 border border-sky-500/30 shadow-lg shadow-sky-900/10 dark:shadow-sky-900/30 font-semibold backdrop-blur';
+    }
+
+    return (
+        <li key={item.name}>
+            <button
+                onClick={() => handleLinkClick(item.name, item.action)}
+                className={`${baseClasses} ${stateClasses}`}
+            >
+                <div className="flex items-center space-x-3">
+                    <span className="relative flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-to-br from-white/90 via-slate-100/60 to-white/10 dark:from-white/10 dark:via-white/5 dark:to-white/0 border border-white/60 dark:border-white/10 shadow-[0_10px_30px_-18px_rgba(15,23,42,0.45)] group-hover:scale-105 transition-transform">{item.icon}</span>
+                    <span className="tracking-tight">{item.name}</span>
+                </div>
+                {item.isHot && <span className="text-xs bg-gradient-to-r from-rose-500 to-orange-400 text-white font-semibold px-2 py-0.5 rounded-full shadow-sm">Hot</span>}
+            </button>
+        </li>
+    );
+};
 
   return (
     <>
@@ -80,34 +80,48 @@ const Sidebar: React.FC = () => {
           aria-hidden="true"
       ></div>
 
-      <aside className={`bg-white dark:bg-[#141c2f] flex flex-col transition-all duration-300 ease-in-out border-r border-slate-200 dark:border-slate-800 overflow-hidden
-          fixed lg:sticky top-0 h-screen z-50 
-          lg:w-64 ${isSidebarCollapsed ? 'lg:w-0 lg:p-0' : ''}
-          ${isMobileSidebarOpen ? 'translate-x-0 w-64' : '-translate-x-full w-64 lg:translate-x-0'}
-      `}>
-          <div className="p-4 flex flex-col flex-1 min-w-[16rem] h-full overflow-y-auto">
-              <div className="flex items-center justify-between mb-8">
-                  <h1 className="text-2xl font-bold text-slate-900 dark:text-white">EarnLab</h1>
-                  <button onClick={handleClose} className="p-2 rounded-lg bg-slate-100 text-slate-500 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-400 dark:hover:bg-slate-700">
-                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-                  </button>
-              </div>
+      <aside className={`relative bg-gradient-to-b from-slate-900/10 via-sky-500/10 to-transparent dark:from-slate-900/40 dark:via-sky-500/15 dark:to-transparent p-[1px] rounded-2xl shadow-[0_20px_60px_-35px_rgba(15,23,42,0.7)] transition-all duration-300 ease-in-out overflow-hidden
+    fixed lg:sticky top-0 h-screen z-50
+    lg:w-64 ${isSidebarCollapsed ? 'lg:w-0 lg:p-0' : ''}
+    ${isMobileSidebarOpen ? 'translate-x-0 w-64' : '-translate-x-full w-64 lg:translate-x-0'}
+`}>
+    <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(59,130,246,0.12),transparent_35%),radial-gradient(circle_at_80%_0%,rgba(236,72,153,0.12),transparent_35%)]" aria-hidden="true"></div>
+    <div className="relative h-full bg-white/85 dark:bg-[#0f1729]/90 backdrop-blur-xl border border-white/30 dark:border-white/5 rounded-2xl flex flex-col">
+        <div className="p-4 flex flex-col flex-1 min-w-[16rem] h-full overflow-y-auto">
+            <div className="flex items-center justify-between mb-8">
+                <div className="space-y-1">
+                    <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-widest bg-gradient-to-r from-sky-500/15 via-indigo-500/15 to-purple-500/15 text-sky-700 dark:text-sky-200 border border-sky-500/30">Navigation</span>
+                    <h1 className="text-2xl font-bold text-slate-900 dark:text-white">EarnLab</h1>
+                    <p className="text-sm text-slate-500 dark:text-slate-400">Glide through offers and rewards with a focused hub.</p>
+                </div>
+                <button onClick={handleClose} className="p-2 rounded-lg bg-white/70 text-slate-500 hover:bg-white dark:bg-white/10 dark:text-slate-300 dark:hover:bg-white/20 border border-slate-200/70 dark:border-white/10 shadow-sm backdrop-blur">
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+            </div>
 
-              <nav className="flex-1 flex flex-col">
-                  <ul className="space-y-1">
-                      {SIDEBAR_MENU_ITEMS_TOP.map(renderMenuItem)}
-                  </ul>
-                  <div className="border-t border-slate-200 dark:border-slate-700 my-4" />
-                   <ul className="space-y-1">
-                      {SIDEBAR_MENU_ITEMS_COMMUNITY.map(renderMenuItem)}
-                  </ul>
-                  <div className="border-t border-slate-200 dark:border-slate-700 my-4" />
-                  <ul className="space-y-1">
-                      {SIDEBAR_MENU_ITEMS_BOTTOM.map(renderMenuItem)}
-                  </ul>
-              </nav>
-          </div>
-      </aside>
+            <nav className="flex-1 flex flex-col space-y-5">
+                <div className="p-3 rounded-2xl border border-white/60 dark:border-white/5 bg-white/50 dark:bg-white/5 backdrop-blur">
+                    <p className="text-xs font-semibold text-slate-500 dark:text-slate-300 mb-2">Explore</p>
+                    <ul className="space-y-2">
+                        {SIDEBAR_MENU_ITEMS_TOP.map(renderMenuItem)}
+                    </ul>
+                </div>
+                <div className="p-3 rounded-2xl border border-white/60 dark:border-white/5 bg-white/50 dark:bg-white/5 backdrop-blur">
+                    <p className="text-xs font-semibold text-slate-500 dark:text-slate-300 mb-2">Community</p>
+                    <ul className="space-y-2">
+                        {SIDEBAR_MENU_ITEMS_COMMUNITY.map(renderMenuItem)}
+                    </ul>
+                </div>
+                <div className="p-3 rounded-2xl border border-white/60 dark:border-white/5 bg-white/50 dark:bg-white/5 backdrop-blur">
+                    <p className="text-xs font-semibold text-slate-500 dark:text-slate-300 mb-2">More</p>
+                    <ul className="space-y-2">
+                        {SIDEBAR_MENU_ITEMS_BOTTOM.map(renderMenuItem)}
+                    </ul>
+                </div>
+            </nav>
+        </div>
+    </div>
+</aside>
     </>
   );
 };
