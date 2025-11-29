@@ -221,7 +221,6 @@ interface EarningMethod {
   earnLabel: string;
   earnAmount: string;
   baseImage: string;
-  overlays: { src: string; className: string }[];
   featured?: boolean;
 }
 
@@ -234,16 +233,6 @@ const earningMethods: EarningMethod[] = [
     earnAmount: '$1.00 - $120.00',
     baseImage:
       'https://res.cloudinary.com/dsezfqke7/image/upload/v1763588048/nanao_base_czw9lt.png',
-    overlays: [
-      {
-        src: 'https://res.cloudinary.com/dsezfqke7/image/upload/v1763588903/nano_flot_1_qi857l.png',
-        className: 'earn-floating-1',
-      },
-      {
-        src: 'https://res.cloudinary.com/dsezfqke7/image/upload/v1763584540/lite-clash-of-clans-character_acm0sg.webp',
-        className: 'earn-floating-2',
-      },
-    ],
     featured: true,
   },
   {
@@ -252,17 +241,7 @@ const earningMethods: EarningMethod[] = [
       'Discover new brands and apps, install or complete a few simple steps, and earn money for each offer you finish — it’s like getting paid to explore.',
     earnLabel: 'Payout per completed offer',
     earnAmount: '$1.00 - $75.00',
-    baseImage: 'https://shorturl.at/G5B5l',
-    overlays: [
-      {
-        src: 'https://shorturl.at/7cBw4',
-        className: 'earn-floating-1',
-      },
-      {
-        src: 'https://i.imgur.com/g2bn5eQ.png',
-        className: 'earn-floating-3',
-      },
-    ],
+    baseImage: 'https://res.cloudinary.com/dsezfqke7/image/upload/v1764389619/ux6374WcpaIBn8-weIQNzffOk9re64pqHEdhsDb3CS58i8IJLI0-JznM8rQ3803NUws_w416-h235-rw_k9uqha.webp',
   },
   {
     title: 'Share your opinion in surveys',
@@ -271,16 +250,6 @@ const earningMethods: EarningMethod[] = [
     earnLabel: 'Average payout per 5–10 min survey',
     earnAmount: '$1.00',
     baseImage: 'https://i.imgur.com/tcAqi0j.png',
-    overlays: [
-      {
-        src: 'https://i.imgur.com/tcAqi0j.png',
-        className: 'earn-floating-2',
-      },
-      {
-        src: 'https://i.imgur.com/tcAqi0j.png',
-        className: 'earn-floating-3',
-      },
-    ],
   },
 ];
 
@@ -604,33 +573,32 @@ const HomePageContent: React.FC = () => {
         </section>
 
         {/* Best ways to earn Section */}
-        {/* Best ways to earn Section */}
 <section
   ref={bestWaysRef}
-  className="relative py-20 text-center overflow-hidden bg-gradient-to-b from-white via-slate-50 to-white dark:from-[#0b111e] dark:via-[#0f172a] dark:to-[#0b111e]"
+  className="relative py-24 text-center overflow-hidden bg-gradient-to-b from-white via-slate-50 to-white dark:from-[#0b111e] dark:via-[#0f172a] dark:to-[#0b111e]"
 >
   {/* soft glow background */}
   <div className="absolute inset-0 pointer-events-none">
-    <div className="absolute -left-20 -top-24 h-72 w-72 bg-gradient-to-br from-green-400/20 via-emerald-500/20 to-teal-400/15 blur-3xl" />
-    <div className="absolute -right-16 bottom-0 h-80 w-80 bg-gradient-to-tr from-emerald-500/15 via-green-400/10 to-cyan-300/10 blur-3xl" />
+    <div className="absolute -left-20 -top-24 h-96 w-96 bg-gradient-to-br from-green-400/20 via-emerald-500/15 to-transparent blur-[120px]" />
+    <div className="absolute -right-20 bottom-0 h-96 w-96 bg-gradient-to-tr from-emerald-500/15 via-teal-400/15 to-transparent blur-[120px]" />
   </div>
 
-  <div className="container mx-auto px-8 relative">
+  <div className="container mx-auto px-6 lg:px-12 relative">
     {/* header */}
-    <div className="max-w-3xl mx-auto mb-12">
-      <span className="inline-flex items-center gap-2 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] rounded-full bg-green-500/10 text-green-500 border border-green-500/30">
+    <div className="max-w-3xl mx-auto mb-16">
+      <span className="inline-flex items-center gap-2 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] rounded-full bg-green-500/10 text-green-600 dark:text-green-400 border border-green-500/20">
         Best ways to earn
       </span>
 
       <h2
-        className={`text-4xl font-bold text-slate-900 dark:text-white mt-4 mb-4 transition-opacity duration-700 ${
+        className={`text-4xl md:text-5xl font-bold text-slate-900 dark:text-white mt-6 mb-6 transition-opacity duration-700 ${
           isBestWaysInView ? "opacity-100" : "opacity-0"
         }`}
       >
         Easy ways to earn money
       </h2>
 
-      <p className="text-slate-600 dark:text-slate-400">
+      <p className="text-lg text-slate-600 dark:text-slate-400 max-w-2xl mx-auto">
         Pick the earning path that suits you—each route comes with trusted partners,
         clear payouts, and a polished experience that matches the rest of the brand.
       </p>
@@ -641,78 +609,53 @@ const HomePageContent: React.FC = () => {
       {earningMethods.map((method, i) => (
         <div
           key={i}
-          className={`group relative h-full text-left transition-all duration-500 ease-out ${
+          className={`group relative flex flex-col h-full rounded-3xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#131926] p-6 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:border-green-500/30 dark:hover:border-green-500/30 ${
             isBestWaysInView ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
           }`}
           style={{ transitionDelay: `${i * 150}ms` }}
         >
-          {/* outer glow */}
-          <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-green-400/25 via-emerald-400/15 to-teal-400/25 opacity-50 blur-2xl transition-opacity duration-500 group-hover:opacity-80" />
+          {/* Content Wrapper */}
+          <div className="flex flex-col h-full text-left">
+            <div className="mb-6 flex items-start justify-between">
+              <h3 className="text-2xl font-extrabold text-slate-900 dark:text-white leading-tight">
+                {method.title}
+              </h3>
+              {method.featured && (
+                <span className="ml-3 inline-flex flex-shrink-0 items-center rounded-full bg-green-500/10 px-2.5 py-0.5 text-xs font-bold text-green-600 dark:text-green-400 border border-green-500/20">
+                  Featured
+                </span>
+              )}
+            </div>
 
-          {/* card */}
-          <div className="relative h-full rounded-2xl border border-white/50 dark:border-white/5 bg-white/80 dark:bg-[#0f172a]/80 backdrop-blur shadow-xl hover:-translate-y-2 hover:shadow-2xl transition-all duration-300">
-            <div className="p-8 flex flex-col gap-4 h-full">
-              {/* title + badge */}
-              <div className="flex items-center justify-between">
-                <h3 className="text-2xl font-bold text-slate-900 dark:text-white">
-                  {method.title}
-                </h3>
+            <p className="mb-8 text-slate-600 dark:text-slate-400 leading-relaxed text-sm font-medium">
+              {method.description}
+            </p>
 
-                {method.featured && (
-                  <span className="inline-flex items-center px-3 py-1 text-xs font-semibold rounded-full bg-gradient-to-r from-green-500/20 via-emerald-400/20 to-teal-400/20 text-green-600 dark:text-green-300 border border-green-400/30">
-                    Featured
-                  </span>
-                )}
+            <div className="mt-auto">
+              <div className="mb-2 flex items-center justify-between">
+                <span className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-500">
+                  {method.earnLabel}
+                </span>
+              </div>
+              <div className="flex items-center justify-between mb-6">
+                <span className="text-3xl font-black text-green-500 dark:text-green-400 tracking-tight">
+                  {method.earnAmount}
+                </span>
+                <span className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 dark:border-slate-700 px-3 py-1 text-[10px] font-bold uppercase text-slate-500 dark:text-slate-400 bg-slate-50 dark:bg-slate-800/50">
+                  <span className="h-1.5 w-1.5 rounded-full bg-green-500 animate-pulse"></span>
+                  Fast Payouts
+                </span>
               </div>
 
-              {/* description */}
-              <p className="text-slate-600 dark:text-slate-400 leading-relaxed flex-grow">
-                {method.description}
-              </p>
-
-              <div className="h-px w-full bg-gradient-to-r from-transparent via-green-400/60 to-transparent" />
-
-              {/* earn info row */}
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-slate-500 dark:text-slate-400">
-                    {method.earnLabel}
-                  </p>
-                  <p className="text-3xl font-bold text-slate-900 dark:text-white">
-                    <span className="text-transparent bg-clip-text bg-gradient-to-r from-green-400 via-emerald-400 to-teal-400">
-                      {method.earnAmount}
-                    </span>
-                  </p>
-                </div>
-
-                <div className="inline-flex items-center gap-2 px-3 py-2 rounded-full border border-green-400/30 bg-green-500/10 text-sm font-semibold text-green-600 dark:text-green-300">
-                  <span className="h-2 w-2 rounded-full bg-green-400 animate-pulse" />
-                  Fast payouts
-                </div>
-              </div>
-
-              {/* base image + floating overlays */}
-              <div className="mt-auto pt-4">
-                <div className="relative rounded-2xl overflow-hidden aspect-[16/9] border border-white/30 dark:border-white/10 shadow-inner">
-                  <img
-                    src={method.baseImage}
-                    alt={method.title}
-                    className="w-full h-full object-cover"
-                    loading="lazy"
-                  />
-
-                  {method.overlays?.map((icon, idx) => (
-                    <img
-                      key={idx}
-                      src={icon.src}
-                      alt={`icon-${idx}`}
-                      className={`earn-floating-icon ${icon.className}`}
-                      loading="lazy"
-                    />
-                  ))}
-
-                  <div className="absolute inset-0 bg-gradient-to-t from-slate-950/20 via-transparent to-transparent pointer-events-none" />
-                </div>
+              <div className="relative aspect-[16/9] w-full overflow-hidden rounded-2xl bg-slate-100 dark:bg-slate-900/50 ring-1 ring-slate-900/5 dark:ring-white/5">
+                <img
+                  src={method.baseImage}
+                  alt={method.title}
+                  className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
+                  loading="lazy"
+                />
+                {/* Inner shadow/gradient overlay for depth */}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent pointer-events-none" />
               </div>
             </div>
           </div>
