@@ -113,7 +113,7 @@ const Header: React.FC<HeaderProps> = ({ onLogout }) => {
             )}
             
             <img 
-                src="https://res.cloudinary.com/dsezfqke7/image/upload/v1764357781/freecash_so0zlc.jpg"
+                src="https://res.cloudinary.com/dsezfqke7/image/upload/v1764430203/ligo_icon_final_111_jaxkf8.png"
                 alt="Earnello" 
                 className="h-8 cursor-pointer object-contain"
                 onClick={() => setCurrentPage('Home')}
