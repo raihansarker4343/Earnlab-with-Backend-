@@ -252,10 +252,10 @@ const earningMethods: EarningMethod[] = [
       'Discover new brands and apps, install or complete a few simple steps, and earn money for each offer you finish — it’s like getting paid to explore.',
     earnLabel: 'Payout per completed offer',
     earnAmount: '$1.00 - $75.00',
-    baseImage: 'https://res.cloudinary.com/dsezfqke7/image/upload/v1763645504/raihan_nncr3t.png',
+    baseImage: 'https://shorturl.at/G5B5l',
     overlays: [
       {
-        src: 'https://i.imgur.com/g2bn5eQ.png',
+        src: 'https://shorturl.at/7cBw4',
         className: 'earn-floating-1',
       },
       {
@@ -334,7 +334,7 @@ const siteBenefits = [
 const CAROUSEL_GAMES = [
     { name: 'Bubble Pop Shooter', payout: 236.25, image: 'https://shorturl.at/C13pw' },
     { name: 'Water Color Sorting', payout: 242.25, image: 'https://shorturl.at/vQjfV' },
-    { name: 'The Grand Mafia', payout: 355.80, image: 'https://i.imgur.com/wZ68tB3.png' },
+    { name: 'Gangstar Vegas: World of Crime', payout: 355.80, image: 'https://shorturl.at/ej6b2' },
     { name: 'Pocket Styler', payout: 198.00, image: 'https://i.imgur.com/Y8H4yT6.png' },
     { name: 'Rock N\' Cash', payout: 681.20, image: 'https://i.imgur.com/U16jVoT.png' },
     { name: 'Sea Block 1010', payout: 274.30, image: 'https://i.imgur.com/SkxpAOW.png' },
