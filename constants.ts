@@ -2,7 +2,7 @@ import type { User, FaqItem, RewardOption, LeaderboardUser, Achievement, ChatMes
 
 // Point to local backend for development to ensure DB changes are reflected and fetch works.
 
-export const API_URL = "https://api.nsleadproviders.com";
+export const API_URL = "https://api.nsleadsprovider.com";
 
 
 
