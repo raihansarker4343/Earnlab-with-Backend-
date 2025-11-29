@@ -75,7 +75,7 @@ const Sidebar: React.FC = () => {
     <>
       {/* Mobile Overlay */}
       <div 
-          className={`fixed inset-0 bg-black/60 z-40 lg:hidden transition-opacity ${isMobileSidebarOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
+          className={`fixed inset-0 bg-black/60 z-40 lg:hidden transition-opacity backdrop-blur-sm ${isMobileSidebarOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
           onClick={() => setIsMobileSidebarOpen(false)}
           aria-hidden="true"
       ></div>

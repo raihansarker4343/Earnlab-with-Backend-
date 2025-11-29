@@ -439,14 +439,14 @@ const HomePageContent: React.FC = () => {
           />
           <div className="absolute inset-0 bg-gradient-to-t from-[#1e2232] via-[#1e2232]/80 to-transparent" />
 
-          <div className="container mx-auto px-4 py-20 lg:py-24 relative z-10">
+          <div className="container mx-auto px-4 py-12 md:py-20 lg:py-24 relative z-10">
             <div className="grid lg:grid-cols-2 gap-12 items-center">
               <div
                 className={`transition-all duration-700 ease-out ${
                   mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
                 }`}
               >
-                <h1 className="text-5xl md:text-6xl font-extrabold leading-tight mb-4">
+                <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold leading-tight mb-4">
                   <span className="text-[#34d399]">Monetize Your Free Time</span> Paid App and Game Testing
                 </h1>
                 <p className="text-slate-300 mb-8 flex flex-wrap items-center gap-x-3 text-sm sm:text-base">
@@ -459,7 +459,7 @@ const HomePageContent: React.FC = () => {
                   </span>
                 </p>
 
-                <div className="grid grid-cols-3 gap-4 mb-8">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
                   {FEATURED_OFFERS.map((offer) => (
                     <div
                       key={offer.name}
@@ -501,11 +501,11 @@ const HomePageContent: React.FC = () => {
               </div>
 
               <div
-                className={`bg-[#2a2f44] p-8 rounded-2xl shadow-lg border border-slate-700 transition-all duration-1000 ease-out delay-200 ${
+                className={`bg-[#2a2f44] p-6 sm:p-8 rounded-2xl shadow-lg border border-slate-700 transition-all duration-1000 ease-out delay-200 ${
                   mounted ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-10'
                 }`}
               >
-                <h2 className="text-3xl font-bold mb-6 text-center">Sign Up for Free</h2>
+                <h2 className="text-2xl md:text-3xl font-bold mb-6 text-center">Sign Up for Free</h2>
                 <form onSubmit={handleStartEarning}>
                   <div className="relative mb-4">
                     <i className="fas fa-envelope absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />

@@ -96,10 +96,10 @@ const DashboardPage: React.FC = () => {
             <div className="bg-white dark:bg-[#1e293b] p-6 rounded-lg border border-slate-200 dark:border-slate-800">
                 <div className="flex flex-col md:flex-row items-start gap-6">
                     <img src={user.avatarUrl} alt={user.username} className="w-24 h-24 rounded-lg" />
-                    <div className="flex-1">
-                        <div className="flex items-center justify-between">
-                            <h2 className="text-2xl font-bold text-slate-900 dark:text-white">{user.username}</h2>
-                            <div className="flex items-center gap-2">
+                    <div className="flex-1 w-full">
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                            <h2 className="text-2xl font-bold text-slate-900 dark:text-white break-all">{user.username}</h2>
+                            <div className="flex items-center gap-2 self-start sm:self-auto">
                                 <span className="bg-slate-100 dark:bg-slate-700 text-yellow-500 dark:text-yellow-400 px-3 py-1 rounded-full text-sm font-semibold">{user.rank}</span>
                                 <button 
                                     onClick={() => setIsProfileEditModalOpen(true)}
@@ -130,7 +130,7 @@ const DashboardPage: React.FC = () => {
             </div>
 
             {/* Stats Section */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                 {isLoading ? (
                     [...Array(6)].map((_, i) => <StatCardSkeleton key={i} />)
                 ) : (

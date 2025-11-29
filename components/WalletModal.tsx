@@ -593,7 +593,7 @@ const WalletModal: React.FC = () => {
         onClick={closeModal}
       >
         <div
-          className="relative w-full max-w-2xl bg-white dark:bg-[#141c2f] rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh] border border-slate-200 dark:border-slate-800"
+          className="relative w-full max-w-2xl bg-white dark:bg-[#141c2f] rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh] border border-slate-200 dark:border-slate-800 m-4 sm:m-auto"
           onClick={(e) => e.stopPropagation()}
         >
             {/* Header */}
