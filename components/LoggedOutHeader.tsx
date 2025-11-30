@@ -12,9 +12,9 @@ const LoggedOutHeader: React.FC = () => {
     };
 
     return (
-        <header className="bg-white dark:bg-[#141c2f] p-4 flex justify-between items-center border-b border-slate-200 dark:border-slate-700">
+        <header className="bg-white dark:bg-[#141c2f] p-4 flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 dark:border-slate-700">
             <div className="flex items-center gap-4">
-                 <button 
+                 <button
                     onClick={() => setIsMobileSidebarOpen(true)}
                     className="p-2 rounded-md text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 lg:hidden"
                     aria-label="Open menu"
@@ -37,7 +37,7 @@ const LoggedOutHeader: React.FC = () => {
                     onClick={() => setCurrentPage('Home')}
                 />
             </div>
-             <div className="flex items-center gap-2">
+             <div className="flex items-center gap-2 sm:gap-3 flex-wrap justify-end w-full sm:w-auto">
                 <button 
                     onClick={toggleTheme}
                     className="text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-700"

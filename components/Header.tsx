@@ -93,7 +93,7 @@ const Header: React.FC<HeaderProps> = ({ onLogout }) => {
     if (!user) return null;
 
   return (
-    <header className="bg-white dark:bg-[#141c2f] p-4 flex items-center justify-between border-b border-slate-200 dark:border-slate-700">
+    <header className="bg-white dark:bg-[#141c2f] p-4 flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 dark:border-slate-700">
         <div className="flex items-center gap-4">
             <button 
                 onClick={() => setIsMobileSidebarOpen(true)}
@@ -119,7 +119,7 @@ const Header: React.FC<HeaderProps> = ({ onLogout }) => {
                 onClick={() => setCurrentPage('Home')}
             />
         </div>
-        <div className="flex items-center gap-2 sm:gap-4">
+        <div className="flex items-center gap-2 sm:gap-4 flex-wrap justify-end w-full lg:w-auto">
             <div className="flex items-center gap-2 text-green-500 dark:text-green-400 font-bold">
                 <span>${balance.toFixed(2)}</span>
             </div>

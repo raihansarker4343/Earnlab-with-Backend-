@@ -603,7 +603,7 @@ const App: React.FC = () => {
       <AppContext.Provider value={appContextValue}>
         <div className="bg-slate-100 dark:bg-[#0f172a] text-slate-800 dark:text-slate-300 min-h-screen">
           <Suspense fallback={<PageLoader />}>
-            <div className="p-4 sm:p-6 lg:p-8">
+            <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto w-full">
               {ComponentToRender}
             </div>
           </Suspense>
@@ -626,7 +626,7 @@ const App: React.FC = () => {
       componentToRender = isLoggedIn ? <LoggedInHomePage /> : <HomePageContent />;
     }
 
-    return <div className={pagePadding}>{componentToRender}</div>;
+    return <div className={`max-w-7xl mx-auto w-full ${pagePadding}`}>{componentToRender}</div>;
   };
 
   const headerContent = isLoggedIn ? <Header onLogout={handleLogout} /> : <LoggedOutHeader />;
@@ -634,17 +634,17 @@ const App: React.FC = () => {
 
   return (
     <AppContext.Provider value={appContextValue}>
-      <div className="flex h-screen bg-slate-100 dark:bg-[#0f172a] text-slate-800 dark:text-slate-300">
+      <div className="min-h-screen bg-slate-100 dark:bg-[#0f172a] text-slate-800 dark:text-slate-300 lg:flex">
         {isLoggedIn ? <Sidebar /> : <LoggedOutSidebar />}
 
-        <div className="flex-1 flex flex-col min-w-0 overflow-y-auto">
+        <div className="flex-1 flex flex-col min-w-0 overflow-y-auto w-full">
           <header className="sticky top-0 z-20 shrink-0">
             {headerContent}
             <LiveEarningFeed />
           </header>
 
           <div className="flex-1 flex flex-col">
-            <main className="flex-1">
+            <main className="flex-1 w-full">
               <Suspense fallback={<PageLoader />}>
                 {mainContent}
               </Suspense>
