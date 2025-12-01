@@ -45,14 +45,23 @@ const Sidebar: React.FC = () => {
 
     const renderMenuItem = (item: SidebarMenuItem) => {
     const isActive = currentPage === item.name;
-    const baseClasses = `w-full group flex items-center justify-between text-left px-4 py-3 rounded-xl transition-all duration-200 font-medium border border-transparent bg-white/0 dark:bg-transparent`;
+    const baseClasses = `w-full group flex items-center justify-between text-left px-4 py-3 rounded-xl transition-all duration-300 font-medium border border-transparent relative overflow-hidden`;
 
-    let stateClasses = 'text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white hover:bg-white/60 dark:hover:bg-white/5 hover:border-slate-200/60 dark:hover:border-white/10 shadow-[inset_0_1px_0_rgba(255,255,255,0.2)]';
+    let stateClasses = '';
+    let iconClasses = '';
 
     if (item.isSpecial) {
-        stateClasses = 'text-amber-400 hover:text-amber-300 bg-gradient-to-r from-amber-500/10 via-orange-500/10 to-rose-500/10 border border-amber-400/40 shadow-[0_10px_30px_-15px_rgba(245,158,11,0.5)]';
+        // Special Gold/Amber Glass
+        stateClasses = 'text-amber-600 dark:text-amber-400 bg-amber-50/50 dark:bg-amber-900/10 border-amber-200/50 dark:border-amber-500/20 hover:bg-amber-100/60 dark:hover:bg-amber-900/30 hover:shadow-[0_0_15px_rgba(245,158,11,0.2)] backdrop-blur-sm';
+        iconClasses = 'text-amber-500 dark:text-amber-400 bg-amber-100/50 dark:bg-amber-900/30';
     } else if (isActive) {
-        stateClasses = 'text-slate-900 dark:text-white bg-gradient-to-r from-sky-500/20 via-indigo-500/20 to-purple-500/20 border border-sky-500/30 shadow-lg shadow-sky-900/10 dark:shadow-sky-900/30 font-semibold backdrop-blur';
+        // Active Blue Glass
+        stateClasses = 'text-blue-700 dark:text-blue-300 bg-blue-50/60 dark:bg-blue-900/20 border-blue-200/50 dark:border-blue-500/20 shadow-sm backdrop-blur-md';
+        iconClasses = 'text-blue-600 dark:text-blue-400 bg-white/60 dark:bg-white/10 shadow-sm';
+    } else {
+        // Default Inactive (Ghost)
+        stateClasses = 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-white/40 dark:hover:bg-white/5 hover:border-white/40 dark:hover:border-white/10';
+        iconClasses = 'text-slate-400 dark:text-slate-500 group-hover:text-blue-500 dark:group-hover:text-blue-400 bg-slate-100/50 dark:bg-slate-800/50 group-hover:bg-white/60 dark:group-hover:bg-white/10';
     }
 
     return (
@@ -61,11 +70,16 @@ const Sidebar: React.FC = () => {
                 onClick={() => handleLinkClick(item.name, item.action)}
                 className={`${baseClasses} ${stateClasses}`}
             >
-                <div className="flex items-center space-x-3">
-                    <span className="relative flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-to-br from-white/90 via-slate-100/60 to-white/10 dark:from-white/10 dark:via-white/5 dark:to-white/0 border border-white/60 dark:border-white/10 shadow-[0_10px_30px_-18px_rgba(15,23,42,0.45)] group-hover:scale-105 transition-transform">{item.icon}</span>
+                {/* Active glow effect */}
+                {isActive && <div className="absolute inset-0 bg-gradient-to-r from-blue-400/10 to-purple-400/10 opacity-50 pointer-events-none"></div>}
+
+                <div className="flex items-center space-x-3 relative z-10">
+                    <span className={`relative flex h-9 w-9 items-center justify-center rounded-lg transition-all duration-300 ${iconClasses}`}>
+                        {item.icon}
+                    </span>
                     <span className="tracking-tight">{item.name}</span>
                 </div>
-                {item.isHot && <span className="text-xs bg-gradient-to-r from-rose-500 to-orange-400 text-white font-semibold px-2 py-0.5 rounded-full shadow-sm">Hot</span>}
+                {item.isHot && <span className="relative z-10 text-[10px] uppercase font-bold bg-gradient-to-r from-rose-500 to-pink-600 text-white px-2 py-0.5 rounded-full shadow-lg shadow-rose-500/30">Hot</span>}
             </button>
         </li>
     );
@@ -75,53 +89,77 @@ const Sidebar: React.FC = () => {
     <>
       {/* Mobile Overlay */}
       <div 
-          className={`fixed inset-0 bg-black/60 z-40 lg:hidden transition-opacity backdrop-blur-sm ${isMobileSidebarOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
+          className={`fixed inset-0 bg-slate-900/40 backdrop-blur-md z-40 lg:hidden transition-opacity duration-300 ease-out ${isMobileSidebarOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
           onClick={() => setIsMobileSidebarOpen(false)}
           aria-hidden="true"
       ></div>
 
-      <aside className={`relative bg-gradient-to-b from-slate-900/10 via-sky-500/10 to-transparent dark:from-slate-900/40 dark:via-sky-500/15 dark:to-transparent p-[1px] rounded-2xl shadow-[0_20px_60px_-35px_rgba(15,23,42,0.7)] transition-all duration-300 ease-in-out overflow-hidden
-    fixed lg:sticky top-0 h-screen z-50
-    lg:w-64 ${isSidebarCollapsed ? 'lg:w-0 lg:p-0' : ''}
-    ${isMobileSidebarOpen ? 'translate-x-0 w-64' : '-translate-x-full w-64 lg:translate-x-0'}
-`}>
-    <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(59,130,246,0.12),transparent_35%),radial-gradient(circle_at_80%_0%,rgba(236,72,153,0.12),transparent_35%)]" aria-hidden="true"></div>
-    <div className="relative h-full bg-white/85 dark:bg-[#0f1729]/90 backdrop-blur-xl border border-white/30 dark:border-white/5 rounded-2xl flex flex-col">
-        <div className="p-4 flex flex-col flex-1 min-w-[16rem] h-full overflow-y-auto">
+      <aside className={`relative flex flex-col transition-all duration-500 cubic-bezier(0.4, 0, 0.2, 1) overflow-hidden
+            fixed lg:sticky top-0 h-screen z-50
+            lg:w-72 ${isSidebarCollapsed ? 'lg:w-0 lg:p-0' : ''}
+            ${isMobileSidebarOpen ? 'translate-x-0 w-72' : '-translate-x-full w-72 lg:translate-x-0'}
+            
+            /* Glassmorphism Container */
+            bg-white/70 dark:bg-[#0f1729]/80 
+            backdrop-blur-2xl 
+            border-r border-white/20 dark:border-white/5 
+            shadow-[10px_0_40px_-10px_rgba(0,0,0,0.05)]
+      `}>
+        {/* Ambient Background Orbs */}
+        <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none z-0">
+            <div className="absolute top-[-10%] right-[-30%] w-[80%] h-[40%] bg-blue-500/10 rounded-full blur-[80px] opacity-70"></div>
+            <div className="absolute bottom-[10%] left-[-20%] w-[70%] h-[50%] bg-purple-500/10 rounded-full blur-[90px] opacity-60"></div>
+        </div>
+
+        <div className="relative z-10 flex flex-col h-full p-6 overflow-y-auto scrollbar-thin scrollbar-thumb-slate-200/50 dark:scrollbar-thumb-slate-700/50">
+            {/* Header */}
             <div className="flex items-center justify-between mb-8">
-                <div className="space-y-1">
-                    <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-widest bg-gradient-to-r from-sky-500/15 via-indigo-500/15 to-purple-500/15 text-sky-700 dark:text-sky-200 border border-sky-500/30">Navigation</span>
-                    <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Earnello.com</h1>
-                    <p className="text-sm text-slate-500 dark:text-slate-400">Glide through offers and rewards with a focused hub.</p>
+                <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-600 to-indigo-600 flex items-center justify-center text-white font-extrabold text-xl shadow-lg shadow-blue-500/30 ring-2 ring-white/20 dark:ring-white/5">
+                        E
+                    </div>
+                    <div className="flex flex-col">
+                        <span className="font-bold text-xl text-slate-800 dark:text-white leading-none tracking-tight">Earnello</span>
+                        <span className="text-[10px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-widest mt-0.5 opacity-80">Gateway</span>
+                    </div>
                 </div>
-                <button onClick={handleClose} className="p-2 rounded-lg bg-white/70 text-slate-500 hover:bg-white dark:bg-white/10 dark:text-slate-300 dark:hover:bg-white/20 border border-slate-200/70 dark:border-white/10 shadow-sm backdrop-blur">
+                <button onClick={handleClose} className="p-2 rounded-xl bg-white/40 dark:bg-white/5 text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white hover:bg-white/60 dark:hover:bg-white/10 transition-all border border-transparent hover:border-white/20 dark:hover:border-white/5 backdrop-blur-sm">
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path></svg>
                 </button>
             </div>
 
-            <nav className="flex-1 flex flex-col space-y-5">
-                <div className="p-3 rounded-2xl border border-white/60 dark:border-white/5 bg-white/50 dark:bg-white/5 backdrop-blur">
-                    <p className="text-xs font-semibold text-slate-500 dark:text-slate-300 mb-2">Explore</p>
-                    <ul className="space-y-2">
+            {/* Menu Sections */}
+            <nav className="flex-1 flex flex-col space-y-6">
+                <div>
+                    <p className="px-4 text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-2">Explore</p>
+                    <ul className="space-y-1.5">
                         {SIDEBAR_MENU_ITEMS_TOP.map(renderMenuItem)}
                     </ul>
                 </div>
-                <div className="p-3 rounded-2xl border border-white/60 dark:border-white/5 bg-white/50 dark:bg-white/5 backdrop-blur">
-                    <p className="text-xs font-semibold text-slate-500 dark:text-slate-300 mb-2">Community</p>
-                    <ul className="space-y-2">
+                
+                <div>
+                    <p className="px-4 text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-2">Community</p>
+                    <ul className="space-y-1.5">
                         {SIDEBAR_MENU_ITEMS_COMMUNITY.map(renderMenuItem)}
                     </ul>
                 </div>
-                <div className="p-3 rounded-2xl border border-white/60 dark:border-white/5 bg-white/50 dark:bg-white/5 backdrop-blur">
-                    <p className="text-xs font-semibold text-slate-500 dark:text-slate-300 mb-2">More</p>
-                    <ul className="space-y-2">
+
+                <div>
+                    <p className="px-4 text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-2">Support & More</p>
+                    <ul className="space-y-1.5">
                         {SIDEBAR_MENU_ITEMS_BOTTOM.map(renderMenuItem)}
                     </ul>
                 </div>
             </nav>
+
+            {/* Footer / Copyright */}
+            <div className="mt-auto pt-6 border-t border-slate-200/50 dark:border-white/5 text-center">
+                <p className="text-[10px] text-slate-400 dark:text-slate-500 font-medium">
+                    © 2025 Earnello.com
+                </p>
+            </div>
         </div>
-    </div>
-</aside>
+      </aside>
     </>
   );
 };
