@@ -120,7 +120,6 @@ const Sidebar: React.FC = () => {
                     </div>
                     <div className="flex flex-col">
                         <span className="font-bold text-xl text-slate-800 dark:text-white leading-none tracking-tight">Earnello</span>
-                        <span className="text-[10px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-widest mt-0.5 opacity-80">Gateway</span>
                     </div>
                 </div>
                 <button onClick={handleClose} className="p-2 rounded-xl bg-white/40 dark:bg-white/5 text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white hover:bg-white/60 dark:hover:bg-white/10 transition-all border border-transparent hover:border-white/20 dark:hover:border-white/5 backdrop-blur-sm">

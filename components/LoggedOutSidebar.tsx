@@ -127,7 +127,6 @@ const LoggedOutSidebar: React.FC = () => {
                          </div>
                          <div className="flex flex-col">
                              <span className="font-bold text-xl text-slate-800 dark:text-white leading-none tracking-tight">Earnello</span>
-                             <span className="text-[10px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-widest mt-0.5">Gateway</span>
                          </div>
                     </div>
 
