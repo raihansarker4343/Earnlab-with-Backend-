@@ -157,19 +157,29 @@ const CPXResearchPage: React.FC = () => {
                     </div>
                 )}
 
-                {isLoggedIn && statusMessage && (
-                    <div className="rounded-xl border border-red-200 bg-red-50 text-red-900 px-4 py-3 text-sm">
-                        {statusMessage}
-                    </div>
-                )}
+                {isLoggedIn && !statusMessage && (
+  <div className="rounded-2xl bg-gradient-to-br from-white via-slate-50 to-fuchsia-50 dark:from-slate-900 dark:via-slate-900/70 dark:to-purple-950/60 p-3 border border-white/70 dark:border-slate-800 shadow-inner">
+    <div className="relative rounded-xl bg-white/60 dark:bg-slate-900/70 backdrop-blur-sm border border-fuchsia-100/60 dark:border-fuchsia-500/10 shadow-[0_12px_60px_-28px_rgba(168,85,247,0.5)]">
+      <div
+        id="fullscreen"
+        className="w-full h-[calc(100vh-220px)] min-h-[700px] rounded-xl overflow-hidden"
+      />
+    </div>
+  </div>
+)}
+
 
                 {isLoggedIn && !statusMessage && (
-                    <div className="rounded-2xl bg-gradient-to-br from-white via-slate-50 to-fuchsia-50 dark:from-slate-900 dark:via-slate-900/70 dark:to-purple-950/60 p-3 border border-white/70 dark:border-slate-800 shadow-inner">
-                        <div className="relative rounded-xl bg-white/60 dark:bg-slate-900/70 backdrop-blur-sm border border-fuchsia-100/60 dark:border-fuchsia-500/10 shadow-[0_12px_60px_-28px_rgba(168,85,247,0.5)]">
-                            <div style={{ maxWidth: 950, margin: 'auto' }} id="fullscreen" className="min-h-[540px]" />
-                        </div>
-                    </div>
-                )}
+  <div className="rounded-2xl bg-gradient-to-br from-white via-slate-50 to-fuchsia-50 dark:from-slate-900 dark:via-slate-900/70 dark:to-purple-950/60 p-3 border border-white/70 dark:border-slate-800 shadow-inner">
+    <div className="relative rounded-xl bg-white/60 dark:bg-slate-900/70 backdrop-blur-sm border border-fuchsia-100/60 dark:border-fuchsia-500/10 shadow-[0_12px_60px_-28px_rgba(168,85,247,0.5)]">
+      <div
+        id="fullscreen"
+        className="w-full h-[calc(100vh-220px)] min-h-[700px] rounded-xl overflow-hidden"
+      />
+    </div>
+  </div>
+)}
+
             </div>
         </div>
     );
