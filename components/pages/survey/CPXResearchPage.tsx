@@ -82,8 +82,8 @@ const CPXResearchPage: React.FC = () => {
             style_config,
             script_config: [script1],
             debug: false,
-            useIFrame: true,
-            iFramePosition: 1,
+            useIFrame: false,
+            iFramePosition: 0,
         };
 
         return baseConfig;
