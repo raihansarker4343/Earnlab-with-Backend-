@@ -135,54 +135,55 @@ const CPXResearchPage: React.FC = () => {
     }, [cpxConfig]);
 
     return (
-        <div className="space-y-6">
-            <div className="flex items-center gap-4">
-                {provider && <img src={provider.logo} alt={`${provider.name} logo`} className="h-10 object-contain bg-slate-200 dark:bg-slate-800 p-1 rounded-md" />}
-                <h1 className="text-3xl font-bold text-slate-900 dark:text-white">CPX Research</h1>
-            </div>
-
-            <div className="bg-white dark:bg-[#0f172a] p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-[0_10px_40px_-24px_rgba(15,23,42,0.35)]">
-                <div className="flex items-center justify-between gap-4 flex-wrap mb-4">
-                    <div className="space-y-1">
-                        <div className="inline-flex items-center px-3 py-1 rounded-full bg-gradient-to-r from-fuchsia-500/10 via-purple-500/10 to-sky-500/10 text-sm font-semibold text-fuchsia-600 dark:text-fuchsia-300 ring-1 ring-fuchsia-500/20">
-                            Live CPX offerwall
-                        </div>
-                    </div>
-                    
-                </div>
-
-                {!isLoggedIn && (
-                    <div className="rounded-xl border border-amber-200 bg-amber-50 text-amber-900 px-4 py-3 text-sm">
-                        Please sign in to launch the CPX Research wall.
-                    </div>
-                )}
-
-                {isLoggedIn && !statusMessage && (
-  <div className="rounded-2xl bg-gradient-to-br from-white via-slate-50 to-fuchsia-50 dark:from-slate-900 dark:via-slate-900/70 dark:to-purple-950/60 p-3 border border-white/70 dark:border-slate-800 shadow-inner">
-    <div className="relative rounded-xl bg-white/60 dark:bg-slate-900/70 backdrop-blur-sm border border-fuchsia-100/60 dark:border-fuchsia-500/10 shadow-[0_12px_60px_-28px_rgba(168,85,247,0.5)]">
-      <div
-        id="fullscreen"
-        className="w-full h-[calc(100vh-220px)] min-h-[700px] rounded-xl overflow-hidden"
-      />
+  <div className="space-y-6">
+    <div className="flex items-center gap-4">
+      {provider && (
+        <img
+          src={provider.logo}
+          alt={`${provider.name} logo`}
+          className="h-10 object-contain bg-slate-200 dark:bg-slate-800 p-1 rounded-md"
+        />
+      )}
+      <h1 className="text-3xl font-bold text-slate-900 dark:text-white">
+        CPX Research
+      </h1>
     </div>
-  </div>
-)}
 
-
-                {isLoggedIn && !statusMessage && (
-  <div className="rounded-2xl bg-gradient-to-br from-white via-slate-50 to-fuchsia-50 dark:from-slate-900 dark:via-slate-900/70 dark:to-purple-950/60 p-3 border border-white/70 dark:border-slate-800 shadow-inner">
-    <div className="relative rounded-xl bg-white/60 dark:bg-slate-900/70 backdrop-blur-sm border border-fuchsia-100/60 dark:border-fuchsia-500/10 shadow-[0_12px_60px_-28px_rgba(168,85,247,0.5)]">
-      <div
-        id="fullscreen"
-        className="w-full h-[calc(100vh-220px)] min-h-[700px] rounded-xl overflow-hidden"
-      />
-    </div>
-  </div>
-)}
-
-            </div>
+    <div className="bg-white dark:bg-[#0f172a] p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-[0_10px_40px_-24px_rgba(15,23,42,0.35)]">
+      <div className="flex items-center justify-between gap-4 flex-wrap mb-4">
+        <div className="space-y-1">
+          <div className="inline-flex items-center px-3 py-1 rounded-full bg-gradient-to-r from-fuchsia-500/10 via-purple-500/10 to-sky-500/10 text-sm font-semibold text-fuchsia-600 dark:text-fuchsia-300 ring-1 ring-fuchsia-500/20">
+            Live CPX offerwall
+          </div>
         </div>
-    );
+      </div>
+
+      {!isLoggedIn && (
+        <div className="rounded-xl border border-amber-200 bg-amber-50 text-amber-900 px-4 py-3 text-sm">
+          Please sign in to launch the CPX Research wall.
+        </div>
+      )}
+
+      {isLoggedIn && statusMessage && (
+        <div className="rounded-xl border border-red-200 bg-red-50 text-red-900 px-4 py-3 text-sm">
+          {statusMessage}
+        </div>
+      )}
+
+      {isLoggedIn && !statusMessage && (
+        <div className="rounded-2xl bg-gradient-to-br from-white via-slate-50 to-fuchsia-50 dark:from-slate-900 dark:via-slate-900/70 dark:to-purple-950/60 p-3 border border-white/70 dark:border-slate-800 shadow-inner">
+          <div className="relative rounded-xl bg-white/60 dark:bg-slate-900/70 backdrop-blur-sm border border-fuchsia-100/60 dark:border-fuchsia-500/10 shadow-[0_12px_60px_-28px_rgba(168,85,247,0.5)]">
+            <div
+              id="fullscreen"
+              className="w-full h-[calc(100vh-220px)] min-h-[700px] rounded-xl overflow-hidden"
+            />
+          </div>
+        </div>
+      )}
+    </div>
+  </div>
+);
+
 };
 
 export default CPXResearchPage;
