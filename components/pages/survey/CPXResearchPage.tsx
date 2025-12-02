@@ -17,8 +17,8 @@ const CPXResearchPage: React.FC = () => {
     const { user, isLoggedIn } = useContext(AppContext);
     const [statusMessage, setStatusMessage] = useState<string>('');
 
-    const appId = import.meta.env.VITE_CPX_APP_ID;
-    const secureHash = import.meta.env.VITE_CPX_SECURE_HASH || '';
+    const appId = import.meta.env.VITE_CPX_APP_ID || '30220';
+    const secureHash = import.meta.env.VITE_CPX_SECURE_HASH || 'PolfKhN60yPmIl00avPt8fFpIf8VldQ1';
 
     useEffect(() => {
         if (!isLoggedIn) {
