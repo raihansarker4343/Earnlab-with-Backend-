@@ -9,7 +9,7 @@ const {
   MIN_POSTBACK_AMOUNT,
   POSTBACK_SECRET,
   parseUsdAmount,
-  toMoney,
+  calculateUserReward,
 } = require('../../config/earnings');
 
 // Final route:  GET /api/postback/cpx
@@ -78,7 +78,7 @@ router.get('/cpx', async (req, res) => {
     }
 
     const user = userResult.rows[0];
-    const userEarnUsd = toMoney(amt * USER_PAYOUT_RATIO);
+    const userReward = calculateUserReward(amt);
 
     // 5) Handle Status
     if (status === 'approved') {
@@ -86,13 +86,13 @@ router.get('/cpx', async (req, res) => {
 
       await client.query(
         'UPDATE users SET balance = balance + $1, total_earned = total_earned + $1 WHERE id = $2',
-        [userEarnUsd, user.id]
+        [userReward, user.id]
       );
 
       await client.query(
         `INSERT INTO transactions (id, user_id, type, method, amount, status, date, source)
          VALUES ($1, $2, $3, $4, $5, $6, NOW(), $7)`,
-        [txId, user.id, 'earn', 'survey', userEarnUsd, 'completed', 'CPX']
+        [txId, user.id, 'earn', 'survey', userReward, 'completed', 'CPX']
       );
 
       await client.query('COMMIT');
@@ -104,13 +104,13 @@ router.get('/cpx', async (req, res) => {
 
       await client.query(
         'UPDATE users SET balance = GREATEST(balance - $1, 0) WHERE id = $2',
-        [userEarnUsd, user.id]
+        [userReward, user.id]
       );
 
       await client.query(
         `INSERT INTO transactions (id, user_id, type, method, amount, status, date, source)
          VALUES ($1, $2, $3, $4, $5, $6, NOW(), $7)`,
-        [txId, user.id, 'reversal', 'survey', -userEarnUsd, 'reversed', 'CPX']
+        [txId, user.id, 'reversal', 'survey', -userReward, 'reversed', 'CPX']
       );
 
       await client.query('COMMIT');
