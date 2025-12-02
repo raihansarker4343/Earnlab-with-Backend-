@@ -147,11 +147,8 @@ const CPXResearchPage: React.FC = () => {
                         <div className="inline-flex items-center px-3 py-1 rounded-full bg-gradient-to-r from-fuchsia-500/10 via-purple-500/10 to-sky-500/10 text-sm font-semibold text-fuchsia-600 dark:text-fuchsia-300 ring-1 ring-fuchsia-500/20">
                             Live CPX offerwall
                         </div>
-                        <p className="text-slate-600 dark:text-slate-300">Complete CPX surveys and tasks to earn credited via the CPX postback.</p>
                     </div>
-                    <div className="text-sm text-slate-500 dark:text-slate-400">
-                        Uses app ID from <code className="font-mono">VITE_CPX_APP_ID</code>
-                    </div>
+                    
                 </div>
 
                 {!isLoggedIn && (
