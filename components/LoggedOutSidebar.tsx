@@ -100,17 +100,24 @@ const LoggedOutSidebar: React.FC = () => {
             aria-hidden="true"
         ></div>
 
-        <aside className={`relative flex flex-col transition-all duration-500 cubic-bezier(0.4, 0, 0.2, 1) overflow-hidden
-            fixed lg:sticky top-0 h-screen z-50
-            lg:w-72 ${isSidebarCollapsed ? 'lg:w-0 lg:p-0' : ''}
-            ${isMobileSidebarOpen ? 'translate-x-0 w-72' : '-translate-x-full w-72 lg:translate-x-0'}
-            
-            /* Glassmorphism Container */
-            bg-white/70 dark:bg-[#0f1729]/70 
-            backdrop-blur-2xl 
-            border-r border-white/40 dark:border-white/5 
-            shadow-[10px_0_40px_-10px_rgba(0,0,0,0.1)]
-        `}>
+        <aside className={`
+  fixed top-0 left-0 inset-y-0 z-50
+  lg:sticky lg:top-0
+  h-[100dvh] lg:h-screen
+
+  flex flex-col overflow-hidden transition-all duration-500 cubic-bezier(0.4, 0, 0.2, 1)
+
+  lg:w-72 ${isSidebarCollapsed ? 'lg:w-0 lg:p-0' : ''}
+  ${isMobileSidebarOpen ? 'translate-x-0 w-72' : '-translate-x-full w-72 lg:translate-x-0'}
+
+  bg-white/70 dark:bg-[#0f1729]/80
+  backdrop-blur-2xl
+  border-r border-white/20 dark:border-white/5
+  shadow-[10px_0_40px_-10px_rgba(0,0,0,0.05)]
+`}>
+
+
+          
             {/* Ambient Background Orbs */}
             <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none z-0">
                 <div className="absolute top-[-10%] right-[-20%] w-[80%] h-[40%] bg-indigo-500/10 rounded-full blur-[80px] animate-pulse"></div>
