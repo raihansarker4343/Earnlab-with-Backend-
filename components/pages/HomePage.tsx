@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef, useContext } from 'react';
 import { AppContext } from '../../App';
 import { FAQ_ITEMS, REWARD_OPTIONS, TESTIMONIALS, FEATURED_OFFERS } from '../../constants';
 import type { FaqItem } from '../../types';
+import OffersSection from '../../components/OffersSection';
 
 // Custom hook to detect when an element is in view
 const useInView = (options?: IntersectionObserverInit) => {
