@@ -571,99 +571,10 @@ const HomePageContent: React.FC = () => {
             ))}
           </div>
         </section>
+        
 
-        {/* Best ways to earn Section */}
-<section
-  ref={bestWaysRef}
-  className="relative py-24 text-center overflow-hidden bg-gradient-to-b from-white via-slate-50 to-white dark:from-[#0b111e] dark:via-[#0f172a] dark:to-[#0b111e]"
->
-  {/* soft glow background */}
-  <div className="absolute inset-0 pointer-events-none">
-    <div className="absolute -left-20 -top-24 h-96 w-96 bg-gradient-to-br from-green-400/20 via-emerald-500/15 to-transparent blur-[120px]" />
-    <div className="absolute -right-20 bottom-0 h-96 w-96 bg-gradient-to-tr from-emerald-500/15 via-teal-400/15 to-transparent blur-[120px]" />
-  </div>
-
-  <div className="container mx-auto px-6 lg:px-12 relative">
-    {/* header */}
-    <div className="max-w-3xl mx-auto mb-16">
-      <span className="inline-flex items-center gap-2 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] rounded-full bg-green-500/10 text-green-600 dark:text-green-400 border border-green-500/20">
-        Best ways to earn
-      </span>
-
-      <h2
-        className={`text-4xl md:text-5xl font-bold text-slate-900 dark:text-white mt-6 mb-6 transition-opacity duration-700 ${
-          isBestWaysInView ? "opacity-100" : "opacity-0"
-        }`}
-      >
-        Easy ways to earn money
-      </h2>
-
-      <p className="text-lg text-slate-600 dark:text-slate-400 max-w-2xl mx-auto">
-        Pick the earning path that suits you—each route comes with trusted partners,
-        clear payouts, and a polished experience that matches the rest of the brand.
-      </p>
-    </div>
-
-    {/* cards */}
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-      {earningMethods.map((method, i) => (
-        <div
-          key={i}
-          className={`group relative flex flex-col h-full rounded-3xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#131926] p-6 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:border-green-500/30 dark:hover:border-green-500/30 ${
-            isBestWaysInView ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
-          }`}
-          style={{ transitionDelay: `${i * 150}ms` }}
-        >
-          {/* Content Wrapper */}
-          <div className="flex flex-col h-full text-left">
-            <div className="mb-6 flex items-start justify-between">
-              <h3 className="text-2xl font-extrabold text-slate-900 dark:text-white leading-tight">
-                {method.title}
-              </h3>
-              {method.featured && (
-                <span className="ml-3 inline-flex flex-shrink-0 items-center rounded-full bg-green-500/10 px-2.5 py-0.5 text-xs font-bold text-green-600 dark:text-green-400 border border-green-500/20">
-                  Featured
-                </span>
-              )}
-            </div>
-
-            <p className="mb-8 text-slate-600 dark:text-slate-400 leading-relaxed text-sm font-medium">
-              {method.description}
-            </p>
-
-            <div className="mt-auto">
-              <div className="mb-2 flex items-center justify-between">
-                <span className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-500">
-                  {method.earnLabel}
-                </span>
-              </div>
-              <div className="flex items-center justify-between mb-6">
-                <span className="text-3xl font-black text-green-500 dark:text-green-400 tracking-tight">
-                  {method.earnAmount}
-                </span>
-                <span className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 dark:border-slate-700 px-3 py-1 text-[10px] font-bold uppercase text-slate-500 dark:text-slate-400 bg-slate-50 dark:bg-slate-800/50">
-                  <span className="h-1.5 w-1.5 rounded-full bg-green-500 animate-pulse"></span>
-                  Fast Payouts
-                </span>
-              </div>
-
-              <div className="relative aspect-[16/9] w-full overflow-hidden rounded-2xl bg-slate-100 dark:bg-slate-900/50 ring-1 ring-slate-900/5 dark:ring-white/5">
-                <img
-                  src={method.baseImage}
-                  alt={method.title}
-                  className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
-                  loading="lazy"
-                />
-                {/* Inner shadow/gradient overlay for depth */}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent pointer-events-none" />
-              </div>
-            </div>
-          </div>
-        </div>
-      ))}
-    </div>
-  </div>
-</section>
+        {/* ✅ Offers Section (replacing Best ways to earn) */}
+        <OffersSection />
 
 
          {/* How it works */}
