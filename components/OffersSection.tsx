@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from "react";
-import { mockOffers } from "./mockData";
+import { mockOffers } from "./mockData/mockData";
 import SignUpModal from "./SignupModal";
 
 type OfferCategory = "apps" | "games" | "surveys";
