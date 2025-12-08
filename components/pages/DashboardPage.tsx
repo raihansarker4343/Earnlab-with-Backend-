@@ -16,7 +16,7 @@ const DashboardPage: React.FC = () => {
     if (!user) return <div>Loading...</div>;
 
     const xpPercentage = user.xpToNextLevel ? ((user.xp || 0) / user.xpToNextLevel) * 100 : 0;
-    
+
     const renderTabContent = () => {
         if (isLoading) {
             return (
@@ -27,35 +27,51 @@ const DashboardPage: React.FC = () => {
                 </div>
             )
         }
-        
-        const dataForTab = transactions.filter(tx => {
-            if (activeTab === 'Withdrawals') return tx.type === 'Withdrawal';
-            if (activeTab === 'Tasks') return tx.source === 'Task';
-            if (activeTab === 'Surveys') return tx.source === 'Survey';
-            if (activeTab === 'Offers') return tx.source === 'Offer';
+
+        const dataForTab = (transactions ?? []).filter(tx => {
+            const type = (tx.type ?? "").toLowerCase();
+            const method = (tx.method ?? "").toLowerCase();
+            const source = (tx.source ?? "").toLowerCase();
+
+            if (activeTab === 'Withdrawals') return type === 'withdrawal';
+
+            // Surveys = earn + method survey (DB অনুযায়ী)
+            if (activeTab === 'Surveys') return type === 'earn' && method === 'survey';
+
+            // Tasks/Offers যদি তোমার DB তে method/source দিয়ে আসে, সেভাবে সেট করো
+            if (activeTab === 'Tasks') return method === 'task';
+            if (activeTab === 'Offers') return method === 'offer';
+
             return false;
         });
-        
+
+
         const headers = ['Method', 'ID', 'Category', 'Provider', 'Status', 'Total', 'Date'];
 
         return (
-             <div className="overflow-x-auto">
-                 <table className="w-full text-sm text-left text-slate-600 dark:text-slate-400">
-                     <thead className="text-xs text-slate-700 dark:text-slate-400 uppercase bg-slate-100 dark:bg-slate-900/50">
-                         <tr>
-                             {headers.map(header => (
+            <div className="overflow-x-auto">
+                <table className="w-full text-sm text-left text-slate-600 dark:text-slate-400">
+                    <thead className="text-xs text-slate-700 dark:text-slate-400 uppercase bg-slate-100 dark:bg-slate-900/50">
+                        <tr>
+                            {headers.map(header => (
                                 <th scope="col" key={header} className="px-6 py-3">{header}</th>
-                             ))}
-                         </tr>
-                     </thead>
-                     <tbody>
+                            ))}
+                        </tr>
+                    </thead>
+                    <tbody>
                         {dataForTab.length > 0 ? (
                             dataForTab.map((item) => (
                                 <tr key={item.id} className="border-t border-slate-200 dark:border-slate-700">
                                     <td className="px-6 py-4 font-medium text-slate-900 dark:text-white whitespace-nowrap">{item.method}</td>
                                     <td className="px-6 py-4">{item.id}</td>
-                                    <td className="px-6 py-4">{item.source || item.type}</td>
-                                    <td className="px-6 py-4">N/A</td>
+                                    <td className="px-6 py-4">
+                                        {activeTab === 'Surveys' ? 'Survey' : (item.source || item.type)}
+                                    </td>
+
+                                    <td className="px-6 py-4">
+                                        {activeTab === 'Surveys' ? (item.source ?? 'N/A') : 'N/A'}
+                                    </td>
+
                                     <td className="px-6 py-4">
                                         <StatusBadge status={item.status} />
                                     </td>
@@ -70,7 +86,7 @@ const DashboardPage: React.FC = () => {
                                         <i className="fas fa-folder-open text-4xl text-slate-400 dark:text-slate-500"></i>
                                         <h3 className="font-semibold text-slate-800 dark:text-slate-300">No History Found</h3>
                                         <p className="text-slate-500 dark:text-slate-400 text-sm">Your completed {activeTab.toLowerCase()} will appear here.</p>
-                                        <button 
+                                        <button
                                             onClick={() => setCurrentPage(activeTab === 'Tasks' ? 'Tasks' : activeTab === 'Surveys' ? 'Surveys' : 'Offer')}
                                             className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg transition-transform active:scale-95"
                                         >
@@ -80,13 +96,13 @@ const DashboardPage: React.FC = () => {
                                 </td>
                             </tr>
                         )}
-                     </tbody>
-                 </table>
-                 <div className="flex justify-center items-center p-4 border-t border-slate-200 dark:border-slate-700">
-                     <button className="text-slate-400 dark:text-slate-500 mx-2" disabled>&lt;</button>
-                     <button className="text-slate-400 dark:text-slate-500 mx-2" disabled>&gt;</button>
-                 </div>
-             </div>
+                    </tbody>
+                </table>
+                <div className="flex justify-center items-center p-4 border-t border-slate-200 dark:border-slate-700">
+                    <button className="text-slate-400 dark:text-slate-500 mx-2" disabled>&lt;</button>
+                    <button className="text-slate-400 dark:text-slate-500 mx-2" disabled>&gt;</button>
+                </div>
+            </div>
         )
     }
 
@@ -101,7 +117,7 @@ const DashboardPage: React.FC = () => {
                             <h2 className="text-2xl font-bold text-slate-900 dark:text-white break-all">{user.username}</h2>
                             <div className="flex items-center gap-2 self-start sm:self-auto">
                                 <span className="bg-slate-100 dark:bg-slate-700 text-yellow-500 dark:text-yellow-400 px-3 py-1 rounded-full text-sm font-semibold">{user.rank}</span>
-                                <button 
+                                <button
                                     onClick={() => setIsProfileEditModalOpen(true)}
                                     className="bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600 px-3 py-1 rounded-full text-sm font-semibold transition-colors flex items-center gap-2"
                                     aria-label="Edit profile"
@@ -146,18 +162,18 @@ const DashboardPage: React.FC = () => {
             </div>
 
             {/* Activity Tabs Section */}
-             <div className="bg-white dark:bg-[#1e293b] rounded-lg border border-slate-200 dark:border-slate-800">
-                 <div className="p-2 border-b border-slate-200 dark:border-slate-700">
-                     <div className="flex items-center space-x-2 overflow-x-auto">
+            <div className="bg-white dark:bg-[#1e293b] rounded-lg border border-slate-200 dark:border-slate-800">
+                <div className="p-2 border-b border-slate-200 dark:border-slate-700">
+                    <div className="flex items-center space-x-2 overflow-x-auto">
                         {['Tasks', 'Surveys', 'Offers', 'Withdrawals', 'Openings', 'Battles'].map(tab => (
                             <button key={tab} onClick={() => setActiveTab(tab)} className={`px-4 py-2 text-sm font-semibold rounded-md ${activeTab === tab ? 'bg-slate-200 dark:bg-slate-700 text-slate-900 dark:text-white' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'}`}>
                                 {tab}
                             </button>
                         ))}
-                     </div>
-                 </div>
-                 {renderTabContent()}
-             </div>
+                    </div>
+                </div>
+                {renderTabContent()}
+            </div>
         </div>
     );
 };
@@ -184,7 +200,7 @@ const StatCard: React.FC<StatCardProps> = ({ title, value, icon }) => {
 }
 
 const StatCardSkeleton: React.FC = () => {
-     return (
+    return (
         <div className="bg-white dark:bg-[#1e293b] p-6 rounded-lg flex items-center gap-4 border border-slate-200 dark:border-slate-800">
             <SkeletonLoader className="w-12 h-12 rounded-full" />
             <div className="flex-1">
