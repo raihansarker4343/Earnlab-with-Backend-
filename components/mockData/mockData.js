@@ -13,7 +13,7 @@ export const mockOffers = [
     title: "Dice Dreams",
     description: "Reach level 10",
     reward: 5000.0,
-    icon: "https://cdn-icons-png.flaticon.com/512/2917/2917242.png",
+    icon: "https://shorturl.at/p2sP3",
     rating: 5.0,
     category: "games"
   },
@@ -49,7 +49,7 @@ export const mockOffers = [
     title: "Raid: Shadow Legends",
     description: "Reach level 30",
     reward: 4200.0,
-    icon: "https://cdn-icons-png.flaticon.com/512/2917/2917242.png",
+    icon: "https://res.cloudinary.com/dsezfqke7/image/upload/v1765262496/o001twsoe2ihfcm64lv2.jpg",
     rating: 4.7,
     category: "games"
   },
@@ -67,7 +67,7 @@ export const mockOffers = [
     title: "Survey Junkie",
     description: "Complete 5 surveys",
     reward: 8.5,
-    icon: "https://cdn-icons-png.flaticon.com/512/1055/1055645.png",
+    icon: "https://shorturl.at/Ut6Rq",
     rating: 4.5,
     category: "surveys"
   }
