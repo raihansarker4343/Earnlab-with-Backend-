@@ -76,7 +76,7 @@ const Footer: React.FC = () => {
                 </div>
 
                 <div className="mt-12 pt-8 border-t border-slate-200/60 dark:border-white/10 flex flex-col sm:flex-row justify-between items-center text-slate-500 dark:text-slate-400 text-sm">
-                    <p className="mb-4 sm:mb-0">&copy; {new Date().getFullYear()} Earnello.com &bull; All rights reserved.</p>
+                    <p className="mb-4 sm:mb-0">&copy; {new Date().getFullYear()} Earnello.com &bull; All rights reserved</p>
                     <div className="flex space-x-6 text-lg">
                         <a href="#" aria-label="Discord" className="text-slate-400 hover:text-[#5865F2] transition-colors hover:scale-110 transform duration-200"><i className="fab fa-discord"></i></a>
                         <a href="#" aria-label="Twitter" className="text-slate-400 hover:text-[#1DA1F2] transition-colors hover:scale-110 transform duration-200"><i className="fab fa-twitter"></i></a>
