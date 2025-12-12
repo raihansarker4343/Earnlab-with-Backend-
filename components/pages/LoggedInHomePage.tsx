@@ -226,6 +226,7 @@ const LoggedInHomePage: React.FC = () => {
     </div>
 </section>
 
+{/*
 {/* Featured Surveys */}
 <section className="relative overflow-hidden rounded-3xl border border-white/70 dark:border-white/5 bg-gradient-to-r from-blue-50 via-sky-50 to-indigo-50 dark:from-[#0c1324] dark:via-[#0a142a] dark:to-[#0d1a33] p-6 shadow-sm">
     <div className="absolute inset-0 pointer-events-none">
@@ -258,6 +259,7 @@ const LoggedInHomePage: React.FC = () => {
         ))}
     </div>
 </section>
+        */}
             
             {/* Offer Walls */}
 <section className="relative overflow-hidden rounded-3xl border border-white/70 dark:border-white/5 bg-gradient-to-r from-indigo-50 via-blue-50 to-cyan-50 dark:from-[#0b1222] dark:via-[#0b182c] dark:to-[#0c1f36] p-6 shadow-sm">
