@@ -688,14 +688,14 @@ app.get('/api/survey-providers', checkIpWithIPHub({ blockImmediately: false, blo
                 const dynamicLocked = balance < CPX_MIN_BALANCE;
 
                 return {
-  ...p,
-  isLocked: dbLocked || dynamicLocked,
-  // ✅ locked হলে DB-এর unlockRequirement থাকলে সেটাই দেখাবে
-  unlockRequirement:
-    (dbLocked || dynamicLocked)
-      ? (p.unlockRequirement ?? `Earn $${CPX_MIN_BALANCE.toFixed(2)} to unlock`)
-      : p.unlockRequirement
-};
+                 ...p,
+                 isLocked: dbLocked || dynamicLocked,
+                // ✅ locked হলে DB-এর unlockRequirement থাকলে সেটাই দেখাবে
+                unlockRequirement:
+                 (dbLocked || dynamicLocked)
+                   ? (p.unlockRequirement ?? `Earn $${CPX_MIN_BALANCE.toFixed(2)} to unlock`)
+                   : p.unlockRequirement
+                 };
 
             });
         } else {
