@@ -8,12 +8,12 @@ import { API_URL } from '../../constants';
 import { AppContext } from '../../App';
 
 const featuredTasks = [
-  { image: 'https://i.imgur.com/r6355M8.png', title: 'Hero Castle War: T...', description: 'Open the app, registe...', payout: 2.50 },
+  { image: 'https://res.cloudinary.com/dsezfqke7/image/upload/v1765514128/Highroller_Vegas_qdgfic.jpg', title: 'Highroller Vegas', description: 'Complete all steps list', payout: 2.50 },
   { image: 'https://shorturl.at/WFqAo', title: 'Wild Fish - Android...', description: 'Be the best fisherman...', payout: 1.75 },
   { image: 'https://shorturl.at/SFXpL', title: 'CortalyCash', description: 'Complete all steps list...', payout: 5.00 },
-  { image: 'https://i.imgur.com/Y8H4yT6.png', title: 'WW Click Box - Mu...', description: 'Answer the survey qu...', payout: 0.80 },
-  { image: 'https://i.imgur.com/lO7qD52.png', title: 'Treehouse Fishing ...', description: 'Climb into your treeho...', payout: 3.20 },
-  { image: 'https://i.imgur.com/wZ68tB3.png', title: 'Money Quiz', description: 'Register using full vali...', payout: 1.10 },
+  { image: 'https://res.cloudinary.com/dsezfqke7/image/upload/v1765514010/Water_Color_Sorting_xnw4dp.jpg', title: 'Water Color Sorting', description: 'Complete all steps list', payout: 0.80 },
+  { image: 'https://res.cloudinary.com/dsezfqke7/image/upload/v1765514208/Bingo_Vacation_astyjb.jpg', title: 'Bingo Vacation', description: 'Complete all steps list', payout: 3.20 },
+  { image: 'https://res.cloudinary.com/dsezfqke7/image/upload/v1765514277/The_Grand_Mafia_r9ngj1.jpg', title: 'The Grand Mafia', description: 'Complete all steps list', payout: 1.10 },
 ];
 
 const featuredSurveys = [
