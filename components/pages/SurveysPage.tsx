@@ -13,7 +13,11 @@ const SurveysPage: React.FC = () => {
     useEffect(() => {
         const fetchProviders = async () => {
             try {
-                const response = await fetch(`${API_URL}/api/survey-providers`);
+                const token = localStorage.getItem('token');
+                const response = await fetch(`${API_URL}/api/survey-providers`, {
+                headers: token ? { Authorization: `Bearer ${token}` } : {}
+                });
+
                 if (!response.ok) {
                     throw new Error('Failed to fetch survey providers.');
                 }
