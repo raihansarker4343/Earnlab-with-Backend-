@@ -63,9 +63,12 @@ const LoggedInHomePage: React.FC = () => {
     useEffect(() => {
         const fetchPageContent = async () => {
             try {
+                const token = localStorage.getItem("token");
                 const [offersRes, surveysRes] = await Promise.all([
                     fetch(`${API_URL}/api/offer-walls`),
-                    fetch(`${API_URL}/api/survey-providers`)
+                    fetch(`${API_URL}/api/survey-providers`, {
+                       headers: token ? { Authorization: `Bearer ${token}` } : {},
+                   }),
                 ]);
 
                 if (!offersRes.ok) throw new Error('Failed to load offer walls.');
