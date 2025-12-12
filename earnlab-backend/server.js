@@ -649,14 +649,64 @@ app.get('/api/survey-providers', checkIpWithIPHub({ blockImmediately: false, blo
         logger.warn(`Blocked IP ${req.ip} attempted to access survey providers. Returning empty list.`);
         return res.json([]);
     }
+
+    const CPX_MIN_BALANCE = Number(process.env.CPX_MIN_BALANCE || 3);
+
+    // Optional auth: if token exists, decode user id
+    let userId = null;
+    const authHeader = req.headers['authorization'];
+    const token = authHeader && authHeader.split(' ')[1];
+
+    if (token) {
+        try {
+            const decoded = jwt.verify(token, process.env.JWT_SECRET);
+            userId = decoded?.id || null;
+        } catch (e) {
+            // invalid token -> treat as guest
+            userId = null;
+        }
+    }
+
     try {
         const result = await pool.query('SELECT * FROM survey_providers WHERE is_enabled = true ORDER BY id');
-        res.json(result.rows.map(snakeToCamel));
+        let providers = result.rows.map(snakeToCamel);
+
+        // If logged in, compute balance-based lock for CPX
+        if (userId) {
+            const u = await pool.query('SELECT balance FROM users WHERE id = $1', [userId]);
+            const balance = Number(u.rows?.[0]?.balance ?? 0);
+
+            providers = providers.map((p) => {
+                const isCPX = (p.name || '').toLowerCase() === 'cpx research';
+
+                if (!isCPX) return p;
+
+                // Keep DB lock if admin globally locked it
+                const dbLocked = !!p.isLocked;
+
+                // Dynamic: lock if balance < 3
+                const dynamicLocked = balance < CPX_MIN_BALANCE;
+
+                return {
+                    ...p,
+                    isLocked: dbLocked || dynamicLocked,
+                    unlockRequirement: (dbLocked || dynamicLocked)
+                        ? `Earn $${CPX_MIN_BALANCE.toFixed(2)} to unlock`
+                        : p.unlockRequirement
+                };
+            });
+        } else {
+            // Guest হলে আপনি চাইলে CPX সবসময় locked রাখতে পারেন (optional)
+            // providers = providers.map((p) => ( (p.name||'').toLowerCase()==='cpx research' ? {...p, isLocked:true, unlockRequirement:`Earn $${CPX_MIN_BALANCE.toFixed(2)} to unlock`} : p ));
+        }
+
+        res.json(providers);
     } catch (error) {
         console.error('Error fetching survey providers:', error);
         res.status(500).json({ message: 'Server error fetching survey providers.' });
     }
 });
+
 
 app.get('/api/offer-walls', checkIpWithIPHub({ blockImmediately: false, blockOnFailure: false }), async (req, res) => {
     if (req.isBlocked) {
