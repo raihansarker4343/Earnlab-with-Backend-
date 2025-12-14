@@ -50,9 +50,11 @@ const port = process.env.PORT || 3001;
 // 👉 নতুন postback routes ইমপোর্ট
 const cpxPostbackRoutes = require('./routes/postback/cpx');
 const bitlabsPostbackRoutes = require('./routes/postback/bitlabs');
+const timewallPostbackRoutes = require('./routes/postback/timewall');
 
 app.use('/api/postback', cpxPostbackRoutes);     // /api/postback/cpx
 app.use('/api/postback', bitlabsPostbackRoutes); // /api/postback/bitlabs
+app.use('/api/postback', timewallPostbackRoutes);
 
 //Backend CORS
 app.use(cors());
