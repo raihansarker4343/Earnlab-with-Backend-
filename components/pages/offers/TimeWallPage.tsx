@@ -32,6 +32,7 @@ const TimeWallPage: React.FC = () => {
             style={{ border: 0 }}
             className="rounded-xl"
             allow="clipboard-write; fullscreen"
+            sandbox="allow-forms allow-modals allow-popups allow-popups-to-escape-sandbox allow-scripts allow-same-origin"
           />
         )}
       </div>
