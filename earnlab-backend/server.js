@@ -1,6 +1,7 @@
 // server.js
 const express = require('express');
 const cors = require('cors');
+const axios = require('axios'); // 👈 এই লাইনটি নিশ্চিতভাবে যোগ করুন
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
