@@ -37,6 +37,18 @@ const CPXResearchPage: React.FC = () => {
     }
   };
 
+  // ✅ অটো-রিফ্রেশ হ্যান্ডেলার
+  const handleSurveyClick = (url: string) => {
+    // ১. নতুন ট্যাবে সার্ভে ওপেন করুন
+    window.open(url, '_blank', 'noopener,noreferrer');
+
+    // ২. ৫ সেকেন্ড পর অটোমেটিক লিস্ট আপডেট করুন
+    setTimeout(() => {
+      console.log("Auto-refreshing survey list...");
+      fetchSurveys();
+    }, 5000); 
+  };
+
   useEffect(() => {
     fetchSurveys();
   }, [isLoggedIn, user?.id]);
@@ -96,14 +108,13 @@ const CPXResearchPage: React.FC = () => {
                    Earn {survey.payout} Points
                 </h3>
 
-                <a
-                  href={survey.href}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="w-full inline-flex items-center justify-center bg-slate-900 dark:bg-fuchsia-600 text-white py-3 rounded-xl font-bold hover:bg-fuchsia-700 transition-colors shadow-lg shadow-fuchsia-500/20"
+                {/* ✅ লিঙ্কের বদলে বাটন ব্যবহার করে handleSurveyClick কল করা হচ্ছে */}
+                <button
+                  onClick={() => handleSurveyClick(survey.href)}
+                  className="w-full inline-flex items-center justify-center bg-slate-900 dark:bg-fuchsia-600 text-white py-3 rounded-xl font-bold hover:bg-fuchsia-700 transition-colors shadow-lg"
                 >
                   Start Survey
-                </a>
+                </button>
               </div>
             ))}
           </div>
