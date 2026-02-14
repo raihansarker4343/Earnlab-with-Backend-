@@ -16,7 +16,13 @@ const Footer: React.FC = () => {
                 <div className="flex flex-wrap justify-between items-start gap-8">
                     <div className="space-y-4">
                         <h3 className="font-bold text-xl text-slate-900 dark:text-white tracking-tight flex items-center gap-2">
-                            <span className="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white text-sm font-extrabold shadow-lg shadow-indigo-500/30">E</span>
+                            <span className="w-8 h-8 rounded-lg flex items-center justify-center shadow-lg shadow-indigo-500/30 overflow-hidden bg-white">
+  <img 
+    src="https://res.cloudinary.com/dsezfqke7/image/upload/v1771094886/Gemini_Generated_Image_4fls9y4fls9y4fls_bxbcke.png" 
+    alt="Earnello Logo" 
+    className="w-full h-full object-cover"
+  />
+</span>
                             Earnello.com
                         </h3>
                          <div className="flex items-center space-x-2">
