@@ -48,6 +48,13 @@ const issueVerificationCode = async (user, client = pool) => {
 const app = express();
 const port = process.env.PORT || 3001;
 
+// অত্যন্ত গুরুত্বপূর্ণ: এই দুটি লাইন সব রুটের ওপরে থাকতে হবে
+app.use(cors({
+    origin: ['https://earnello.com', 'https://www.earnello.com'],
+    credentials: true
+}));
+app.use(express.json());
+
 // 👉 নতুন postback routes ইমপোর্ট
 const cpxPostbackRoutes = require('./routes/postback/cpx');
 const bitlabsPostbackRoutes = require('./routes/postback/bitlabs');
