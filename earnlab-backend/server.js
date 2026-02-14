@@ -70,9 +70,6 @@ app.use('/api/postback', timewallPostbackRoutes);
 // 👉 সার্ভে লিস্ট পাওয়ার জন্য নতুন এন্ডপয়েন্ট:
 app.use('/api/surveys/cpx', cpxOffersRoutes); // এটি এন্ডপয়েন্ট তৈরি করবে: /api/surveys/cpx/get-surveys
 
-//Backend CORS
-app.use(cors());
-app.use(express.json());
 
 
 
