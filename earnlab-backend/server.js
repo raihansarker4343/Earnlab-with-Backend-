@@ -54,7 +54,7 @@ const bitlabsPostbackRoutes = require('./routes/postback/bitlabs');
 const timewallPostbackRoutes = require('./routes/postback/timewall');
 
 // 👉 নতুন লাইনটি যোগ করুন:
-const cpxOffersRoutes = require('./routes/offers/cpx_offers');
+const cpxOffersRoutes = require('./routes/postback/offers/cpx_offers');
 
 app.use('/api/postback', cpxPostbackRoutes);     // /api/postback/cpx
 app.use('/api/postback', bitlabsPostbackRoutes); // /api/postback/bitlabs
