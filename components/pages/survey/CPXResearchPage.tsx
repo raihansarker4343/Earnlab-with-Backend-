@@ -19,8 +19,8 @@ const CPXResearchPage: React.FC = () => {
     setError(null);
     try {
       // আপনার ব্যাকএন্ড এন্ডপয়েন্ট কল করা হচ্ছে
-      // Render এ হোস্ট করা আপনার ব্যাকএন্ড ডোমেইন ব্যবহার করুন (যেমন: https://your-api.onrender.com)
-      const response = await axios.get(`/api/surveys/cpx/get-surveys`, {
+      // ✅ এখানে সম্পূর্ণ URL ব্যবহার করুন যাতে এটি আপনার সাবডোমেইনে (Backend) হিট করে
+      const response = await axios.get(`https://api.earnello.com/api/surveys/cpx/get-surveys`, {
         params: { user_id: user.id }
       });
 
