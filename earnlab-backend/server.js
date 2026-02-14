@@ -52,9 +52,15 @@ const cpxPostbackRoutes = require('./routes/postback/cpx');
 const bitlabsPostbackRoutes = require('./routes/postback/bitlabs');
 const timewallPostbackRoutes = require('./routes/postback/timewall');
 
+// 👉 নতুন লাইনটি যোগ করুন:
+const cpxOffersRoutes = require('./routes/offers/cpx_offers');
+
 app.use('/api/postback', cpxPostbackRoutes);     // /api/postback/cpx
 app.use('/api/postback', bitlabsPostbackRoutes); // /api/postback/bitlabs
 app.use('/api/postback', timewallPostbackRoutes);
+
+// 👉 সার্ভে লিস্ট পাওয়ার জন্য নতুন এন্ডপয়েন্ট:
+app.use('/api/surveys/cpx', cpxOffersRoutes); // এটি এন্ডপয়েন্ট তৈরি করবে: /api/surveys/cpx/get-surveys
 
 //Backend CORS
 app.use(cors());
