@@ -2,7 +2,7 @@ const express = require('express');
 const axios = require('axios');
 const crypto = require('crypto');
 const router = express.Router();
-const { pool } = require('../db'); // আপনার db.js ফাইলের পাথ অনুযায়ী এটি নিশ্চিত করুন
+const { pool } = require('../../../db');
 
 // ১. ইন-মেমোরি ক্যাশ স্টোরেজ তৈরি (সার্ভার মেমরিতে থাকবে)
 const surveyCache = new Map();
