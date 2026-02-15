@@ -460,11 +460,14 @@ app.post('/api/auth/admin-login', async (req, res) => {
 });
 
 // --- USER PROFILE ROUTES ---
+// --- USER PROFILE ROUTES ---
 app.patch('/api/user/profile', authMiddleware, async (req, res) => {
-    const { username, avatarUrl } = req.body;
+    // ১. নতুন ফিল্ডগুলো বডি থেকে ডিস্ট্রাকচার করুন
+    const { username, avatarUrl, gender, zip_code, dob } = req.body;
     const { id } = req.user;
 
-    if (!username && !avatarUrl) {
+    // ২. চেক করুন অন্তত একটি ফিল্ড পাঠানো হয়েছে কি না
+    if (!username && !avatarUrl && !gender && !zip_code && !dob) {
         return res.status(400).json({ message: 'No fields to update were provided.' });
     }
     
@@ -483,6 +486,7 @@ app.patch('/api/user/profile', authMiddleware, async (req, res) => {
         const values = [];
         let queryIndex = 1;
 
+        // ডাইনামিক ফিল্ড পুশিং লজিক
         if (username) {
             fields.push(`username = $${queryIndex++}`);
             values.push(username);
@@ -491,10 +495,31 @@ app.patch('/api/user/profile', authMiddleware, async (req, res) => {
             fields.push(`avatar_url = $${queryIndex++}`);
             values.push(avatarUrl);
         }
+        // CPX প্রোফাইলিং এর জন্য নতুন ডাটা
+        if (gender) {
+            fields.push(`gender = $${queryIndex++}`);
+            values.push(gender); // 'm' অথবা 'f'
+        }
+        if (zip_code) {
+            fields.push(`zip_code = $${queryIndex++}`);
+            values.push(zip_code);
+        }
+        if (dob) {
+            fields.push(`dob = $${queryIndex++}`);
+            values.push(dob); // YYYY-MM-DD ফরম্যাট
+        }
 
         values.push(id);
 
-        const updateUserQuery = `UPDATE users SET ${fields.join(', ')} WHERE id = $${queryIndex} RETURNING id, username, email, avatar_url, created_at AS joined_date, total_earned, balance, last_30_days_earned, completed_tasks, total_wagered, total_profit, total_withdrawn, total_referrals, referral_earnings, xp, rank, earn_id, is_verified`;
+        // ৩. RETURNING ক্লজে নতুন কলামগুলো যোগ করা হয়েছে
+        const updateUserQuery = `
+            UPDATE users 
+            SET ${fields.join(', ')} 
+            WHERE id = $${queryIndex} 
+            RETURNING id, username, email, avatar_url, gender, zip_code, dob, created_at AS joined_date, 
+                      total_earned, balance, last_30_days_earned, completed_tasks, 
+                      total_wagered, total_profit, total_withdrawn, total_referrals, 
+                      referral_earnings, xp, rank, earn_id, is_verified`;
         
         const result = await client.query(updateUserQuery, values);
 
@@ -505,6 +530,7 @@ app.patch('/api/user/profile', authMiddleware, async (req, res) => {
         await client.query('COMMIT');
 
         const updatedUser = result.rows[0];
+        // snakeToCamel আপনার কোডের ফিল্ডগুলোকে ফ্রন্টএন্ড ফ্রেন্ডলি করবে
         res.json(snakeToCamel(updatedUser));
 
     } catch (error) {
