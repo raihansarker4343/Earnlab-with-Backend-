@@ -96,20 +96,23 @@ const CPXResearchPage: React.FC = () => {
                 className="group relative bg-white dark:bg-slate-900 rounded-3xl p-5 border border-slate-200 dark:border-slate-800 hover:border-fuchsia-500 dark:hover:border-fuchsia-500 transition-all duration-300 shadow-sm hover:shadow-xl"
               >
                 {/* 🆔 Survey ID - এটা আপনার ফিল্টার করার কাজে লাগবে */}
-               <div className="absolute top-3 right-5">
-               <span className="text-[10px] font-mono font-bold text-white opacity-40">
-               #{survey.id}
-                </span>
-                 </div>
                 
-                <div className="flex justify-between items-start mb-4">
-                  <div className="bg-slate-100 dark:bg-slate-800 px-3 py-1 rounded-lg text-xs font-medium text-slate-600 dark:text-slate-400">
-                    {survey.loi} Mins
-                  </div>
-                  <div className="text-fuchsia-600 dark:text-fuchsia-400 font-bold">
-                    ${survey.payout_publisher_usd}
-                  </div>
+               <div className="flex justify-between items-center mb-4">
+              {/* ১. Mins (বামে থাকবে) */}
+              <div className="bg-slate-100 dark:bg-slate-800 px-3 py-1 rounded-lg text-xs font-medium text-slate-600 dark:text-slate-400">
+                {survey.loi} Mins
+              </div>
+
+              {/* ২. Survey ID (মাঝখানে থাকবে) */}
+              <div className="text-[10px] font-mono font-bold text-white opacity-40">
+                #{survey.id}
+              </div>
+
+                {/* ৩. Dollar (ডানে থাকবে) */}
+                <div className="text-fuchsia-600 dark:text-fuchsia-400 font-bold">
+                  ${survey.payout_publisher_usd}
                 </div>
+              </div>
 
                 <h3 className="text-lg font-bold text-slate-800 dark:text-white mb-6">
                    Earn {survey.payout} Points
