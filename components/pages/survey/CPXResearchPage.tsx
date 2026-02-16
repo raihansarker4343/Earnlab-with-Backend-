@@ -97,7 +97,7 @@ const CPXResearchPage: React.FC = () => {
               >
                 {/* 🆔 Survey ID - এটা আপনার ফিল্টার করার কাজে লাগবে */}
                <div className="absolute top-3 right-5">
-               <span className="text-[9px] font-mono font-bold text-slate-700 dark:text-slate-600 tracking-tighter">
+               <span className="text-[10px] font-mono font-bold text-white opacity-40">
                #{survey.id}
                 </span>
                  </div>
