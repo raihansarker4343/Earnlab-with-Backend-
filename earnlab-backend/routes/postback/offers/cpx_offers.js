@@ -58,15 +58,16 @@ router.get('/get-surveys', async (req, res) => {
         profileParams += `&birthday_month=${birthDate.getMonth() + 1}`;
         profileParams += `&birthday_year=${birthDate.getFullYear()}`;
     }
-}
-// --- নতুন প্রোফাইল লজিক এখানে শেষ ---
+ }
+       // --- নতুন প্রোফাইল লজিক এখানে শেষ ---
 
         // URL তৈরি
-        // লাইন ৩০ আপডেট করুন
         const url = `https://live-api.cpx-research.com/api/get-surveys.php?app_id=${appId}&ext_user_id=${userId}&output_method=api&ip_user=${userIp}&user_agent=${encodeURIComponent(userAgent)}&limit=12&secure_hash=${hash}${profileParams}`;
 
         // লগ চেক করার জন্য (Render Logs-এ দেখা যাবে)
-        console.log(`[CPX API Request] User: ${userId}, Clean IP: ${userIp}`);
+        console.log(`[CPX API Request] User: ${userId}, Clean IP: ${userIp}, Params: ${profileParams}`);
+        console.log(`[Full URL]: ${url}`);
+        
         const response = await axios.get(url);
         // ৪. নতুন ডাটা ক্যাশ-এ সেভ করা
         surveyCache.set(userId, {
