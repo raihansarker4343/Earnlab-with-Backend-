@@ -95,6 +95,13 @@ const CPXResearchPage: React.FC = () => {
                 key={survey.id} 
                 className="group relative bg-white dark:bg-slate-900 rounded-3xl p-5 border border-slate-200 dark:border-slate-800 hover:border-fuchsia-500 dark:hover:border-fuchsia-500 transition-all duration-300 shadow-sm hover:shadow-xl"
               >
+                {/* 🆔 Survey ID - এটা আপনার ফিল্টার করার কাজে লাগবে */}
+               <div className="absolute top-3 right-5">
+               <span className="text-[9px] font-mono font-bold text-slate-700 dark:text-slate-600 tracking-tighter">
+               #{survey.id}
+                </span>
+                 </div>
+                
                 <div className="flex justify-between items-start mb-4">
                   <div className="bg-slate-100 dark:bg-slate-800 px-3 py-1 rounded-lg text-xs font-medium text-slate-600 dark:text-slate-400">
                     {survey.loi} Mins
