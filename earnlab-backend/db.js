@@ -36,7 +36,7 @@ const initDb = async () => {
         xp INTEGER DEFAULT 0,
         rank VARCHAR(50) DEFAULT 'Newbie',
         is_banned BOOLEAN DEFAULT FALSE,
-        //CPX প্রোফাইলিং এর জন্য নতুন কলাম
+
         gender VARCHAR(10),      -- 'm' অথবা 'f' সেভ হবে
         zip_code VARCHAR(20),    -- ইউজারের পোস্টাল কোড
         dob DATE                 -- জন্ম তারিখ (YYYY-MM-DD)
