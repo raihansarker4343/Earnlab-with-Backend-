@@ -409,7 +409,7 @@ const HomePageContent: React.FC = () => {
           />
           <div className="absolute inset-0 bg-gradient-to-t from-[#1e2232] via-[#1e2232]/80 to-transparent" />
 
-          <div className="container mx-auto px-4 py-12 md:py-20 lg:py-24 relative z-10">
+          <div className="w-full px-6 py-12 md:py-20 lg:py-24 relative z-10">
             <div className="grid lg:grid-cols-2 gap-12 items-center">
               <div
                 className={`transition-all duration-700 ease-out ${
