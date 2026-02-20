@@ -603,7 +603,7 @@ const App: React.FC = () => {
       <AppContext.Provider value={appContextValue}>
         <div className="bg-slate-100 dark:bg-[#0f172a] text-slate-800 dark:text-slate-300 min-h-screen">
           <Suspense fallback={<PageLoader />}>
-            <div className="p-4 sm:p-6 lg:p-8 w-full">
+            <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto w-full">
               {ComponentToRender}
             </div>
           </Suspense>
@@ -627,7 +627,7 @@ const App: React.FC = () => {
     }
 
     // আপডেট করা কোড:
-     return <div className={`w-full ${pagePadding}`}>{componentToRender}</div>;
+     return <div className={`max-w-7xl mx-auto w-full ${pagePadding}`}>{componentToRender}</div>;
   };
 
   const headerContent = isLoggedIn ? <Header onLogout={handleLogout} /> : <LoggedOutHeader />;
