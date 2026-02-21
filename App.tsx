@@ -306,10 +306,7 @@ const App: React.FC = () => {
 
   const fetchAndSetUserData = useCallback(async () => {
     const token = localStorage.getItem('token');
-    if (!token) {
-      if (isLoggedIn) handleLogout();
-      return;
-    }
+    if (!token) return;
 
     try {
       const [userRes, transactionsRes, notificationsRes] = await Promise.all([
@@ -317,6 +314,11 @@ const App: React.FC = () => {
         fetch(`${API_URL}/api/transactions`, { headers: { 'Authorization': `Bearer ${token}` } }),
         fetch(`${API_URL}/api/notifications`, { headers: { 'Authorization': `Bearer ${token}` } })
       ]);
+      // যদি টোকেন ইনভ্যালিড হয় (401 বা 403), তবেই লগআউট করুন
+      if (userRes.status === 401 || userRes.status === 403) {
+      handleLogout();
+      return;
+      }
 
       if (!userRes.ok || !transactionsRes.ok) {
         throw new Error('Authentication failed or server error.');
@@ -346,9 +348,8 @@ const App: React.FC = () => {
       }
     } catch (error) {
       console.error("Failed to fetch user data:", error);
-      handleLogout();
     }
-  }, [isLoggedIn, handleLogout]);
+  }, [handleLogout]);
 
   const handleLogin = useCallback(async (token: string) => {
     localStorage.setItem('token', token);
