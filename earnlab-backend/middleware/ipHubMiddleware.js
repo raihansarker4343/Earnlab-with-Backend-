@@ -8,7 +8,7 @@ const ipCache = new Map();
 const CACHE_TTL = 60 * 60 * 1000; // 1 hour in milliseconds
 
 const checkIpWithIPHub = (options = {}) => {
-  const { blockImmediately = false, blockOnFailure = true } = options;
+  const { blockImmediately = false, blockOnFailure = false } = options;
 
   return async (req, res, next) => {
     // req.ip will be the real client IP if 'trust proxy' is set in Express
