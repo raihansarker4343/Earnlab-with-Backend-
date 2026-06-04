@@ -1,8 +1,61 @@
 import React, { useState, useEffect, useRef, useContext } from 'react';
 import { AppContext } from '../../App';
 import { FAQ_ITEMS, REWARD_OPTIONS, TESTIMONIALS, FEATURED_OFFERS } from '../../constants';
+import { API_URL } from '../../constants';
 import type { FaqItem } from '../../types';
 import OffersSection from '../../components/OffersSection';
+
+interface HomeStats {
+  signups24h: number;
+  avgTimeToFirstCash: string;
+  avgWithdrawYesterday: number;
+  totalEarned: number;
+}
+
+const DEFAULT_HOME_STATS: HomeStats = {
+  signups24h: 101137,
+  avgTimeToFirstCash: '17m 12s',
+  avgWithdrawYesterday: 22.90,
+  totalEarned: 300000000,
+};
+
+const formatTotalEarned = (n: number): string =>
+  Math.floor(n).toLocaleString('en-US');
+
+const HeroOfferCard: React.FC<{
+  logo: string;
+  name: string;
+  description: string;
+  payout: number;
+  rating: number;
+}> = ({ logo, name, description, payout, rating }) => {
+  const dollars = Math.floor(payout);
+  const cents = (payout % 1).toFixed(2).slice(2);
+
+  return (
+    <div className="bg-[#1a1f2e]/90 backdrop-blur-sm rounded-xl border border-white/10 p-3 text-left hover:border-green-500/30 transition-colors">
+      <div className="bg-black/30 rounded-lg mb-3 flex items-center justify-center aspect-square overflow-hidden">
+        <img src={logo} alt={name} className="w-full h-full object-cover" />
+      </div>
+      <h3 className="font-semibold text-white truncate text-sm">{name}</h3>
+      <p className="text-slate-400 text-xs truncate mb-2">{description}</p>
+      <div className="flex items-end justify-between gap-2">
+        <div>
+          <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-0.5">Up to</p>
+          <div className="flex items-start text-white font-extrabold leading-none">
+            <span className="text-lg">$</span>
+            <span className="text-2xl">{dollars}</span>
+            <span className="text-sm mt-0.5">.{cents}</span>
+          </div>
+        </div>
+        <p className="text-yellow-400 text-xs flex items-center gap-0.5 shrink-0 mb-1">
+          <i className="fas fa-star text-[10px]" />
+          {rating.toFixed(1)}
+        </p>
+      </div>
+    </div>
+  );
+};
 
 // Custom hook to detect when an element is in view
 const useInView = (options?: IntersectionObserverInit) => {
@@ -30,45 +83,6 @@ const useInView = (options?: IntersectionObserverInit) => {
   }, [options]);
 
   return [ref, isInView] as const;
-};
-
-// Component to animate counting up to a target number
-const AnimatedCounter: React.FC<{ value: string }> = ({ value }) => {
-  const target = parseInt(value.replace(/[^0-9]/g, ''), 10);
-  const [count, setCount] = useState(0);
-  const [ref, isInView] = useInView({ threshold: 0.5 });
-
-  useEffect(() => {
-    if (isInView) {
-      let start = 0;
-      const end = target;
-      if (start === end) return;
-
-      const duration = 2000; // ms
-      const frameDuration = 1000 / 60; // 60fps
-      const totalFrames = Math.round(duration / frameDuration);
-      const increment = (end - start) / totalFrames;
-
-      let currentFrame = 0;
-      const timer = setInterval(() => {
-        currentFrame++;
-        start += increment;
-        if (currentFrame === totalFrames) {
-          setCount(end);
-          clearInterval(timer);
-        } else {
-          setCount(Math.floor(start));
-        }
-      }, frameDuration);
-
-      return () => clearInterval(timer);
-    }
-  }, [isInView, target]);
-
-  const formattedCount = count.toLocaleString();
-  const prefix = value.startsWith('$') ? '$' : '';
-
-  return <div ref={ref as React.RefObject<HTMLDivElement>}>{`${prefix}${formattedCount}`}</div>;
 };
 
 // Accordion item for the FAQ section with smooth transitions
@@ -254,13 +268,6 @@ const earningMethods: EarningMethod[] = [
   },
 ];
 
-
-const statHighlights = [
-  { label: 'Earners paid out', value: '$5000', suffix: '+' },
-  { label: 'Tasks finished', value: '6000', suffix: '+' },
-  { label: 'Avg. daily payout', value: '$38', suffix: '' },
-];
-
 const howItWorks = [
   {
     title: 'Create your account',
@@ -318,6 +325,22 @@ const HomePageContent: React.FC = () => {
   const [email, setEmail] = useState('');
   const [currentTestimonialIndex, setCurrentTestimonialIndex] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
+  const [homeStats, setHomeStats] = useState<HomeStats>(DEFAULT_HOME_STATS);
+
+  useEffect(() => {
+    const fetchHomeStats = async () => {
+      try {
+        const response = await fetch(`${API_URL}/api/public/home-stats`);
+        if (response.ok) {
+          const data: HomeStats = await response.json();
+          setHomeStats(data);
+        }
+      } catch (error) {
+        console.error('Failed to fetch home stats:', error);
+      }
+    };
+    fetchHomeStats();
+  }, []);
 
   const handleStartEarning = (e: React.FormEvent) => {
     e.preventDefault();
@@ -337,7 +360,6 @@ const HomePageContent: React.FC = () => {
   const [whyUsRef, isWhyUsInView] = useInView({ threshold: 0.1 });
   const [rewardsRef, isRewardsInView] = useInView({ threshold: 0.15 });
   const [testimonialsRef, isTestimonialsInView] = useInView({ threshold: 0.15 });
-  const [statsRef, isStatsInView] = useInView({ threshold: 0.15 });
   const [faqRef, isFaqInView] = useInView({ threshold: 0.15 });
   
   // Ref for the games carousel
@@ -401,175 +423,174 @@ const HomePageContent: React.FC = () => {
 
       {/* Main content */}
       <div className="relative z-10">
-        {/* Hero Section */}
-        <section className="bg-[#1e2232] text-white relative overflow-hidden">
-          <div
-            className="absolute inset-0 bg-cover bg-center opacity-30"
-            style={{ backgroundImage: "url('https://i.imgur.com/7GVjh0M.png')" }}
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-[#1e2232] via-[#1e2232]/80 to-transparent" />
-
-          <div className="w-full px-6 py-12 md:py-20 lg:py-24 relative z-10">
-            <div className="grid lg:grid-cols-2 gap-12 items-center">
+        {/* Hero Section — FreeCash-inspired layout */}
+        <section className="bg-[#141826] text-white relative overflow-hidden">
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_rgba(52,211,153,0.08)_0%,_transparent_50%)]" />
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_left,_rgba(59,130,246,0.06)_0%,_transparent_50%)]" />
+          
+          <div className="w-full max-w-7xl mx-auto px-6 py-12 md:py-16 lg:py-20 relative z-10">
+            <div className="grid lg:grid-cols-2 gap-10 lg:gap-14 items-start">
+              {/* Left — headline + offers */}
               <div
                 className={`transition-all duration-700 ease-out ${
                   mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
                 }`}
               >
-                <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold leading-tight mb-4">
-                  <span className="text-[#34d399]">Monetize Your Free Time</span> Paid App and Game Testing
+                <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-[3.25rem] font-extrabold leading-[1.15] mb-5 text-white">
+                  Monetize Your Free Time, Paid App and Game Testing
                 </h1>
-                <p className="text-slate-300 mb-8 flex flex-wrap items-center gap-x-3 text-sm sm:text-base">
+                <p className="text-slate-300 mb-8 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm sm:text-base">
                   <span>
-                    Earn up to <span className="font-bold text-white">$200</span> per offer
+                    Earn up to <span className="font-bold text-white">$350</span> per offer
                   </span>
-                  <span className="text-[#34d399] text-xl">&bull;</span>
+                  <span className="text-green-400 text-lg hidden sm:inline">&bull;</span>
                   <span>
-                    <span className="font-bold text-white">1624</span> Offers available now
+                    <span className="font-bold text-white">2,500+</span> Offers available now
                   </span>
                 </p>
 
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 mb-8">
+                <div className="grid grid-cols-3 gap-3 sm:gap-4 mb-8">
                   {FEATURED_OFFERS.map((offer) => (
-                    <div
+                    <HeroOfferCard
                       key={offer.name}
-                      className="bg-[#2a2f44]/80 backdrop-blur-sm p-3 rounded-lg border border-slate-700 text-left"
-                    >
-                      <div className="bg-black/20 rounded-md mb-3 flex items-center justify-center aspect-square overflow-hidden">
-                        <img src={offer.logo} alt={offer.name} className="w-full h-full object-cover" />
-                      </div>
-                      <h3 className="font-semibold text-white truncate text-sm">{offer.name}</h3>
-                      <p className="text-slate-400 text-xs truncate mb-2">{offer.description}</p>
-                      <div className="flex justify-between items-center">
-                        <p className="font-bold text-white text-sm">${offer.payout.toFixed(2)}</p>
-                        <p className="text-yellow-400 text-xs flex items-center gap-1">
-                          <i className="fas fa-star text-xs" /> {offer.rating.toFixed(1)}
-                        </p>
-                      </div>
-                    </div>
+                      logo={offer.logo}
+                      name={offer.name}
+                      description={offer.description}
+                      payout={offer.payout}
+                      rating={offer.rating}
+                    />
                   ))}
                 </div>
 
                 <div>
                   <p className="text-sm text-slate-400 mb-2">See our reviews on</p>
-                  <div className="flex items-center gap-2">
+                  <a
+                    href="https://www.trustpilot.com"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-2 hover:opacity-90 transition-opacity"
+                  >
                     <i className="fas fa-star text-green-500" />
-                    <span className="text-xl font-bold text-white">Trustpilot</span>
+                    <span className="text-lg font-bold text-white">Trustpilot</span>
                     <div
-                      className="flex items-center ml-2 bg-green-500 p-1"
+                      className="flex items-center ml-1 bg-[#00b67a] px-1.5 py-0.5"
                       style={{
-                        clipPath:
-                          'polygon(0 0, 100% 0, 100% 70%, 95% 100%, 5% 100%, 0 70%)',
+                          clipPath: 'polygon(0 0, 100% 0, 100% 70%, 95% 100%, 5% 100%, 0 70%)',
                       }}
                     >
                       {[...Array(5)].map((_, i) => (
-                        <i key={i} className="fas fa-star text-white text-sm px-1" />
+                        <i key={i} className="fas fa-star text-white text-xs px-0.5" />
                       ))}
                     </div>
-                  </div>
+                  </a>
                 </div>
               </div>
 
-              <div
-                className={`bg-[#2a2f44] p-6 sm:p-8 rounded-2xl shadow-lg border border-slate-700 transition-all duration-1000 ease-out delay-200 ${
+            {/* Right — signup card */}
+            <div
+                className={`bg-[#1e2438] p-6 sm:p-8 rounded-2xl shadow-2xl border border-white/10 transition-all duration-1000 ease-out delay-200 ${
                   mounted ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-10'
                 }`}
               >
-                <h2 className="text-2xl md:text-3xl font-bold mb-6 text-center">Sign Up for Free</h2>
+                <h2 className="text-2xl md:text-3xl font-bold mb-5 text-center text-white">Sign Up for Free</h2>
                 <form onSubmit={handleStartEarning}>
-                  <div className="relative mb-4">
+                  <div className="relative mb-3">
                     <i className="fas fa-envelope absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
                     <input
                       type="email"
                       placeholder="Email address"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
-                      className="w-full bg-[#1e2232] text-white p-3 pl-12 rounded-lg border border-slate-600 focus:outline-none focus:ring-2 focus:ring-green-400"
+                      className="w-full bg-[#141826] text-white p-3.5 pl-12 rounded-xl border border-slate-600/80 focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-transparent"
                     />
                   </div>
-                  <a
-                    href="#"
-                    className="text-sm text-slate-400 hover:underline mb-4 block text-center"
-                  >
-                    I have a referral code
-                  </a>
+                  <p className="text-xs text-slate-500 mb-4 text-center leading-relaxed">
+                    I agree to the{' '}
+                    <a href="#" className="text-slate-400 hover:text-white underline">Terms of Service</a>
+                    {' '}and{' '}
+                    <a href="#" className="text-slate-400 hover:text-white underline">Privacy Policy</a>
+                  </p>
                   <button
-                    type="submit"
-                    className="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-3 rounded-lg mb-4 text-lg transition-colors"
+                  type="submit"
+                    className="w-full bg-[#00D26A] hover:bg-[#00b85c] text-white font-bold py-3.5 rounded-xl mb-4 text-lg transition-colors shadow-lg shadow-green-500/20"
                   >
                     Start earning now
                   </button>
                 </form>
 
-                <div className="flex items-center my-6">
-                  <hr className="flex-grow border-slate-600" />
-                  <span className="mx-4 text-slate-400 text-sm font-semibold">OR</span>
-                  <hr className="flex-grow border-slate-600" />
+                <div className="flex items-center my-5">
+                  <hr className="flex-grow border-slate-600/60" />
+                  <span className="mx-4 text-slate-500 text-xs font-semibold uppercase tracking-wider">OR</span>
+                  <hr className="flex-grow border-slate-600/60" />
                 </div>
 
-                <div className="space-y-3">
+                <div className="space-y-2.5">
                   <button
                     onClick={() => openSignupModal()}
-                    className="w-full bg-white text-slate-800 font-semibold py-3 rounded-lg flex items-center justify-center gap-2 hover:bg-slate-200 transition-colors"
+                    className="w-full bg-white text-slate-800 font-semibold py-3 rounded-xl flex items-center justify-center gap-2 hover:bg-slate-100 transition-colors text-sm"
                   >
                     <img
                       src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg"
                       alt="Google"
                       className="w-5 h-5"
-                    />{' '}
+                    />
                     Sign Up with Google
                   </button>
                   <button
                     onClick={() => openSignupModal()}
-                    className="w-full bg-[#1877F2] text-white font-semibold py-3 rounded-lg flex items-center justify-center gap-3 hover:bg-blue-700 transition-colors"
+                    className="w-full bg-[#1877F2] text-white font-semibold py-3 rounded-xl flex items-center justify-center gap-3 hover:bg-blue-700 transition-colors text-sm"
                   >
-                    <i className="fab fa-facebook-f text-lg" /> Sign Up with Facebook
+                    <i className="fab fa-facebook-f" /> Sign Up with Facebook
                   </button>
                   <button
                     onClick={() => openSignupModal()}
-                    className="w-full bg-black text-white font-semibold py-3 rounded-lg flex items-center justify-center gap-3 hover:bg-gray-800 transition-colors"
+                    className="w-full bg-black text-white font-semibold py-3 rounded-xl flex items-center justify-center gap-3 hover:bg-gray-900 transition-colors text-sm border border-white/10"
                   >
-                    <i className="fab fa-apple text-xl" /> Sign Up with Apple
+                    <i className="fab fa-apple text-lg" /> Sign Up with Apple
                   </button>
                 </div>
-
-                <p className="text-center text-sm text-slate-400 mt-6">
-                  <span className="font-bold text-white">100+</span> sign ups in the past 24 hours
+              
+              </div>
+            </div>
+            {/* Stats row — FreeCash-style, inside hero */}
+            <div
+              className={`mt-12 md:mt-16 pt-10 border-t border-white/10 grid grid-cols-2 lg:grid-cols-4 gap-8 md:gap-6 transition-all duration-700 delay-300 ${
+                mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
+              }`}
+            >
+              <div className="text-center lg:text-left">
+                <p className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-white leading-tight">
+                  {homeStats.signups24h.toLocaleString()}+
+                </p>
+                <p className="text-slate-400 text-xs sm:text-sm mt-2 leading-snug">
+                  sign ups in the past 24 hours
+                </p>
+              </div>
+              <div className="text-center lg:text-left">
+                <p className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-white leading-tight">
+                  {homeStats.avgTimeToFirstCash}
+                </p>
+                <p className="text-slate-400 text-xs sm:text-sm mt-2 leading-snug">
+                  Avg. time to earn your first cash
+                </p>
+              </div>
+              <div className="text-center lg:text-left">
+                <p className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-white leading-tight">
+                  ${homeStats.avgWithdrawYesterday.toFixed(2)}
+                </p>
+                <p className="text-slate-400 text-xs sm:text-sm mt-2 leading-snug">
+                  Avg. withdrawal sent yesterday
+                </p>
+              </div>
+              <div className="text-center lg:text-left">
+                <p className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-white leading-tight">
+                  ${formatTotalEarned(homeStats.totalEarned)}+
+                </p>
+                <p className="text-slate-400 text-xs sm:text-sm mt-2 leading-snug">
+                  Total amount earned on Earnello
                 </p>
               </div>
             </div>
-          </div>
-        </section>
-
-          {/* Highlight metrics ribbon */}
-        <section
-          ref={statsRef}
-          className={`bg-gradient-to-r from-[#0b111e] via-[#0f172a] to-[#0b111e] py-10 transition-opacity duration-700 ${
-            isStatsInView ? 'opacity-100' : 'opacity-0'
-          }`}
-        >
-          <div className="container mx-auto px-6 grid grid-cols-1 md:grid-cols-3 gap-6">
-            {statHighlights.map((stat, index) => (
-              <div
-                key={stat.label}
-                className="relative overflow-hidden rounded-2xl border border-slate-800/60 bg-white/5 px-6 py-5 shadow-lg backdrop-blur"
-                style={{ boxShadow: '0 20px 60px rgba(0,0,0,0.25)' }}
-              >
-                <div className="absolute inset-x-4 top-0 h-px bg-gradient-to-r from-transparent via-green-400 to-transparent opacity-60" />
-                <div className="flex items-center gap-3">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-green-500/15 text-green-400">
-                    <i className={`fas ${index === 2 ? 'fa-wallet' : 'fa-fire'} text-xl`} />
-                  </div>
-                  <div>
-                    <div className="text-3xl font-bold text-white">
-                      <AnimatedCounter value={stat.value} />
-                      {stat.suffix}
-                    </div>
-                    <p className="text-slate-300 text-sm mt-1">{stat.label}</p>
-                  </div>
-                </div>
-              </div>
-            ))}
           </div>
         </section>
         
