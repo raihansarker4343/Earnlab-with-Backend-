@@ -91,12 +91,12 @@ const FaqAccordionItem: React.FC<{ item: FaqItem }> = ({ item }) => {
   const contentRef = useRef<HTMLDivElement>(null);
 
   return (
-    <div className="border-b border-slate-200 dark:border-slate-700">
+    <div className="border-b border-white/10">
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="w-full text-left flex justify-between items-center p-6 hover:bg-slate-100/50 dark:hover:bg-slate-700/20 focus:outline-none"
+        className="w-full text-left flex justify-between items-center p-6 hover:bg-white/5 focus:outline-none"
       >
-        <span className="font-semibold text-lg text-slate-900 dark:text-white">{item.question}</span>
+        <span className="font-semibold text-lg text-white">{item.question}</span>
         <span
           className={`transform transition-transform duration-300 ease-in-out ${
             isOpen ? 'rotate-180' : ''
@@ -110,16 +110,16 @@ const FaqAccordionItem: React.FC<{ item: FaqItem }> = ({ item }) => {
         style={{ maxHeight: isOpen ? `${contentRef.current?.scrollHeight}px` : '0px' }}
         className="overflow-hidden transition-all duration-500 ease-in-out"
       >
-        <div className="px-6 pb-6 pt-0 text-slate-600 dark:text-slate-400">{item.answer}</div>
+        <div className="px-6 pb-6 pt-0 text-slate-400">{item.answer}</div>
       </div>
     </div>
   );
 };
 
 const HighestPayoutsIcon = () => (
-  <div className="w-16 h-16 bg-green-500/10 rounded-lg flex items-center justify-center">
+  <div className="w-16 h-16 bg-white/5 rounded-lg flex items-center justify-center">
     <svg
-      className="w-8 h-8 text-green-400"
+      className="w-8 h-8 text-slate-300"
       viewBox="0 0 32 32"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
@@ -152,9 +152,9 @@ const HighestPayoutsIcon = () => (
 );
 
 const InstantCashoutsIcon = () => (
-  <div className="w-16 h-16 bg-green-500/10 rounded-lg flex items-center justify-center">
+  <div className="w-16 h-16 bg-white/5 rounded-lg flex items-center justify-center">
     <svg
-      className="w-8 h-8 text-green-400"
+      className="w-8 h-8 text-slate-300"
       viewBox="0 0 32 32"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
@@ -196,9 +196,9 @@ const InstantCashoutsIcon = () => (
 );
 
 const DailyBonusesIcon = () => (
-  <div className="w-16 h-16 bg-green-500/10 rounded-lg flex items-center justify-center">
+  <div className="w-16 h-16 bg-white/5 rounded-lg flex items-center justify-center">
     <svg
-      className="w-8 h-8 text-green-400"
+      className="w-8 h-8 text-slate-300"
       viewBox="0 0 32 32"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
@@ -408,7 +408,7 @@ const HomePageContent: React.FC = () => {
   };
 
   return (
-    <div className="relative bg-white dark:bg-[#0b111e] text-slate-700 dark:text-slate-300 overflow-x-hidden">
+    <div className="relative bg-[#141826] text-slate-300 overflow-x-hidden">
       {/* 🔥 Global flat cartoon floating icons (background layer) */}
       <div className="pointer-events-none fixed inset-0 z-0 overflow-hidden">
         {GLOBAL_FLOATING_ICONS.map((icon, idx) => (
@@ -600,13 +600,13 @@ const HomePageContent: React.FC = () => {
 
 
          {/* How it works */}
-        <section className="py-20 bg-gradient-to-b from-white via-slate-50 to-white dark:from-[#0b111e] dark:via-[#0d1527] dark:to-[#0b111e]">
+        <section className="py-20 bg-[#141826]">
           <div className="container mx-auto px-8 text-center max-w-6xl">
-            <span className="text-xs font-semibold tracking-[0.15em] uppercase text-green-400">Step-by-step</span>
-            <h2 className="text-4xl font-bold text-slate-900 dark:text-white mt-3 mb-6">
+            <span className="text-xs font-semibold tracking-[0.15em] uppercase text-slate-400">Step-by-step</span>
+            <h2 className="text-4xl font-bold text-white mt-3 mb-6">
               Start earning in minutes
             </h2>
-            <p className="text-slate-600 dark:text-slate-400 max-w-3xl mx-auto mb-12">
+            <p className="text-slate-400 max-w-3xl mx-auto mb-12">
               A streamlined flow built for speed: create your account, pick the offers you like, and cash out without waiting days for approvals.
             </p>
 
@@ -614,17 +614,16 @@ const HomePageContent: React.FC = () => {
               {howItWorks.map((step, idx) => (
                 <div
                   key={step.title}
-                  className="relative h-full rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#0f172a] p-8 text-left shadow-lg transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl"
+                  className="relative h-full rounded-2xl border border-white/10 bg-[#1a1f2e] p-8 text-left shadow-lg transition-all duration-300 hover:-translate-y-1 hover:border-white/20"
                 >
                   <div className="flex items-center justify-between mb-6">
-                    <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-green-500/15 text-green-400 text-xl">
+                    <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-white/5 text-slate-300 text-xl">
                       <i className={`fas ${step.icon}`} />
                     </div>
-                    <span className="text-sm font-semibold text-slate-500 dark:text-slate-400">Step {idx + 1}</span>
+                    <span className="text-sm font-semibold text-slate-500">Step {idx + 1}</span>
                   </div>
-                  <h3 className="text-2xl font-bold text-slate-900 dark:text-white mb-3">{step.title}</h3>
-                  <p className="text-slate-600 dark:text-slate-400 leading-relaxed">{step.description}</p>
-                  <div className="absolute inset-x-0 bottom-0 h-1 rounded-b-2xl bg-gradient-to-r from-green-400 via-emerald-400 to-teal-400" />
+                  <h3 className="text-2xl font-bold text-white mb-3">{step.title}</h3>
+                  <p className="text-slate-400 leading-relaxed">{step.description}</p>
                 </div>
               ))}
             </div>
@@ -634,32 +633,23 @@ const HomePageContent: React.FC = () => {
         {/* Why Us Section */}
         <section
           ref={whyUsRef}
-          className="relative py-20 overflow-hidden bg-gradient-to-b from-white via-slate-50 to-white dark:from-[#0b111e] dark:via-[#0f172a] dark:to-[#0b111e]"
+          className="relative py-20 overflow-hidden bg-[#141826]"
         >
-          {/* soft glow background */}
-          <div className="absolute inset-0 pointer-events-none">
-            <div className="absolute -left-20 -top-32 h-64 w-64 bg-gradient-to-br from-green-400/20 via-emerald-500/20 to-teal-400/10 blur-3xl" />
-            <div className="absolute -right-12 bottom-0 h-80 w-80 bg-gradient-to-tr from-emerald-500/15 via-green-400/10 to-cyan-300/10 blur-3xl" />
-          </div>
-
           <div className="container mx-auto px-8 relative">
             {/* header */}
             <div className="text-center max-w-3xl mx-auto mb-14">
-              <span className="inline-flex items-center gap-2 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] rounded-full bg-green-500/10 text-green-500 border border-green-500/30">
+              <span className="inline-flex items-center gap-2 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] rounded-full bg-white/5 text-slate-400 border border-white/10">
                 Why us
               </span>
 
               <h2
-                className={`text-4xl font-bold text-slate-900 dark:text-white mt-4 mb-4 transition-opacity duration-700 ${isWhyUsInView ? "opacity-100" : "opacity-0"
+                className={`text-4xl font-bold text-white mt-4 mb-4 transition-opacity duration-700 ${isWhyUsInView ? "opacity-100" : "opacity-0"
                   }`}
               >
-                We&apos;re the #1 site to make money.{" "}
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-green-400 via-emerald-400 to-teal-400">
-                  Here&apos;s why
-                </span>
+                We&apos;re the #1 site to make money. Here&apos;s why
               </h2>
 
-              <p className="text-slate-600 dark:text-slate-400 text-lg">
+              <p className="text-slate-400 text-lg">
                 Earning should feel premium—our payouts, speed, and daily boosts are wrapped
                 in a platform built to look and feel trustworthy.
               </p>
@@ -674,28 +664,24 @@ const HomePageContent: React.FC = () => {
                     }`}
                   style={{ transitionDelay: `${i * 150}ms` }}
                 >
-                  {/* outer glow */}
-                  <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-green-400/25 via-emerald-400/15 to-teal-400/25 opacity-50 blur-2xl transition-opacity duration-500 group-hover:opacity-80" />
-
-                  {/* card body */}
-                  <div className="relative h-full rounded-2xl border border-white/50 dark:border-white/5 bg-white/80 dark:bg-[#0f172a]/80 backdrop-blur shadow-xl hover:-translate-y-2 hover:shadow-2xl transition-all duration-300">
+                  <div className="relative h-full rounded-2xl border border-white/10 bg-[#1a1f2e] shadow-xl hover:-translate-y-2 hover:border-white/20 transition-all duration-300">
                     <div className="p-8 flex flex-col gap-4 h-full">
-                      <div className="inline-flex items-center justify-center w-14 h-14 rounded-xl bg-gradient-to-br from-green-500/15 via-emerald-400/20 to-teal-400/20 text-green-400 shadow-inner">
+                      <div className="inline-flex items-center justify-center w-14 h-14 rounded-xl bg-white/5 text-slate-300">
                         {benefit.icon}
                       </div>
 
-                      <div className="h-px w-10 bg-gradient-to-r from-green-400 via-emerald-400 to-teal-400" />
+                      <div className="h-px w-10 bg-white/10" />
 
-                      <h3 className="text-2xl font-bold text-slate-900 dark:text-white">
+                      <h3 className="text-2xl font-bold text-white">
                         {benefit.title}
                       </h3>
 
-                      <p className="text-slate-600 dark:text-slate-400 leading-relaxed">
+                      <p className="text-slate-400 leading-relaxed">
                         {benefit.description}
                       </p>
 
-                      <div className="mt-auto inline-flex items-center gap-2 text-sm font-semibold text-green-500">
-                        <span className="h-2 w-2 rounded-full bg-green-400 animate-pulse" />
+                      <div className="mt-auto inline-flex items-center gap-2 text-sm font-semibold text-slate-500">
+                        <span className="h-2 w-2 rounded-full bg-slate-500" />
                         Trusted by top earners
                       </div>
                     </div>
@@ -709,32 +695,24 @@ const HomePageContent: React.FC = () => {
 {/* New Games & Surveys Carousel Section */}
 <section
   ref={gamesSectionRef}
-  className={`relative py-20 overflow-hidden transition-opacity duration-1000 ${
+  className={`relative py-20 overflow-hidden bg-[#141826] transition-opacity duration-1000 ${
     isGamesSectionInView ? "opacity-100" : "opacity-0"
   }`}
 >
-  {/* Background gradient + soft glows */}
-  <div className="absolute inset-0 bg-gradient-to-br from-green-50 via-white to-emerald-50 dark:from-[#0b111e] dark:via-[#0f172a] dark:to-[#0b111e]" />
-  <div className="absolute inset-0 opacity-40 blur-3xl pointer-events-none" aria-hidden>
-    <div className="absolute -top-10 -left-16 w-64 h-64 rounded-full bg-gradient-to-br from-green-400/25 via-emerald-300/20 to-teal-300/20" />
-    <div className="absolute bottom-0 -right-10 w-72 h-72 rounded-full bg-gradient-to-br from-emerald-400/20 via-green-300/15 to-teal-300/25" />
-  </div>
-
   <div className="container mx-auto px-4 sm:px-8 relative">
     {/* Header */}
     <div className="text-center max-w-4xl mx-auto mb-14">
-      <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-green-500/15 via-emerald-400/15 to-teal-400/15 text-green-600 dark:text-green-300 text-sm font-semibold border border-green-500/20 dark:border-green-400/15 shadow-inner">
-        <span className="h-2 w-2 rounded-full bg-green-400 animate-pulse" />
+      <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 text-slate-400 text-sm font-semibold border border-white/10">
         Fresh games & surveys — curated daily
       </div>
 
-      <h2 className="text-3xl md:text-4xl font-extrabold text-slate-900 dark:text-white mt-4 mb-4">
+      <h2 className="text-3xl md:text-4xl font-extrabold text-white mt-4 mb-4">
         Play games & take surveys to earn money
       </h2>
 
-      <p className="text-slate-600 dark:text-slate-400 text-lg">
+      <p className="text-slate-400 text-lg">
         Download mobile games, finish exciting levels, share your opinions on products,
-        and cash out real rewards — all styled to match our premium vibe.
+        and cash out real rewards.
       </p>
     </div>
 
@@ -743,7 +721,7 @@ const HomePageContent: React.FC = () => {
       {/* Left Button */}
       <button
         onClick={scrollGamesLeft}
-        className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-4 z-20 w-12 h-12 bg-white/90 dark:bg-slate-900/80 rounded-full shadow-xl border border-white/40 dark:border-slate-700 flex items-center justify-center text-slate-700 dark:text-slate-200 hover:scale-110 transition-transform hidden md:flex opacity-0 group-hover:opacity-100 duration-300 backdrop-blur"
+        className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-4 z-20 w-12 h-12 bg-[#1a1f2e] rounded-full shadow-xl border border-white/10 flex items-center justify-center text-slate-300 hover:scale-110 transition-transform hidden md:flex opacity-0 group-hover:opacity-100 duration-300"
         aria-label="Scroll left"
       >
         <i className="fas fa-chevron-left" />
@@ -762,46 +740,40 @@ const HomePageContent: React.FC = () => {
         {CAROUSEL_GAMES.map((item, index) => (
           <div
             key={index}
-            className="group min-w-[220px] bg-white/80 dark:bg-[#111827]/80 backdrop-blur-lg rounded-2xl p-4 border border-white/40 dark:border-slate-800 shadow-lg hover:-translate-y-1 hover:shadow-2xl transition-all duration-300 snap-start flex flex-col text-left cursor-pointer relative overflow-hidden"
+            className="group min-w-[220px] bg-[#1a1f2e] rounded-2xl p-4 border border-white/10 shadow-lg hover:-translate-y-1 hover:border-white/20 transition-all duration-300 snap-start flex flex-col text-left cursor-pointer relative overflow-hidden"
           >
-            {/* hover glow */}
-            <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
-              <div className="absolute -top-10 -right-14 w-32 h-32 rounded-full bg-gradient-to-br from-green-300/30 via-emerald-200/25 to-teal-200/25 blur-3xl" />
-            </div>
-
             {/* top row */}
             <div className="relative flex items-start gap-3 mb-4">
-              <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-green-500 via-emerald-500 to-teal-400 text-white flex items-center justify-center shadow-lg">
+              <div className="h-12 w-12 rounded-xl bg-white/5 text-slate-300 flex items-center justify-center">
                 <i className="fas fa-gamepad" />
               </div>
 
               <div className="flex-1">
-                <h3 className="font-semibold text-slate-900 dark:text-white line-clamp-1 text-base md:text-lg">
+                <h3 className="font-semibold text-white line-clamp-1 text-base md:text-lg">
                   {item.name}
                 </h3>
-                <div className="text-xs text-slate-500 dark:text-slate-400">
+                <div className="text-xs text-slate-500">
                   Games & Surveys
                 </div>
               </div>
             </div>
 
             {/* image */}
-            <div className="relative rounded-xl overflow-hidden mb-4 border border-slate-100 dark:border-slate-800">
+            <div className="relative rounded-xl overflow-hidden mb-4 border border-white/10">
               <img
                 src={item.image}
                 alt={item.name}
                 className="w-full aspect-[4/3] object-cover"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-slate-900/60 via-slate-900/10 to-transparent opacity-70" />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-70" />
             </div>
 
             {/* footer row */}
-            <div className="flex items-center justify-between text-sm text-slate-600 dark:text-slate-300">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-gradient-to-r from-green-500/15 via-emerald-400/15 to-teal-400/15 text-green-600 dark:text-green-300 font-semibold">
-                <span className="h-2 w-2 rounded-full bg-green-400 animate-pulse" />
+            <div className="flex items-center justify-between text-sm text-slate-400">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 text-slate-300 font-semibold">
                 Up to ${item.payout.toFixed(2)}
               </div>
-              <span className="font-semibold text-slate-900 dark:text-white">
+              <span className="font-semibold text-white">
                 Start now
               </span>
             </div>
@@ -812,7 +784,7 @@ const HomePageContent: React.FC = () => {
       {/* Right Button */}
       <button
         onClick={scrollGamesRight}
-        className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-4 z-20 w-12 h-12 bg-white/90 dark:bg-slate-900/80 rounded-full shadow-xl border border-white/40 dark:border-slate-700 flex items-center justify-center text-slate-700 dark:text-slate-200 hover:scale-110 transition-transform hidden md:flex opacity-0 group-hover:opacity-100 duration-300 backdrop-blur"
+        className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-4 z-20 w-12 h-12 bg-[#1a1f2e] rounded-full shadow-xl border border-white/10 flex items-center justify-center text-slate-300 hover:scale-110 transition-transform hidden md:flex opacity-0 group-hover:opacity-100 duration-300"
         aria-label="Scroll right"
       >
         <i className="fas fa-chevron-right" />
@@ -826,30 +798,20 @@ const HomePageContent: React.FC = () => {
  {/* Rewards Section */}
 <section
   ref={rewardsRef}
-  className="relative py-24 text-center overflow-hidden"
+  className="relative py-24 text-center overflow-hidden bg-[#141826]"
 >
-  {/* background */}
-  <div className="absolute inset-0 bg-gradient-to-b from-slate-50 via-white to-slate-100 dark:from-[#0f172a] dark:via-[#0b1223] dark:to-[#0f172a]" />
-  <div className="absolute inset-0 opacity-60 pointer-events-none" aria-hidden>
-    <div className="absolute -left-24 top-10 w-72 h-72 rounded-full bg-gradient-to-br from-green-500/25 via-emerald-400/10 to-teal-300/15 blur-3xl" />
-    <div className="absolute right-10 -bottom-10 w-80 h-80 rounded-full bg-gradient-to-tr from-emerald-500/15 via-green-400/10 to-teal-300/20 blur-3xl" />
-  </div>
-
   <div className="container mx-auto px-6 relative z-10">
     {/* header */}
     <div className="max-w-3xl mx-auto mb-16">
-      <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-gradient-to-r from-green-500/15 via-emerald-400/20 to-teal-400/15 text-green-600 dark:text-green-300 text-xs font-semibold uppercase tracking-[0.2em] border border-green-200/40 dark:border-emerald-700/40 shadow-sm">
+      <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 text-slate-400 text-xs font-semibold uppercase tracking-[0.2em] border border-white/10">
         Rewards Library
       </div>
 
-      <h2 className="text-4xl md:text-5xl font-extrabold text-slate-900 dark:text-white mt-4 mb-5">
-        Choose from{" "}
-        <span className="text-transparent bg-clip-text bg-gradient-to-r from-green-500 via-emerald-400 to-teal-400 font-bold">
-          100+ Rewards
-        </span>
+      <h2 className="text-4xl md:text-5xl font-extrabold text-white mt-4 mb-5">
+        Choose from 100+ Rewards
       </h2>
 
-      <p className="text-lg text-slate-600 dark:text-slate-400 leading-relaxed">
+      <p className="text-lg text-slate-400 leading-relaxed">
         Withdraw cash or choose from hundreds of different gift cards.
       </p>
     </div>
@@ -859,22 +821,14 @@ const HomePageContent: React.FC = () => {
       {REWARD_OPTIONS.map((option, i) => (
         <div
           key={option.name}
-          className={`relative group h-32 rounded-2xl p-[1px] bg-gradient-to-br from-white via-emerald-100/60 to-green-200/70 dark:from-white/10 dark:via-emerald-500/10 dark:to-green-500/20 shadow-[0_20px_45px_-15px_rgba(16,185,129,0.35)] transition-all duration-300 ease-out hover:-translate-y-1 hover:shadow-[0_25px_60px_-15px_rgba(16,185,129,0.45)] ${
+          className={`relative group h-32 rounded-2xl border border-white/10 bg-[#1a1f2e] transition-all duration-300 ease-out hover:-translate-y-1 hover:border-white/20 ${
             isRewardsInView ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10"
           }`}
           style={{ transitionDelay: `${i * 50}ms` }}
         >
-          <div className="relative h-full w-full rounded-2xl bg-white/95 dark:bg-[#111827]/80 backdrop-blur-lg border border-white/70 dark:border-emerald-500/10 flex items-center justify-center overflow-hidden">
-            {/* hover glow */}
-            <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
-              <div className="absolute -top-10 -right-14 w-28 h-28 rounded-full bg-gradient-to-br from-emerald-200/40 via-green-300/30 to-teal-200/30 blur-2xl" />
-              <div className="absolute -bottom-10 -left-14 w-24 h-24 rounded-full bg-gradient-to-tr from-green-300/30 via-emerald-200/25 to-teal-200/25 blur-2xl" />
-            </div>
-
-            {/* content */}
+          <div className="relative h-full w-full rounded-2xl flex items-center justify-center overflow-hidden">
             <div className="relative z-10 w-full h-full flex flex-col items-center justify-center gap-2 p-3">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-green-500/10 text-green-700 dark:text-green-300 text-xs font-semibold border border-green-200/50 dark:border-emerald-500/30">
-                <span className="h-2 w-2 rounded-full bg-green-400 animate-pulse" />
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 text-slate-400 text-xs font-semibold border border-white/10">
                 In stock
               </div>
 
@@ -885,7 +839,7 @@ const HomePageContent: React.FC = () => {
                 loading="lazy"
               />
 
-              <div className="text-xs font-semibold text-slate-600 dark:text-slate-300 truncate w-full text-center">
+              <div className="text-xs font-semibold text-slate-400 truncate w-full text-center">
                 {option.name}
               </div>
             </div>
@@ -900,23 +854,17 @@ const HomePageContent: React.FC = () => {
         {/* Testimonials Section */}
 <section
   ref={testimonialsRef}
-  className="relative py-20 bg-slate-50 dark:bg-[#0f1729] overflow-hidden"
+  className="relative py-20 bg-[#141826] overflow-hidden"
 >
-  {/* background + glows */}
-  <div className="absolute inset-0 bg-gradient-to-b from-emerald-100/25 via-transparent to-emerald-100/15 dark:from-emerald-400/5 dark:via-emerald-500/0 dark:to-cyan-500/10" />
-  <div className="absolute -right-24 -top-24 w-64 h-64 bg-gradient-to-br from-emerald-300/25 via-teal-200/25 to-cyan-200/20 blur-3xl pointer-events-none" />
-  <div className="absolute -left-32 -bottom-24 w-72 h-72 bg-gradient-to-tr from-cyan-300/20 via-emerald-200/15 to-teal-200/20 blur-3xl pointer-events-none" />
-
   <div className="container relative mx-auto px-8 text-center">
     {/* header */}
-    <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-emerald-500/15 via-cyan-500/10 to-green-500/15 border border-white/60 dark:border-emerald-500/20 shadow-[0_10px_40px_-18px_rgba(16,185,129,0.45)]">
-      <span className="h-2 w-2 rounded-full bg-emerald-400 animate-ping" />
-      <span className="text-sm font-semibold text-emerald-600 dark:text-emerald-200">
+    <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10">
+      <span className="text-sm font-semibold text-slate-400">
         Customer reviews
       </span>
     </div>
 
-    <h2 className="text-4xl font-bold text-slate-900 dark:text-white mt-4 mb-12">
+    <h2 className="text-4xl font-bold text-white mt-4 mb-12">
       Everybody loves Earnello.com
     </h2>
 
@@ -930,27 +878,23 @@ const HomePageContent: React.FC = () => {
         return (
           <div
             key={`${testimonial.author}-${index}`}
-            className={`relative p-[1px] rounded-2xl bg-gradient-to-br from-white via-emerald-100/70 to-green-200/60 dark:from-emerald-500/10 dark:via-cyan-500/5 dark:to-emerald-500/15 shadow-[0_25px_65px_-25px_rgba(16,185,129,0.5)] transition-all duration-500 ease-out hover:-translate-y-2 hover:shadow-[0_30px_70px_-22px_rgba(16,185,129,0.65)] ${
+            className={`relative rounded-2xl border border-white/10 bg-[#1a1f2e] transition-all duration-500 ease-out hover:-translate-y-1 hover:border-white/20 ${
               isTestimonialsInView
                 ? "opacity-100 translate-y-0"
                 : "opacity-0 translate-y-8"
             }`}
             style={{ transitionDelay: `${offset * 150}ms` }}
           >
-            <div className="relative h-full w-full rounded-2xl bg-white/95 dark:bg-[#111827]/85 backdrop-blur-lg border border-white/60 dark:border-emerald-500/15 p-8 flex flex-col overflow-hidden">
-              {/* inner glows */}
-              <div className="absolute -top-10 -right-10 w-32 h-32 rounded-full bg-gradient-to-br from-emerald-300/20 via-cyan-200/20 to-green-200/20 blur-3xl pointer-events-none" />
-              <div className="absolute -bottom-12 -left-12 w-28 h-28 rounded-full bg-gradient-to-tr from-cyan-300/15 via-emerald-200/15 to-green-200/15 blur-3xl pointer-events-none" />
-
-              <i className="fas fa-quote-left text-5xl text-emerald-400/40 absolute top-6 left-6" />
+            <div className="relative h-full w-full rounded-2xl p-8 flex flex-col overflow-hidden">
+              <i className="fas fa-quote-left text-5xl text-white/10 absolute top-6 left-6" />
 
               <div className="relative z-10 flex flex-col flex-grow">
-                <p className="text-slate-600 dark:text-slate-300 mb-6 flex-grow leading-relaxed">
+                <p className="text-slate-400 mb-6 flex-grow leading-relaxed">
                   {testimonial.text}
                 </p>
 
                 <div className="mt-auto">
-                  <p className="font-bold text-slate-900 dark:text-white text-lg">
+                  <p className="font-bold text-white text-lg">
                     {testimonial.author}
                   </p>
 
@@ -958,11 +902,11 @@ const HomePageContent: React.FC = () => {
                     {[...Array(testimonial.rating)].map((_, starIndex) => (
                       <span
                         key={starIndex}
-                        className="h-2.5 w-2.5 rounded-full bg-gradient-to-br from-amber-300 to-amber-500 shadow-[0_6px_18px_-6px_rgba(251,191,36,0.8)]"
+                        className="h-2.5 w-2.5 rounded-full bg-amber-400"
                       />
                     ))}
 
-                    <span className="ml-2 text-xs font-semibold text-emerald-600 dark:text-emerald-200 bg-emerald-500/10 px-2 py-1 rounded-full border border-emerald-400/20">
+                    <span className="ml-2 text-xs font-semibold text-slate-500 bg-white/5 px-2 py-1 rounded-full border border-white/10">
                       Verified
                     </span>
                   </div>
@@ -978,7 +922,7 @@ const HomePageContent: React.FC = () => {
     <div className="flex items-center justify-center gap-6 mt-12">
       <button
         onClick={handlePrevTestimonial}
-        className="w-12 h-12 flex items-center justify-center rounded-xl bg-slate-200 dark:bg-[#1e2235] hover:bg-slate-300 dark:hover:bg-[#2a2f44] text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-all active:scale-95"
+        className="w-12 h-12 flex items-center justify-center rounded-xl bg-[#1a1f2e] border border-white/10 hover:bg-[#222838] text-slate-400 hover:text-white transition-all active:scale-95"
         aria-label="Previous testimonial"
       >
         <i className="fas fa-chevron-left" />
@@ -991,8 +935,8 @@ const HomePageContent: React.FC = () => {
             onClick={() => setCurrentTestimonialIndex(i)}
             className={`rounded-full transition-all duration-300 ${
               i === currentTestimonialIndex
-                ? "w-3 h-3 bg-slate-800 dark:bg-white"
-                : "w-2 h-2 bg-slate-300 dark:bg-slate-600 hover:bg-slate-400 dark:hover:bg-slate-500"
+                ? "w-3 h-3 bg-white"
+                : "w-2 h-2 bg-slate-600 hover:bg-slate-500"
             }`}
             aria-label={`Go to testimonial ${i + 1}`}
           />
@@ -1001,7 +945,7 @@ const HomePageContent: React.FC = () => {
 
       <button
         onClick={handleNextTestimonial}
-        className="w-12 h-12 flex items-center justify-center rounded-xl bg-slate-200 dark:bg-[#1e2235] hover:bg-slate-300 dark:hover:bg-[#2a2f44] text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-all active:scale-95"
+        className="w-12 h-12 flex items-center justify-center rounded-xl bg-[#1a1f2e] border border-white/10 hover:bg-[#222838] text-slate-400 hover:text-white transition-all active:scale-95"
         aria-label="Next testimonial"
       >
         <i className="fas fa-chevron-right" />
@@ -1014,28 +958,22 @@ const HomePageContent: React.FC = () => {
         {/* FAQ Section */}
 <section
   ref={faqRef}
-  className={`relative py-20 bg-slate-50 dark:bg-[#0f1729] overflow-hidden transition-opacity duration-1000 ${
+  className={`relative py-20 bg-[#141826] overflow-hidden transition-opacity duration-1000 ${
     isFaqInView ? "opacity-100" : "opacity-0"
   }`}
 >
-  {/* background + glows */}
-  <div className="absolute inset-0 bg-gradient-to-b from-emerald-100/25 via-transparent to-emerald-200/20 dark:from-emerald-500/5 dark:via-transparent dark:to-cyan-500/10" />
-  <div className="absolute -left-24 top-10 w-56 h-56 bg-gradient-to-br from-emerald-300/25 via-teal-200/25 to-cyan-200/20 blur-3xl pointer-events-none" />
-  <div className="absolute -right-20 bottom-0 w-64 h-64 bg-gradient-to-tr from-cyan-300/20 via-emerald-200/15 to-green-200/20 blur-3xl pointer-events-none" />
-
   <div className="container relative mx-auto px-8 max-w-4xl">
     {/* header */}
     <div className="text-center mb-10">
       <div className="flex items-center justify-center gap-3 mb-4">
-        <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-gradient-to-r from-emerald-500/15 via-cyan-500/10 to-green-500/15 border border-white/60 dark:border-emerald-500/20">
-          <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
-          <span className="text-xs font-semibold text-emerald-700 dark:text-emerald-200 uppercase tracking-wide">
+        <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/5 border border-white/10">
+          <span className="text-xs font-semibold text-slate-400 uppercase tracking-wide">
             Support
           </span>
         </div>
       </div>
 
-      <h2 className="text-4xl font-bold text-slate-900 dark:text-white mb-3">
+      <h2 className="text-4xl font-bold text-white mb-3">
         Your Earnello.com Questions Answered
       </h2>
 
@@ -1046,12 +984,10 @@ const HomePageContent: React.FC = () => {
     </div>
 
     {/* accordion */}
-    <div className="p-[1px] rounded-2xl bg-gradient-to-br from-white via-emerald-100/70 to-green-200/60 dark:from-emerald-500/10 dark:via-cyan-500/5 dark:to-emerald-500/15 shadow-[0_25px_65px_-25px_rgba(16,185,129,0.5)]">
-      <div className="bg-white/95 dark:bg-[#111827]/85 backdrop-blur-lg rounded-2xl shadow-lg border border-white/60 dark:border-emerald-500/15 divide-y divide-slate-200/70 dark:divide-emerald-500/10">
-        {FAQ_ITEMS.map((item, i) => (
-          <FaqAccordionItem key={i} item={item} />
-        ))}
-      </div>
+    <div className="rounded-2xl border border-white/10 bg-[#1a1f2e] shadow-lg divide-y divide-white/10">
+      {FAQ_ITEMS.map((item, i) => (
+        <FaqAccordionItem key={i} item={item} />
+      ))}
     </div>
   </div>
 </section>
