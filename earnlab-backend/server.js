@@ -764,6 +764,33 @@ app.get('/api/offer-walls', checkIpWithIPHub({ blockImmediately: false, blockOnF
     }
 });
 
+const FEED_EARNING_TYPES = ['Task Reward', 'earn', 'bonus_earn'];
+
+const mapEarningFeedItem = (item) => {
+    if (item.type === 'Withdrawal') {
+        return {
+            id: item.id,
+            user: item.username,
+            avatar: item.avatar_url,
+            task: 'Withdrawal',
+            provider: item.method,
+            amount: Number(item.amount),
+        };
+    }
+
+    const provider = item.source || item.method || 'Offer';
+    const task = item.source || item.method || 'Task';
+
+    return {
+        id: item.id,
+        user: item.username,
+        avatar: item.avatar_url,
+        task,
+        provider,
+        amount: Number(item.amount),
+    };
+};
+
 app.get('/api/public/earning-feed', async (req, res) => {
     try {
         const result = await pool.query(`
@@ -777,32 +804,19 @@ app.get('/api/public/earning-feed', async (req, res) => {
                 t.amount
             FROM transactions t
             JOIN users u ON t.user_id = u.id
-            WHERE t.status = 'Completed' AND (t.type = 'Task Reward' OR t.type = 'Withdrawal')
+            WHERE (
+                t.type = ANY($1::text[])
+                AND LOWER(t.status) = 'completed'
+                AND t.amount > 0
+            ) OR (
+                t.type = 'Withdrawal'
+                AND t.status = 'Completed'
+            )
             ORDER BY t.date DESC
             LIMIT 15
-        `);
+        `, [FEED_EARNING_TYPES]);
         
-        const feedItems = result.rows.map(item => {
-            let task, provider;
-            if (item.type === 'Task Reward') {
-                task = item.source || 'Task';
-                provider = item.method;
-            } else { // Withdrawal
-                task = 'Withdrawal';
-                provider = item.method;
-            }
-            
-            return {
-                id: item.id,
-                user: item.username,
-                avatar: item.avatar_url,
-                task: task,
-                provider: provider,
-                amount: Number(item.amount)
-            };
-        });
-
-        res.json(feedItems);
+        res.json(result.rows.map(mapEarningFeedItem));
     } catch (error) {
         console.error('Error fetching public earning feed:', error);
         res.status(500).json({ message: 'Server error fetching earning feed.' });
