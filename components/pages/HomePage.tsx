@@ -3,7 +3,7 @@ import { AppContext } from '../../App';
 import { FAQ_ITEMS, REWARD_OPTIONS, TESTIMONIALS, FEATURED_OFFERS } from '../../constants';
 import { API_URL } from '../../constants';
 import type { FaqItem } from '../../types';
-import OffersSection from '../../components/OffersSection';
+import LiveCashoutsSection from '../LiveCashoutsSection';
 
 interface HomeStats {
   signups24h: number;
@@ -237,34 +237,48 @@ interface EarningMethod {
   earnAmount: string;
   baseImage: string;
   featured?: boolean;
+  floatingIcons?: { src: string; className: string }[];
 }
 
 const earningMethods: EarningMethod[] = [
   {
-    title: 'Play games & get paid',
+    title: 'Play games',
     description:
-      'Game studios are happy to reward you just for trying out their games. Pick a game you like, play a few levels and collect real cash while you have fun.',
+      'In order to attract more players, gaming companies want to pay you to play their games. Let\'s play!',
     earnLabel: 'Payout per game',
     earnAmount: '$1.00 - $120.00',
     baseImage:
       'https://res.cloudinary.com/dsezfqke7/image/upload/v1763588048/nanao_base_czw9lt.png',
     featured: true,
+    floatingIcons: [
+      { src: 'https://i.imgur.com/U16jVoT.png', className: 'earn-floating-1' },
+      { src: 'https://shorturl.at/C13pw', className: 'earn-floating-2' },
+    ],
   },
   {
-    title: 'Try new apps & offers',
+    title: 'Complete offers',
     description:
-      'Discover new brands and apps, install or complete a few simple steps, and earn money for each offer you finish — it’s like getting paid to explore.',
+      'Get to know new companies by trying their apps while you earn money. It\'s time to get paid for using apps!',
     earnLabel: 'Payout per completed offer',
     earnAmount: '$1.00 - $75.00',
-    baseImage: 'https://res.cloudinary.com/dsezfqke7/image/upload/v1764389619/ux6374WcpaIBn8-weIQNzffOk9re64pqHEdhsDb3CS58i8IJLI0-JznM8rQ3803NUws_w416-h235-rw_k9uqha.webp',
+    baseImage:
+      'https://res.cloudinary.com/dsezfqke7/image/upload/v1764389619/ux6374WcpaIBn8-weIQNzffOk9re64pqHEdhsDb3CS58i8IJLI0-JznM8rQ3803NUws_w416-h235-rw_k9uqha.webp',
+    floatingIcons: [
+      { src: 'https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg', className: 'earn-floating-1' },
+      { src: 'https://i.imgur.com/Y8H4yT6.png', className: 'earn-floating-2' },
+    ],
   },
   {
-    title: 'Share your opinion in surveys',
+    title: 'Join surveys',
     description:
-      'Brands rely on honest feedback to improve their products, and they’re willing to reward you for your time. Answer a few quick questions and turn your opinions into cash.',
+      'Companies need your opinion to create better products and services. That\'s why they pay for your feedback.',
     earnLabel: 'Average payout per 5–10 min survey',
     earnAmount: '$1.00',
     baseImage: 'https://i.imgur.com/tcAqi0j.png',
+    floatingIcons: [
+      { src: 'https://i.imgur.com/oZznueX.png', className: 'earn-floating-1' },
+      { src: 'https://i.imgur.com/ssL8ALh.png', className: 'earn-floating-2' },
+    ],
   },
 ];
 
@@ -595,8 +609,74 @@ const HomePageContent: React.FC = () => {
         </section>
         
 
-        {/* ✅ Offers Section (replacing Best ways to earn) */}
-        <OffersSection />
+        {/* Best ways to earn — FreeCash-style */}
+        <section
+          ref={bestWaysRef}
+          className={`relative py-20 overflow-hidden bg-[#141826] transition-opacity duration-1000 ${
+            isBestWaysInView ? 'opacity-100' : 'opacity-0'
+          }`}
+        >
+          <div className="container mx-auto px-6 sm:px-8 max-w-6xl">
+            <h2 className="text-3xl md:text-4xl font-extrabold text-white text-center mb-12 md:mb-16">
+              Best ways to earn
+            </h2>
+
+            <div className="space-y-6">
+              {earningMethods.map((method, idx) => (
+                <div
+                  key={method.title}
+                  onClick={() => openSignupModal()}
+                  onKeyDown={(e) => e.key === 'Enter' && openSignupModal()}
+                  role="button"
+                  tabIndex={0}
+                  className={`group relative rounded-2xl border bg-[#1a1f2e] overflow-hidden cursor-pointer transition-all duration-500 hover:border-white/20 hover:-translate-y-0.5 ${
+                    method.featured ? 'border-green-500/30' : 'border-white/10'
+                  } ${isBestWaysInView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}
+                  style={{ transitionDelay: `${idx * 150}ms` }}
+                >
+                  <div
+                    className={`flex flex-col ${
+                      idx % 2 === 1 ? 'md:flex-row-reverse' : 'md:flex-row'
+                    } items-center`}
+                  >
+                    <div className="relative w-full md:w-1/2 p-6 md:p-10 flex items-center justify-center min-h-[260px] bg-gradient-to-br from-white/[0.03] to-transparent">
+                      {method.floatingIcons?.map((icon, iconIdx) => (
+                        <img
+                          key={iconIdx}
+                          src={icon.src}
+                          alt=""
+                          className={`earn-floating-icon ${icon.className}`}
+                        />
+                      ))}
+                      <img
+                        src={method.baseImage}
+                        alt={method.title}
+                        className="relative z-10 max-h-[260px] w-auto object-contain drop-shadow-2xl transition-transform duration-300 group-hover:scale-105"
+                      />
+                    </div>
+
+                    <div className="w-full md:w-1/2 p-6 md:p-10 text-left">
+                      <h3 className="text-2xl md:text-3xl font-bold text-white mb-4">
+                        {method.title}
+                      </h3>
+                      <p className="text-slate-400 text-base md:text-lg leading-relaxed mb-6">
+                        {method.description}
+                      </p>
+                      <div className="inline-flex flex-col gap-1 px-4 py-3 rounded-xl bg-white/5 border border-white/10">
+                        <span className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+                          {method.earnLabel}
+                        </span>
+                        <span className="text-xl font-extrabold text-[#00D26A]">
+                          {method.earnAmount}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
 
 
          {/* How it works */}
@@ -991,6 +1071,8 @@ const HomePageContent: React.FC = () => {
     </div>
   </div>
 </section>
+
+        <LiveCashoutsSection />
 
       </div>
     </div>
