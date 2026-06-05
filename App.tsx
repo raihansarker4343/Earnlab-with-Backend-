@@ -613,6 +613,8 @@ const App: React.FC = () => {
     );
   }
 
+  const isPublicHomepage = !isLoggedIn && page === 'Home';
+  
   const renderPage = () => {
     const pagePadding = "p-4 sm:p-6 lg:p-8";
     let componentToRender;
@@ -627,8 +629,11 @@ const App: React.FC = () => {
       componentToRender = isLoggedIn ? <LoggedInHomePage /> : <HomePageContent />;
     }
 
-    // আপডেট করা কোড:
-     return <div className={`max-w-7xl mx-auto w-full ${pagePadding}`}>{componentToRender}</div>;
+    if (isPublicHomepage) {
+      return componentToRender;
+    }
+
+    return <div className={`max-w-7xl mx-auto w-full ${pagePadding}`}>{componentToRender}</div>;
   };
 
   const headerContent = isLoggedIn ? <Header onLogout={handleLogout} /> : <LoggedOutHeader />;
@@ -636,7 +641,7 @@ const App: React.FC = () => {
 
   return (
     <AppContext.Provider value={appContextValue}>
-      <div className="min-h-screen bg-slate-100 dark:bg-[#0f172a] text-slate-800 dark:text-slate-300 lg:flex">
+      <div className={`min-h-screen lg:flex ${isPublicHomepage ? 'bg-[#141826] text-slate-300' : 'bg-slate-100 dark:bg-[#0f172a] text-slate-800 dark:text-slate-300'}`}>
         {isLoggedIn ? <Sidebar /> : <LoggedOutSidebar />}
 
         <div className="flex-1 flex flex-col min-w-0 overflow-y-auto w-full">
