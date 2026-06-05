@@ -15,6 +15,17 @@ import {
   JoinSurveysFloat1,
   JoinSurveysFloat2,
 } from '../earn/BestWaysIllustrations';
+import {
+  CreateAccountIllustration,
+  CreateAccountFloat1,
+  CreateAccountFloat2,
+  PickOffersIllustration,
+  PickOffersFloat1,
+  PickOffersFloat2,
+  CashOutIllustration,
+  CashOutFloat1,
+  CashOutFloat2,
+} from '../earn/HowItWorksIllustrations';
 
 interface HomeStats {
   signups24h: number;
@@ -283,21 +294,42 @@ const earningMethods: EarningMethod[] = [
   },
 ];
 
-const howItWorks = [
+interface HowItWorkStep {
+  title: string;
+  description: string;
+  illustration: React.ReactNode;
+  featured?: boolean;
+  floatingElements?: { element: React.ReactNode; className: string }[];
+}
+
+const howItWorks: HowItWorkStep[] = [
   {
     title: 'Create your account',
     description: 'Join free with your email—no credit card, no hidden fees.',
-    icon: 'fa-user-plus',
+    illustration: <CreateAccountIllustration />,
+    featured: true,
+    floatingElements: [
+      { element: <CreateAccountFloat1 />, className: 'earn-floating-1 earn-float-step1-1' },
+      { element: <CreateAccountFloat2 />, className: 'earn-floating-2 earn-float-step1-2' },
+    ],
   },
   {
     title: 'Pick offers you like',
     description: 'Choose games, apps, and surveys tailored to your interests.',
-    icon: 'fa-clipboard-list',
+    illustration: <PickOffersIllustration />,
+    floatingElements: [
+      { element: <PickOffersFloat1 />, className: 'earn-floating-1 earn-float-step2-1' },
+      { element: <PickOffersFloat2 />, className: 'earn-floating-2 earn-float-step2-2' },
+    ],
   },
   {
     title: 'Cash out instantly',
     description: 'Withdraw earnings to your favorite payout method without waiting.',
-    icon: 'fa-bolt',
+    illustration: <CashOutIllustration />,
+    floatingElements: [
+      { element: <CashOutFloat1 />, className: 'earn-floating-1 earn-float-step3-1' },
+      { element: <CashOutFloat2 />, className: 'earn-floating-2 earn-float-step3-2' },
+    ],
   },
 ];
 
@@ -372,6 +404,7 @@ const HomePageContent: React.FC = () => {
   }, []);
 
   const [bestWaysRef, isBestWaysInView] = useInView({ threshold: 0.1 });
+  const [howItWorksRef, isHowItWorksInView] = useInView({ threshold: 0.1 });
   const [whyUsRef, isWhyUsInView] = useInView({ threshold: 0.1 });
   const [rewardsRef, isRewardsInView] = useInView({ threshold: 0.15 });
   const [testimonialsRef, isTestimonialsInView] = useInView({ threshold: 0.15 });
@@ -662,32 +695,75 @@ const HomePageContent: React.FC = () => {
           </div>
         </section>
 
+        {/* How it works — matches Best ways to earn layout */}
+        <section
+          ref={howItWorksRef}
+          className={`relative py-20 overflow-hidden bg-[#141826] transition-opacity duration-1000 ${
+            isHowItWorksInView ? 'opacity-100' : 'opacity-0'
+          }`}
+        >
+          <div className="container mx-auto px-6 sm:px-8 max-w-6xl">
+            <div className="text-center mb-12 md:mb-16">
+              <span className="text-xs font-semibold tracking-[0.15em] uppercase text-slate-400">
+                Step-by-step
+              </span>
+              <h2 className="text-3xl md:text-4xl font-extrabold text-white mt-3 mb-6">
+                Start earning in minutes
+              </h2>
+              <p className="text-slate-400 max-w-3xl mx-auto text-base md:text-lg leading-relaxed">
+                A streamlined flow built for speed: create your account, pick the offers you like, and cash out without waiting days for approvals.
+              </p>
+            </div>
 
-         {/* How it works */}
-        <section className="py-20 bg-[#141826]">
-          <div className="container mx-auto px-8 text-center max-w-6xl">
-            <span className="text-xs font-semibold tracking-[0.15em] uppercase text-slate-400">Step-by-step</span>
-            <h2 className="text-4xl font-bold text-white mt-3 mb-6">
-              Start earning in minutes
-            </h2>
-            <p className="text-slate-400 max-w-3xl mx-auto mb-12">
-              A streamlined flow built for speed: create your account, pick the offers you like, and cash out without waiting days for approvals.
-            </p>
+        
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div className="space-y-6">
               {howItWorks.map((step, idx) => (
                 <div
                   key={step.title}
-                  className="relative h-full rounded-2xl border border-white/10 bg-[#1a1f2e] p-8 text-left shadow-lg transition-all duration-300 hover:-translate-y-1 hover:border-white/20"
+                  onClick={() => openSignupModal()}
+                  onKeyDown={(e) => e.key === 'Enter' && openSignupModal()}
+                  role="button"
+                  tabIndex={0}
+                  className={`group relative rounded-2xl border bg-[#1a1f2e] overflow-hidden cursor-pointer transition-all duration-500 hover:border-white/20 hover:-translate-y-0.5 ${
+                    step.featured ? 'border-green-500/30' : 'border-white/10'
+                  } ${isHowItWorksInView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}
+                  style={{ transitionDelay: `${idx * 150}ms` }}
                 >
-                  <div className="flex items-center justify-between mb-6">
-                    <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-white/5 text-slate-300 text-xl">
-                      <i className={`fas ${step.icon}`} />
+                  <div
+                    className={`flex flex-col ${
+                      idx % 2 === 1 ? 'md:flex-row-reverse' : 'md:flex-row'
+                    } items-center`}
+                  >
+                    <div className="relative w-full md:w-1/2 p-6 md:p-10 flex items-center justify-center min-h-[260px] bg-[#141826] overflow-visible">
+                      {step.floatingElements?.map((float, iconIdx) => (
+                        <div
+                          key={iconIdx}
+                          className={`earn-floating-icon ${float.className}`}
+                          aria-hidden
+                        >
+                          {float.element}
+                        </div>
+                      ))}
+                      <div className="relative z-10 w-full max-w-[380px] transition-transform duration-300 group-hover:scale-[1.03]">
+                        {step.illustration}
+                      </div>
                     </div>
-                    <span className="text-sm font-semibold text-slate-500">Step {idx + 1}</span>
+
+                    <div className="w-full md:w-1/2 p-6 md:p-10 text-left">
+                      <h3 className="text-2xl md:text-3xl font-bold text-white mb-4">
+                        {step.title}
+                      </h3>
+                      <p className="text-slate-400 text-base md:text-lg leading-relaxed mb-6">
+                        {step.description}
+                      </p>
+                      <div className="inline-flex px-4 py-3 rounded-xl bg-white/5 border border-white/10">
+                        <span className="text-xl font-extrabold text-[#00D26A]">
+                          Step {idx + 1}
+                        </span>
+                      </div>
+                    </div>
                   </div>
-                  <h3 className="text-2xl font-bold text-white mb-3">{step.title}</h3>
-                  <p className="text-slate-400 leading-relaxed">{step.description}</p>
                 </div>
               ))}
             </div>
