@@ -252,7 +252,6 @@ const earningMethods: EarningMethod[] = [
     earnAmount: '$1.00 - $120.00',
     illustration: <PlayGamesIllustration />,
     featured: true,
-    floatingIcons: [
       floatingElements: [
       { element: <PlayGamesFloat1 />, className: 'earn-floating-1 earn-float-games-1' },
       { element: <PlayGamesFloat2 />, className: 'earn-floating-2 earn-float-games-2' },
