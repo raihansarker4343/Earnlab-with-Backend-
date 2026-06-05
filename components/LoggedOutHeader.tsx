@@ -5,14 +5,19 @@ import { MenuIcon } from './icons/HeaderIcons';
 import { MoonIcon, SunIcon } from './icons/FooterIcons';
 
 const LoggedOutHeader: React.FC = () => {
-    const { isSidebarCollapsed, setIsSidebarCollapsed, setIsMobileSidebarOpen, theme, setTheme, setIsSigninModalOpen, openSignupModal, setCurrentPage } = useContext(AppContext);
+    const { isSidebarCollapsed, setIsSidebarCollapsed, setIsMobileSidebarOpen, theme, setTheme, setIsSigninModalOpen, openSignupModal, setCurrentPage, currentPage } = useContext(AppContext);
+    const isPublicHomepage = currentPage === 'Home';
 
     const toggleTheme = () => {
         setTheme(prevTheme => prevTheme === 'light' ? 'dark' : 'light');
     };
 
     return (
-        <header className="relative bg-white/70 dark:bg-[#0f1729]/80 backdrop-blur-2xl p-4 flex flex-wrap items-center justify-between gap-3 border-b border-slate-200/60 dark:border-white/5 shadow-[0_4px_30px_rgba(0,0,0,0.03)] z-30">
+        <header className={`relative p-4 flex flex-wrap items-center justify-between gap-3 z-30 ${
+            isPublicHomepage
+                ? 'bg-[#141826] border-b border-white/10'
+                : 'bg-white/70 dark:bg-[#0f1729]/80 backdrop-blur-2xl border-b border-slate-200/60 dark:border-white/5 shadow-[0_4px_30px_rgba(0,0,0,0.03)]'
+        }`}>
             <div className="flex items-center gap-4">
                  <button
                     onClick={() => setIsMobileSidebarOpen(true)}
