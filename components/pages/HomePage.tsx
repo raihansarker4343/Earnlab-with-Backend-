@@ -222,14 +222,6 @@ const DailyBonusesIcon = () => (
   </div>
 );
 
-// Global small floating icons (flat cartoon style, external URLs)
-const GLOBAL_FLOATING_ICONS = [
-  { src: "https://cryptologos.cc/logos/bitcoin-btc-logo.svg?v=002", className: "global-floating-1" }, // Bitcoin Neon
-  { src: "https://cryptologos.cc/logos/ethereum-eth-logo.png?v=002", className: "global-floating-2" }, // Ethereum Neon
-  { src: "https://cryptologos.cc/logos/tether-usdt-logo.png?v=002", className: "global-floating-3" }, // Binance Neon
-  { src: "https://cryptologos.cc/logos/litecoin-ltc-logo.png?v=002", className: "global-floating-4" }, // Gamepad Neon
-];
-
 interface EarningMethod {
   title: string;
   description: string;
@@ -422,27 +414,11 @@ const HomePageContent: React.FC = () => {
   };
 
   return (
-    <div className="relative bg-[#141826] text-slate-300 overflow-x-hidden">
-      {/* 🔥 Global flat cartoon floating icons (background layer) */}
-      <div className="pointer-events-none fixed inset-0 z-0 overflow-hidden">
-        {GLOBAL_FLOATING_ICONS.map((icon, idx) => (
-          <img
-            key={idx}
-            src={icon.src}
-            alt={`floating-icon-${idx}`}
-            className={`global-floating-icon ${icon.className}`}
-          />
-        ))}
-      </div>
-
-      {/* Main content */}
-      <div className="relative z-10">
-        {/* Hero Section — FreeCash-inspired layout */}
-        <section className="bg-[#141826] text-white relative overflow-hidden">
-          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_rgba(52,211,153,0.08)_0%,_transparent_50%)]" />
-          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_left,_rgba(59,130,246,0.06)_0%,_transparent_50%)]" />
-          
-          <div className="w-full max-w-7xl mx-auto px-6 py-12 md:py-16 lg:py-20 relative z-10">
+      <div className="relative w-full bg-[#141826] text-slate-300 overflow-x-hidden">
+      <div>
+        {/* Hero Section */}
+        <section className="bg-[#141826] text-white">
+          <div className="w-full max-w-7xl mx-auto px-6 py-12 md:py-16 lg:py-20">
             <div className="grid lg:grid-cols-2 gap-10 lg:gap-14 items-start">
               {/* Left — headline + offers */}
               <div
@@ -639,7 +615,7 @@ const HomePageContent: React.FC = () => {
                       idx % 2 === 1 ? 'md:flex-row-reverse' : 'md:flex-row'
                     } items-center`}
                   >
-                    <div className="relative w-full md:w-1/2 p-6 md:p-10 flex items-center justify-center min-h-[260px] bg-gradient-to-br from-white/[0.03] to-transparent">
+                    <div className="relative w-full md:w-1/2 p-6 md:p-10 flex items-center justify-center min-h-[260px] bg-[#141826]">
                       {method.floatingIcons?.map((icon, iconIdx) => (
                         <img
                           key={iconIdx}
