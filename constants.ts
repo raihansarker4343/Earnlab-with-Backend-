@@ -4,6 +4,9 @@ import type { User, FaqItem, RewardOption, LeaderboardUser, Achievement, ChatMes
 
 export const API_URL = "https://api.earnello.com";
 
+/** Solid dark background used across the public homepage (matches earnello.com) */
+export const HOMEPAGE_BG = '#141826';
+
 
 
 // FIX: Added OFFER_WALLS and SURVEY_PROVIDERS constants back.
