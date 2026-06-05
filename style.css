@@ -424,6 +424,48 @@
       animation: earn-float-diagonal 5.2s ease-in-out infinite 0.5s;
     }
 
+    
+    /* How it works — Step 1 floats */
+    .earn-float-step1-1 {
+      top: 8%;
+      left: 5%;
+      animation: earn-float-up-down 4.3s ease-in-out infinite;
+    }
+
+    .earn-float-step1-2 {
+      top: 10%;
+      right: 6%;
+      animation: earn-float-diagonal 4.9s ease-in-out infinite 0.25s;
+    }
+
+    /* How it works — Step 2 floats */
+    .earn-float-step2-1 {
+      top: 7%;
+      left: 4%;
+      animation: earn-float-diagonal 4.7s ease-in-out infinite 0.1s;
+    }
+
+    .earn-float-step2-2 {
+      bottom: 16%;
+      right: 5%;
+      top: auto;
+      animation: earn-float-up-down 5s ease-in-out infinite 0.35s;
+    }
+
+    /* How it works — Step 3 floats */
+    .earn-float-step3-1 {
+      top: 9%;
+      right: 7%;
+      animation: earn-float-up-down 4.5s ease-in-out infinite 0.15s;
+    }
+
+    .earn-float-step3-2 {
+      bottom: 14%;
+      left: 6%;
+      top: auto;
+      animation: earn-float-diagonal 5.1s ease-in-out infinite 0.4s;
+    }
+
     /* Legacy class aliases */
     .earn-floating-1 {
       top: 8%;
