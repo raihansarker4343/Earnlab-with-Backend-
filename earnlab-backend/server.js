@@ -861,6 +861,44 @@ app.get('/api/public/earning-feed', async (req, res) => {
     }
 });
 
+app.get('/api/public/live-cashouts', async (req, res) => {
+    try {
+        const [totalRes, itemsRes] = await Promise.all([
+            pool.query(`
+                SELECT COALESCE(SUM(amount), 0) AS total
+                FROM transactions
+                WHERE type = 'Withdrawal'
+                  AND status = 'Completed'
+                  AND date >= NOW() - INTERVAL '30 days'
+            `),
+            pool.query(`
+                SELECT t.id, u.username, t.method, t.amount
+                FROM transactions t
+                JOIN users u ON t.user_id = u.id
+                WHERE t.type = 'Withdrawal'
+                  AND status = 'Completed'
+                ORDER BY t.date DESC
+                LIMIT 24
+            `),
+        ]);
+
+        const total30Days = parseFloat(totalRes.rows[0].total) || 0;
+
+        res.json({
+            total30Days: Number(total30Days.toFixed(2)),
+            items: itemsRes.rows.map((row) => ({
+                id: row.id,
+                method: row.method || 'PayPal',
+                user: row.username,
+                amount: Number(row.amount),
+            })),
+        });
+    } catch (error) {
+        console.error('Error fetching live cashouts:', error);
+        res.status(500).json({ message: 'Server error fetching live cashouts.' });
+    }
+});
+
 app.get('/api/leaderboard', async (req, res) => {
     const { period } = req.query; // 'daily', 'weekly', 'monthly'
     if (!['daily', 'weekly', 'monthly'].includes(period)) {
