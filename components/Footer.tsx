@@ -47,7 +47,7 @@ const Footer: React.FC = () => {
 
                     <div className="grid grid-cols-2 sm:grid-cols-4 gap-8 text-sm">
                         <div>
-                            <h4 className="font-bold text-slate-900 dark:text-white mb-4">Menu</h4>
+                            <h4 className={`font-bold mb-4 ${isPublicHomepage ? 'text-white' : 'text-slate-900 dark:text-white'}`}>Menu</h4>
                             <ul className="space-y-2">
                                 <li><a href="/Home" onClick={(e) => handleNavClick(e, 'Home')} className="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">Home</a></li>
                                 <li><a href="/Offer" onClick={(e) => handleNavClick(e, 'Offer')} className="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">Offer</a></li>
@@ -57,14 +57,14 @@ const Footer: React.FC = () => {
                             </ul>
                         </div>
                         <div>
-                            <h4 className="font-bold text-slate-900 dark:text-white mb-4">Games</h4>
+                            <h4 className={`font-bold mb-4 ${isPublicHomepage ? 'text-white' : 'text-slate-900 dark:text-white'}`}>Games</h4>
                             <ul className="space-y-2">
                                 <li><a href="/Boxes" onClick={(e) => handleNavClick(e, 'Boxes')} className="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">Boxes</a></li>
                                 <li><a href="/Battles" onClick={(e) => handleNavClick(e, 'Battles')} className="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">Battles</a></li>
                             </ul>
                         </div>
                         <div>
-                            <h4 className="font-bold text-slate-900 dark:text-white mb-4">About</h4>
+                            <h4 className={`font-bold mb-4 ${isPublicHomepage ? 'text-white' : 'text-slate-900 dark:text-white'}`}>About</h4>
                             <ul className="space-y-2">
                                 <li><a href="/Blog" onClick={(e) => handleNavClick(e, 'Blog')} className="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">Blog</a></li>
                                 <li><a href="/Guides" onClick={(e) => handleNavClick(e, 'Guides')} className="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">Guides</a></li>
@@ -75,7 +75,7 @@ const Footer: React.FC = () => {
                             </ul>
                         </div>
                         <div>
-                            <h4 className="font-bold text-slate-900 dark:text-white mb-4">Help</h4>
+                            <h4 className={`font-bold mb-4 ${isPublicHomepage ? 'text-white' : 'text-slate-900 dark:text-white'}`}>Help</h4>
                             <ul className="space-y-2">
                                 <li><a href="/FrequentlyAsked" onClick={(e) => handleNavClick(e, 'Frequently Asked')} className="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">Frequently Asked</a></li>
                                 <li><a href="/HelpDesk" onClick={(e) => handleNavClick(e, 'Help Desk')} className="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">Help Desk</a></li>
