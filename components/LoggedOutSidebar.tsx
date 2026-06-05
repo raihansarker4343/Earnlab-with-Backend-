@@ -116,10 +116,9 @@ const LoggedOutSidebar: React.FC = () => {
   lg:w-72 ${isSidebarCollapsed ? 'lg:w-0 lg:p-0' : ''}
   ${isMobileSidebarOpen ? 'translate-x-0 w-72' : '-translate-x-full w-72 lg:translate-x-0'}
 
-  bg-white/70 dark:bg-[#0f1729]/80
-  backdrop-blur-2xl
-  border-r border-white/20 dark:border-white/5
-  shadow-[10px_0_40px_-10px_rgba(0,0,0,0.05)]
+  ${isPublicHomepage
+    ? 'bg-[#141826] border-r border-white/10'
+    : 'bg-white/70 dark:bg-[#0f1729]/80 backdrop-blur-2xl border-r border-white/20 dark:border-white/5 shadow-[10px_0_40px_-10px_rgba(0,0,0,0.05)]'}
 `}>
 
             <div className="p-6 flex flex-col flex-1 min-w-[18rem] h-full overflow-y-auto relative z-10 scrollbar-thin scrollbar-thumb-slate-200/50 dark:scrollbar-thumb-slate-700/50">
