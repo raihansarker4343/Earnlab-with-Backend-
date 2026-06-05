@@ -13,6 +13,34 @@
       animation: marquee 30s linear infinite;
     }
 
+   @keyframes cashout-scroll-up {
+      0% {
+        transform: translateY(0);
+      }
+
+      100% {
+        transform: translateY(-50%);
+      }
+    }
+
+    @keyframes cashout-scroll-down {
+      0% {
+        transform: translateY(-50%);
+      }
+
+      100% {
+        transform: translateY(0);
+      }
+    }
+
+    .animate-cashout-scroll-up {
+      animation: cashout-scroll-up 28s linear infinite;
+    }
+
+    .animate-cashout-scroll-down {
+      animation: cashout-scroll-down 28s linear infinite;
+    }
+
     /* Confetti Animation */
     .confetti {
       position: absolute;
