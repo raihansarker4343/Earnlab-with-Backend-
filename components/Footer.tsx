@@ -3,7 +3,8 @@ import React, { useContext } from 'react';
 import { AppContext } from '../App';
 
 const Footer: React.FC = () => {
-    const { setCurrentPage } = useContext(AppContext);
+    const { setCurrentPage, isLoggedIn, currentPage } = useContext(AppContext);
+    const isPublicHomepage = !isLoggedIn && currentPage === 'Home';
 
     const handleNavClick = (e: React.MouseEvent, pageName: string) => {
         e.preventDefault();
@@ -11,11 +12,15 @@ const Footer: React.FC = () => {
     };
 
     return (
-        <footer className="relative bg-white/70 dark:bg-[#0f1729]/80 backdrop-blur-2xl border-t border-white/20 dark:border-white/5 py-12 text-slate-600 dark:text-slate-400 shadow-[0_-10px_40px_-20px_rgba(0,0,0,0.05)]">
+        <footer className={`relative py-12 ${
+            isPublicHomepage
+                ? 'bg-[#141826] border-t border-white/10 text-slate-400'
+                : 'bg-white/70 dark:bg-[#0f1729]/80 backdrop-blur-2xl border-t border-white/20 dark:border-white/5 text-slate-600 dark:text-slate-400 shadow-[0_-10px_40px_-20px_rgba(0,0,0,0.05)]'
+        }`}>
             <div className="container mx-auto px-8 relative z-10">
                 <div className="flex flex-wrap justify-between items-start gap-8">
                     <div className="space-y-4">
-                        <h3 className="font-bold text-xl text-slate-900 dark:text-white tracking-tight flex items-center gap-2">
+                        <h3 className={`font-bold text-xl tracking-tight flex items-center gap-2 ${isPublicHomepage ? 'text-white' : 'text-slate-900 dark:text-white'}`}>
                             <span className="w-8 h-8 rounded-lg flex items-center justify-center shadow-lg shadow-indigo-500/30 overflow-hidden bg-white">
   <img 
     src="https://res.cloudinary.com/dsezfqke7/image/upload/v1771094886/Gemini_Generated_Image_4fls9y4fls9y4fls_bxbcke.png" 
