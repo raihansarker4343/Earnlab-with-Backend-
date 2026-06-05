@@ -93,9 +93,9 @@ const LoggedOutSidebar: React.FC = () => {
 
   return (
     <>
-        {/* Mobile Overlay with heavy blur */}
+        {/* Mobile Overlay */}
         <div 
-            className={`fixed inset-0 bg-slate-900/30 backdrop-blur-md z-40 lg:hidden transition-opacity duration-500 ease-out ${isMobileSidebarOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
+            className={`fixed inset-0 z-40 lg:hidden transition-opacity duration-500 ease-out ${isMobileSidebarOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'} ${isPublicHomepage ? 'bg-black/60' : 'bg-slate-900/30 backdrop-blur-md'}`}
             onClick={() => setIsMobileSidebarOpen(false)}
             aria-hidden="true"
         ></div>
