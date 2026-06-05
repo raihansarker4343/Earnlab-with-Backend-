@@ -4,6 +4,17 @@ import { FAQ_ITEMS, REWARD_OPTIONS, TESTIMONIALS, FEATURED_OFFERS } from '../../
 import { API_URL } from '../../constants';
 import type { FaqItem } from '../../types';
 import LiveCashoutsSection from '../LiveCashoutsSection';
+import {
+  PlayGamesIllustration,
+  PlayGamesFloat1,
+  PlayGamesFloat2,
+  CompleteOffersIllustration,
+  CompleteOffersFloat1,
+  CompleteOffersFloat2,
+  JoinSurveysIllustration,
+  JoinSurveysFloat1,
+  JoinSurveysFloat2,
+} from '../earn/BestWaysIllustrations';
 
 interface HomeStats {
   signups24h: number;
@@ -227,9 +238,9 @@ interface EarningMethod {
   description: string;
   earnLabel: string;
   earnAmount: string;
-  baseImage: string;
+  illustration: React.ReactNode;
   featured?: boolean;
-  floatingIcons?: { src: string; className: string }[];
+  floatingElements?: { element: React.ReactNode; className: string }[];
 }
 
 const earningMethods: EarningMethod[] = [
@@ -239,12 +250,12 @@ const earningMethods: EarningMethod[] = [
       'In order to attract more players, gaming companies want to pay you to play their games. Let\'s play!',
     earnLabel: 'Payout per game',
     earnAmount: '$1.00 - $120.00',
-    baseImage:
-      'https://res.cloudinary.com/dsezfqke7/image/upload/v1763588048/nanao_base_czw9lt.png',
+    illustration: <PlayGamesIllustration />,
     featured: true,
     floatingIcons: [
-      { src: 'https://i.imgur.com/U16jVoT.png', className: 'earn-floating-1' },
-      { src: 'https://shorturl.at/C13pw', className: 'earn-floating-2' },
+      floatingElements: [
+      { element: <PlayGamesFloat1 />, className: 'earn-floating-1 earn-float-games-1' },
+      { element: <PlayGamesFloat2 />, className: 'earn-floating-2 earn-float-games-2' },
     ],
   },
   {
@@ -253,11 +264,10 @@ const earningMethods: EarningMethod[] = [
       'Get to know new companies by trying their apps while you earn money. It\'s time to get paid for using apps!',
     earnLabel: 'Payout per completed offer',
     earnAmount: '$1.00 - $75.00',
-    baseImage:
-      'https://res.cloudinary.com/dsezfqke7/image/upload/v1764389619/ux6374WcpaIBn8-weIQNzffOk9re64pqHEdhsDb3CS58i8IJLI0-JznM8rQ3803NUws_w416-h235-rw_k9uqha.webp',
-    floatingIcons: [
-      { src: 'https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg', className: 'earn-floating-1' },
-      { src: 'https://i.imgur.com/Y8H4yT6.png', className: 'earn-floating-2' },
+    illustration: <CompleteOffersIllustration />,
+    floatingElements: [
+      { element: <CompleteOffersFloat1 />, className: 'earn-floating-1 earn-float-offers-1' },
+      { element: <CompleteOffersFloat2 />, className: 'earn-floating-2 earn-float-offers-2' },
     ],
   },
   {
@@ -266,10 +276,10 @@ const earningMethods: EarningMethod[] = [
       'Companies need your opinion to create better products and services. That\'s why they pay for your feedback.',
     earnLabel: 'Average payout per 5–10 min survey',
     earnAmount: '$1.00',
-    baseImage: 'https://i.imgur.com/tcAqi0j.png',
-    floatingIcons: [
-      { src: 'https://i.imgur.com/oZznueX.png', className: 'earn-floating-1' },
-      { src: 'https://i.imgur.com/ssL8ALh.png', className: 'earn-floating-2' },
+    illustration: <JoinSurveysIllustration />,
+    floatingElements: [
+      { element: <JoinSurveysFloat1 />, className: 'earn-floating-1 earn-float-surveys-1' },
+      { element: <JoinSurveysFloat2 />, className: 'earn-floating-2 earn-float-surveys-2' },
     ],
   },
 ];
@@ -615,20 +625,19 @@ const HomePageContent: React.FC = () => {
                       idx % 2 === 1 ? 'md:flex-row-reverse' : 'md:flex-row'
                     } items-center`}
                   >
-                    <div className="relative w-full md:w-1/2 p-6 md:p-10 flex items-center justify-center min-h-[260px] bg-[#141826]">
-                      {method.floatingIcons?.map((icon, iconIdx) => (
-                        <img
+                    <div className="relative w-full md:w-1/2 p-6 md:p-10 flex items-center justify-center min-h-[260px] bg-[#141826] overflow-visible">
+                      {method.floatingElements?.map((float, iconIdx) => (
+                        <div
                           key={iconIdx}
-                          src={icon.src}
-                          alt=""
-                          className={`earn-floating-icon ${icon.className}`}
-                        />
+                          className={`earn-floating-icon ${float.className}`}
+                          aria-hidden
+                        >
+                          {float.element}
+                        </div>
                       ))}
-                      <img
-                        src={method.baseImage}
-                        alt={method.title}
-                        className="relative z-10 max-h-[260px] w-auto object-contain drop-shadow-2xl transition-transform duration-300 group-hover:scale-105"
-                      />
+                      <div className="relative z-10 w-full max-w-[380px] transition-transform duration-300 group-hover:scale-[1.03]">
+                        {method.illustration}
+                      </div>
                     </div>
 
                     <div className="w-full md:w-1/2 p-6 md:p-10 text-left">
