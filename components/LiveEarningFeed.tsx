@@ -1,8 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { API_URL } from '../constants';
 import type { EarningFeedItem } from '../types';
+import { AppContext } from '../App';
 
 const LiveEarningFeed: React.FC = () => {
+    const { isLoggedIn, currentPage } = useContext(AppContext);
+    const isPublicHomepage = !isLoggedIn && currentPage === 'Home';
     const [feedItems, setFeedItems] = useState<EarningFeedItem[]>([]);
 
     useEffect(() => {
@@ -38,7 +41,11 @@ const LiveEarningFeed: React.FC = () => {
     const duplicatedItems = [...feedItems, ...feedItems, ...feedItems];
 
   return (
-    <div className="bg-white dark:bg-[#0b111e] border-b border-slate-200 dark:border-slate-800 overflow-hidden py-3 select-none">
+    <div className={`overflow-hidden py-3 select-none border-b ${
+        isPublicHomepage
+            ? 'bg-[#141826] border-white/10'
+            : 'bg-white dark:bg-[#0b111e] border-slate-200 dark:border-slate-800'
+    }`}>
       <div className="flex animate-marquee gap-4 hover:[animation-play-state:paused] items-center">
         {duplicatedItems.map((item, index) => {
           const isWithdrawal = item.task === 'Withdrawal';
