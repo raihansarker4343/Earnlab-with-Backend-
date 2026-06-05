@@ -46,16 +46,22 @@ const LoggedOutSidebar: React.FC = () => {
         setIsMobileSidebarOpen(false);
     };
 
-    const renderMenuItem = (item: SidebarMenuItem) => {
+  const isPublicHomepage = currentPage === 'Home';
+  
+  const renderMenuItem = (item: SidebarMenuItem) => {
         const isActive = currentPage === item.name;
         
         // Base container styles
         const baseClasses = `group relative w-full flex items-center justify-between text-left px-4 py-3.5 rounded-2xl transition-all duration-300 font-medium border overflow-hidden`;
         
         // Active vs Inactive state styles (Glassmorphism)
-        const stateClasses = isActive
-            ? 'bg-gradient-to-r from-white/60 to-white/20 dark:from-white/15 dark:to-white/5 text-indigo-900 dark:text-white border-white/60 dark:border-white/10 shadow-[0_4px_20px_-2px_rgba(0,0,0,0.1)] backdrop-blur-md'
-            : 'text-slate-600 dark:text-slate-400 border-transparent hover:bg-white/30 dark:hover:bg-white/5 hover:border-white/30 dark:hover:border-white/5 hover:shadow-sm hover:backdrop-blur-sm hover:text-slate-900 dark:hover:text-slate-200';
+        const stateClasses = isPublicHomepage
+            ? isActive
+                ? 'bg-[#1a1f2e] text-white border-white/10'
+                : 'text-slate-400 border-transparent hover:bg-[#1a1f2e]/60 hover:text-white'
+            : isActive
+                ? 'bg-gradient-to-r from-white/60 to-white/20 dark:from-white/15 dark:to-white/5 text-indigo-900 dark:text-white border-white/60 dark:border-white/10 shadow-[0_4px_20px_-2px_rgba(0,0,0,0.1)] backdrop-blur-md'
+                : 'text-slate-600 dark:text-slate-400 border-transparent hover:bg-white/30 dark:hover:bg-white/5 hover:border-white/30 dark:hover:border-white/5 hover:shadow-sm hover:backdrop-blur-sm hover:text-slate-900 dark:hover:text-slate-200';
 
         // Icon container styles
         const iconBase = `relative grid place-items-center w-10 h-10 rounded-xl transition-all duration-300`;
@@ -116,14 +122,6 @@ const LoggedOutSidebar: React.FC = () => {
   shadow-[10px_0_40px_-10px_rgba(0,0,0,0.05)]
 `}>
 
-
-          
-            {/* Ambient Background Orbs */}
-            <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none z-0">
-                <div className="absolute top-[-10%] right-[-20%] w-[80%] h-[40%] bg-indigo-500/10 rounded-full blur-[80px] animate-pulse"></div>
-                <div className="absolute bottom-[10%] left-[-20%] w-[70%] h-[50%] bg-cyan-500/10 rounded-full blur-[90px]"></div>
-            </div>
-
             <div className="p-6 flex flex-col flex-1 min-w-[18rem] h-full overflow-y-auto relative z-10 scrollbar-thin scrollbar-thumb-slate-200/50 dark:scrollbar-thumb-slate-700/50">
                 
                 {/* Sidebar Header */}
@@ -133,7 +131,7 @@ const LoggedOutSidebar: React.FC = () => {
                             E
                          </div>
                          <div className="flex flex-col">
-                             <span className="font-bold text-xl text-slate-800 dark:text-white leading-none tracking-tight">Earnello</span>
+                             <span className={`font-bold text-xl leading-none tracking-tight ${isPublicHomepage ? 'text-white' : 'text-slate-800 dark:text-white'}`}>Earnello</span>
                          </div>
                     </div>
 
@@ -150,7 +148,7 @@ const LoggedOutSidebar: React.FC = () => {
 
                 {/* Navigation Menu */}
                 <nav className="flex-1 flex flex-col">
-                    <h3 className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-4 px-2">Menu</h3>
+                    <h3 className={`text-xs font-bold uppercase tracking-widest mb-4 px-2 ${isPublicHomepage ? 'text-slate-500' : 'text-slate-400 dark:text-slate-500'}`}>Menu</h3>
                     <ul className="space-y-3">
                         {SIDEBAR_MENU_ITEMS.map(renderMenuItem)}
                     </ul>
